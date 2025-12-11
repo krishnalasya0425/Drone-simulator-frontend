@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+.input {
+  @apply w-full border rounded px-3 py-2 bg-gray-50 focus:ring-2 focus:ring-blue-300 outline-none;
+}
+
+.input-box {
+  @apply w-full px-4 py-3 rounded-xl bg-white/20 text-white placeholder-gray-300 
+         border border-white/30 focus:border-blue-400 outline-none backdrop-blur-md;
+}
+
