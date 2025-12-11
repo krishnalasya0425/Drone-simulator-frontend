@@ -2,15 +2,17 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import classAPI from "../../entities/class";
 import Modal from "../../components/FileModal";
-import UploadDocs from './UploadDocs'
+import UploadDocs from "../../components/UploadDocs";
+import { useNavigate } from "react-router-dom";
+
 
 import {
   FaFilePdf,
-  FaFileWord,
-  FaFileExcel,
-  FaFilePowerpoint,
   FaFileImage,
   FaFile,
+  FaUpload,
+  FaClipboardList,
+  FaMagic,
 } from "react-icons/fa";
 
 const Docs = () => {
@@ -19,11 +21,13 @@ const Docs = () => {
   const [previewDoc, setPreviewDoc] = useState(null);
   const [classData, setClassData] = useState({});
   const [docType, setDocType] = useState(null);
+    const navigate = useNavigate()
+
+  const role = localStorage.getItem("role")
 
 
-  const [preview, setPreview] = useState(null);
+
   const [uploadDoc, setUploadDoc] = useState(false);
-  const [openSection, setOpenSection] = useState(null);
     const [previewId, setPreviewId] = useState(null);
 
   // -----------------------
@@ -45,46 +49,60 @@ const Docs = () => {
 
   useEffect(() => {
     loadDocs();
-  }, [classId]);
+  }, [classId, uploadDoc]);
 
   console.log(docs)
 
-  // -----------------------
-  // File Icons
-  // -----------------------
+
  const getFileIcon = (mime) => {
     if (!mime) return <FaFile size={30} />;
 
     if (mime.includes("pdf")) return <FaFilePdf size={30} color="red" />;
-    // if (mime.includes("word")) return <FaFileWord size={30} color="blue" />;
-    // if (mime.includes("spreadsheet") || mime.includes("excel"))
-    //   return <FaFileExcel size={30} color="green" />;
-    // if (mime.includes("presentation"))
-    //   return <FaFilePowerpoint size={30} color="orange" />;
     if (mime.startsWith("image")) return <FaFileImage size={30} />;
 
     return <FaFile size={30} />;
   };
 
-  // -----------------------
-  // Group Files by Type
-  // -----------------------
+ 
  
 
   return (
     <div className="p-4">
 
-      {/* ---------------- CLASS INFO ---------------- */}
-      <div className="bg-white border rounded-lg shadow p-4 mb-6">
-        <h2 className="text-2xl font-bold mb-2">{classData.class_name}</h2>
+    {/* ---------------- CLASS INFO ---------------- */}
+<div className="flex items-center justify-between mb-6 relative">
 
-        <div className="flex gap-6 flex-wrap">
-          <p><strong>Class ID:</strong> {classData.id}</p>
-          <p><strong>Created By:</strong> {classData.creator_id} — {classData.created_by}</p>
-          <p><strong>Created At:</strong> {classData.created_at ? new Date(classData.created_at).toLocaleString() : ""}</p>
-        </div>
-      </div>
-  <div className="grid grid-cols-2 gap-4 p-4">
+  {/* Centered Title */}
+  <h1 className="text-3xl font-bold text-center flex-1">
+    {classData.class_name}
+  </h1>
+
+   <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded flex items-center gap-2 shadow">
+      <FaClipboardList /> Practice
+    </button>
+
+  {/* Right Buttons (stay right, no overflow) */}
+  {role !== "Student" &&
+  <div className="flex items-center gap-3 shrink-0 ml-4">
+
+    <button className="bg-purple-400 hover:bg-purple-700 text-white px-4 py-2 rounded flex items-center gap-2 shadow"  onClick={() => navigate(`/${classId}/generatetest`)}>
+      <FaMagic /> Generate Test
+    </button>
+
+    <button
+      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded flex items-center gap-2 shadow"
+      onClick={() => setUploadDoc(true)}
+    >
+      <FaUpload /> Upload
+    </button>
+
+  </div> }
+  
+</div>
+
+
+
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mt-8">
       {docs.map((doc) => (
       <div
   key={doc.id}
@@ -105,31 +123,19 @@ const Docs = () => {
         <Modal fileId={previewId} docType ={docType} onClose={() => setPreviewId(null)} />
       )}
     </div>
-      {/* ------------------------ Upload Button ------------------------ */}
-      <button
-        onClick={() => setUploadDoc(true)}
-        className="fixed bottom-4 right-4 bg-green-600 text-white px-5 py-3 rounded-full shadow-lg hover:bg-green-700"
-      >
-        Upload Docs
-      </button>
+     
+ 
 
      
-      {/* ------------------------ UPLOAD MODAL ------------------------ */}
-      {uploadDoc && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-xl p-4 w-[400px] relative">
+  
+     {uploadDoc && (
+  <UploadDocs
+    classId={classId}
+    uploadDocs={classAPI.uploadDocs}
+    onClose={() => setUploadDoc(false)}
+  />
+)}
 
-            <button
-              className="absolute top-2 right-2 text-xl bg-gray-200 px-3 py-1 rounded"
-              onClick={() => setUploadDoc(false)}
-            >
-              ✖
-            </button>
-
-            <UploadDocs classId={classId} uploadDocs={classAPI.uploadDocs} />
-          </div>
-        </div>
-      )}
     </div>
   );
 };

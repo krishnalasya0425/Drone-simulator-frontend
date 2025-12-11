@@ -4,9 +4,15 @@ const API_BASE_URL = 'http://localhost:5000/tests'; // adjust the URL according 
 
  const userAPI = {
     // Get all users
-    async addTest() {
+    async addTest(title) {
         try {
-            const response = await fetch(API_BASE_URL);
+ const response = await fetch(`${API_BASE_URL}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title
+      })
+    });
             if (!response.ok) throw new Error('Failed to fetch users');
             return await response.json();
         } catch (error) {

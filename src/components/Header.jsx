@@ -22,7 +22,7 @@ export default function Header() {
 
   return (
     <header className="w-full bg-blue-600 text-white shadow-lg">
-      <div className="max-w-[1400px] mx-auto flex items-center justify-between px-6 py-3">
+      <div className="max-w-full mx-auto flex items-center justify-between px-6 py-3">
 
         {/* LEFT SIDE: LOGO */}
         <div className="flex items-center justify-start gap-2 font-bold text-xl ">

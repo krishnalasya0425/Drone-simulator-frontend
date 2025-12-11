@@ -21,11 +21,19 @@ export const classAPI = {
   // =======================
   // CLASSES
   // =======================
-   getAllClasses(id = null) {
-    let url = `${API_BASE_URL}`;
-    if (id) url += `?id=${id}`;
-    return apiRequest(url, "GET");
-  },
+   getAllClasses(id = null, role = null) {
+  let url = `${API_BASE_URL}`;
+ 
+  if (role === "Student") {
+    url += `/assigned?id=${id}`;
+  } 
+  else if (id) {
+    url += `?id=${id}`;
+  }
+
+  return apiRequest(url, "GET");
+},
+
 
   getClassInfo(Id){
      return apiRequest(`${API_BASE_URL}/${Id}`);

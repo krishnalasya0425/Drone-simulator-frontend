@@ -9,7 +9,7 @@ const FileModal = ({ fileId, docType, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
       <button
-        className="absolute top-5 right-5 bg-red-600 text-white px-4 py-1 rounded z-50"
+        className="absolute top-5 right-5 bg-gray-600 text-white px-4 py-1 rounded z-50"
         onClick={onClose}
       >
         ✕
