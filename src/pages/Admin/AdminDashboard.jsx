@@ -1,5 +1,8 @@
+
 import { useEffect, useState } from "react";
 import api from "../../entities/axios";
+import { classAPI } from "../../entities/class";
+import { useNavigate } from "react-router-dom";
 import React from "react";
 import {
   FaUserGraduate,
@@ -13,6 +16,7 @@ import {
 } from "react-icons/fa";
 
 export default function AdminDashboard() {
+  const navigate = useNavigate();
   const [filter, setFilter] = useState("student");
   const [students, setStudents] = useState([]);
   const [instructors, setInstructors] = useState([]);
@@ -27,8 +31,12 @@ export default function AdminDashboard() {
     status: "",
   });
   const [showModal, setShowModal] = useState(false);
+  const [instructorClasses, setInstructorClasses] = useState([]);
+  const [approvingStudent, setApprovingStudent] = useState(null);
+  const [selectedClassId, setSelectedClassId] = useState("");
 
-  const role = localStorage.getItem("role")
+  const role = localStorage.getItem("role");
+  const instructorId = localStorage.getItem("id");
 
   useEffect(() => {
     if (!localStorage.getItem("token")) window.location.href = "/login";
@@ -37,6 +45,13 @@ export default function AdminDashboard() {
   useEffect(() => {
     fetchUsers();
   }, [filter]);
+
+  // Fetch instructor's classes when role is Instructor
+  useEffect(() => {
+    if (role === "Instructor" && instructorId) {
+      fetchInstructorClasses();
+    }
+  }, [role, instructorId]);
 
   const fetchUsers = async () => {
     try {
@@ -47,6 +62,15 @@ export default function AdminDashboard() {
         : setInstructors(otpRes.data);
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const fetchInstructorClasses = async () => {
+    try {
+      const classes = await classAPI.getAllClasses(instructorId);
+      setInstructorClasses(classes);
+    } catch (err) {
+      console.error("Error fetching classes:", err);
     }
   };
 
@@ -154,11 +178,20 @@ export default function AdminDashboard() {
 
                 {u.status !== "Approved" && (
                   <button
-                    onClick={() =>
-                      api
-                        .put(`/users/${u.id}/status`, { status: "Approved" })
-                        .then(fetchUsers)
-                    }
+                    onClick={async () => {
+                      // If instructor, show class selection modal
+                      if (role === "Instructor") {
+                        // Refresh classes list before showing modal
+                        await fetchInstructorClasses();
+                        setApprovingStudent(u);
+                        setSelectedClassId("");
+                      } else {
+                        // Admin can approve without class assignment
+                        api
+                          .put(`/users/${u.id}/status`, { status: "Approved" })
+                          .then(fetchUsers);
+                      }
+                    }}
                     className="text-green-600 hover:text-green-800"
                   >
                     <FaCheck size={18} />
@@ -187,7 +220,9 @@ export default function AdminDashboard() {
 
       {/* HEADER */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-blue-700">Admin Dashboard</h1>
+        <h1 className="text-3xl font-bold text-blue-700">
+          {role === "Instructor" ? "Instructor Dashboard" : "Admin Dashboard"}
+        </h1>
 
       
       </div>
@@ -271,6 +306,84 @@ export default function AdminDashboard() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* APPROVE STUDENT WITH CLASS SELECTION MODAL (For Instructors) */}
+      {approvingStudent && role === "Instructor" && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-[400px]">
+            <h3 className="text-xl font-bold mb-4">Approve Student & Assign to Class</h3>
+            <p className="mb-4 text-gray-600">
+              Student: <strong>{approvingStudent.name}</strong> ({approvingStudent.army_id})
+            </p>
+
+            {instructorClasses.length === 0 ? (
+              <div className="mb-4 p-3 bg-yellow-100 border border-yellow-400 rounded">
+                <p className="text-yellow-800 mb-2">No classes available. Please create a class first.</p>
+                <button
+                  onClick={() => {
+                    setApprovingStudent(null);
+                    setSelectedClassId("");
+                    navigate("/classes");
+                  }}
+                  className="text-blue-600 hover:text-blue-800 underline font-semibold"
+                >
+                  Go to Classes Page →
+                </button>
+              </div>
+            ) : (
+              <div className="mb-4">
+                <label className="block mb-2 font-semibold">Select Class:</label>
+                <select
+                  className="w-full border px-3 py-2 rounded text-black"
+                  value={selectedClassId}
+                  onChange={(e) => setSelectedClassId(e.target.value)}
+                >
+                  <option value="">-- Select a class --</option>
+                  {instructorClasses.map((cls) => (
+                    <option key={cls.id} value={cls.id}>
+                      {cls.class_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-3 mt-4">
+              <button
+                type="button"
+                className="bg-gray-300 px-4 py-2 rounded"
+                onClick={() => {
+                  setApprovingStudent(null);
+                  setSelectedClassId("");
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                className="bg-green-600 text-white px-4 py-2 rounded disabled:bg-gray-400 disabled:cursor-not-allowed"
+                disabled={!selectedClassId || instructorClasses.length === 0}
+                onClick={async () => {
+                  try {
+                    await api.put(`/users/${approvingStudent.id}/status`, {
+                      status: "Approved",
+                      classId: selectedClassId,
+                    });
+                    alert("Student approved and assigned to class successfully!");
+                    setApprovingStudent(null);
+                    setSelectedClassId("");
+                    fetchUsers();
+                  } catch (err) {
+                    console.error(err);
+                    alert("Error approving student");
+                  }
+                }}
+              >
+                Approve & Assign
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -4,7 +4,13 @@ const API_BASE_URL = "http://localhost:5000/c";
 
 // Generic request helper
 async function apiRequest(url, method = "GET", body = null) {
+  const token = localStorage.getItem("token");
   const options = { method, headers: {} };
+
+  // Add Authorization header if token exists
+  if (token) {
+    options.headers["Authorization"] = `Bearer ${token}`;
+  }
 
   if (body) {
     options.headers["Content-Type"] = "application/json";
@@ -65,13 +71,20 @@ export const classAPI = {
   },
 
   async uploadDocs(class_id, doc_title, file) {
-
+    const token = localStorage.getItem("token");
     const formData = new FormData();
     formData.append("class_id", class_id);
     formData.append("doc_title", doc_title);
     formData.append("file", file);
+    
+    const headers = {};
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+    
     const res = await fetch(`${API_BASE_URL}/docs`, {
       method: "POST",
+      headers,
       body: formData,
     });
     if (!res.ok) throw new Error(`API error: ${res.status}`);
@@ -80,16 +93,22 @@ export const classAPI = {
 
  
   async getDocs(id) {
-  const endpoint = `${API_BASE_URL}/docs/${id}`;
+    const token = localStorage.getItem("token");
+    const endpoint = `${API_BASE_URL}/docs/${id}`;
 
-  const res = await fetch(endpoint);
+    const headers = {};
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
 
-  if (!res.ok) {
-    throw new Error("Failed to fetch documents");
-  }
+    const res = await fetch(endpoint, { headers });
 
-  return await res.json(); 
-},
+    if (!res.ok) {
+      throw new Error("Failed to fetch documents");
+    }
+
+    return await res.json(); 
+  },
 
 
 };
