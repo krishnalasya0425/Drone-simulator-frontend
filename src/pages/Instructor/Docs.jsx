@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import classAPI from "../../entities/class";
+import api from "../../entities/axios";
 import Modal from "../../components/FileModal";
 import UploadDocs from "../../components/UploadDocs";
 import {
@@ -14,8 +15,11 @@ import {
   FaDownload,
   FaEye,
   FaTrash,
+  FaUserPlus,
+  FaUsers,
+  FaCheckCircle,
 } from "react-icons/fa";
-import { FiGrid, FiList } from "react-icons/fi";
+import { FiGrid, FiList, FiX } from "react-icons/fi";
 
 const Docs = () => {
   const { classId } = useParams();
@@ -26,6 +30,16 @@ const Docs = () => {
   const [uploadDoc, setUploadDoc] = useState(false);
   const [previewId, setPreviewId] = useState(null);
   const [viewMode, setViewMode] = useState("grid"); // grid or list
+
+  // Student management states
+  const [showAddStudentsModal, setShowAddStudentsModal] = useState(false);
+  const [showViewStudentsModal, setShowViewStudentsModal] = useState(false);
+  const [availableStudents, setAvailableStudents] = useState([]);
+  const [classStudents, setClassStudents] = useState([]);
+  const [selectedStudents, setSelectedStudents] = useState([]);
+  const [loadingStudents, setLoadingStudents] = useState(false);
+  const [deleteMode, setDeleteMode] = useState(false);
+  const [studentsToDelete, setStudentsToDelete] = useState([]);
 
   const role = localStorage.getItem("role");
 
@@ -43,7 +57,74 @@ const Docs = () => {
 
   useEffect(() => {
     loadDocs();
+    if (role !== "Student") {
+      loadClassStudents();
+    }
   }, [classId, uploadDoc]);
+
+  const loadClassStudents = async () => {
+    try {
+      const response = await api.get(`/classes/${classId}/students`);
+      setClassStudents(response.data || []);
+    } catch (err) {
+      console.error("Failed to load class students", err);
+      setClassStudents([]);
+    }
+  };
+
+  const loadAvailableStudents = async () => {
+    try {
+      setLoadingStudents(true);
+      const response = await api.get(`/users?role=student&status=Approved`);
+      // Filter out students already in this class
+      const available = response.data.filter(
+        student => !classStudents.some(cs => cs.id === student.id)
+      );
+      setAvailableStudents(available);
+    } catch (err) {
+      console.error("Failed to load students", err);
+      setAvailableStudents([]);
+    } finally {
+      setLoadingStudents(false);
+    }
+  };
+
+  const handleAddStudentsClick = async () => {
+    setShowAddStudentsModal(true);
+    await loadAvailableStudents();
+  };
+
+  const handleViewStudentsClick = () => {
+    setShowViewStudentsModal(true);
+  };
+
+  const toggleStudentSelection = (studentId) => {
+    setSelectedStudents(prev =>
+      prev.includes(studentId)
+        ? prev.filter(id => id !== studentId)
+        : [...prev, studentId]
+    );
+  };
+
+  const handleAddSelectedStudents = async () => {
+    if (selectedStudents.length === 0) {
+      alert("Please select at least one student");
+      return;
+    }
+
+    try {
+      await api.post(`/classes/${classId}/students`, {
+        studentIds: selectedStudents
+      });
+      alert(`Successfully added ${selectedStudents.length} student(s) to the class!`);
+      setSelectedStudents([]);
+      setShowAddStudentsModal(false);
+      await loadClassStudents();
+    } catch (err) {
+      console.error("Failed to add students", err);
+      alert("Failed to add students. Please try again.");
+    }
+  };
 
   const getFileIcon = (mime) => {
     if (!mime) return <FaFile size={40} className="text-gray-500" />;
@@ -77,6 +158,45 @@ const Docs = () => {
     }
   };
 
+  const toggleDeleteMode = () => {
+    setDeleteMode(!deleteMode);
+    setStudentsToDelete([]);
+  };
+
+  const toggleStudentForDeletion = (studentId) => {
+    setStudentsToDelete(prev =>
+      prev.includes(studentId)
+        ? prev.filter(id => id !== studentId)
+        : [...prev, studentId]
+    );
+  };
+
+  const handleRemoveSelectedStudents = async () => {
+    if (studentsToDelete.length === 0) {
+      alert("Please select at least one student to remove");
+      return;
+    }
+
+    const confirmDelete = window.confirm(
+      `Are you sure you want to remove ${studentsToDelete.length} student(s) from this class?`
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      await api.delete(`/classes/${classId}/students`, {
+        data: { studentIds: studentsToDelete }
+      });
+      alert(`Successfully removed ${studentsToDelete.length} student(s) from the class!`);
+      setStudentsToDelete([]);
+      setDeleteMode(false);
+      await loadClassStudents();
+    } catch (err) {
+      console.error("Failed to remove students", err);
+      alert("Failed to remove students. Please try again.");
+    }
+  };
+
   return (
     <div className="min-h-screen p-6">
       <div className="max-w-7xl mx-auto">
@@ -94,9 +214,20 @@ const Docs = () => {
                   <h1 className="text-4xl font-bold" style={{ color: '#074F06' }}>
                     {classData.class_name || 'Class Documents'}
                   </h1>
-                  <p className="text-gray-600 mt-1">
-                    {docs.length} {docs.length === 1 ? 'document' : 'documents'} available
-                  </p>
+                  <div className="flex items-center gap-4 mt-1">
+                    <p className="text-gray-600">
+                      {docs.length} {docs.length === 1 ? 'document' : 'documents'} available
+                    </p>
+                    {role !== "Student" && (
+                      <p className="text-gray-600 flex items-center gap-1">
+                        <FaUsers size={14} style={{ color: '#074F06' }} />
+                        <span className="font-semibold" style={{ color: '#074F06' }}>
+                          {classStudents.length}
+                        </span>
+                        {classStudents.length === 1 ? ' student' : ' students'}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -123,6 +254,26 @@ const Docs = () => {
                   >
                     <FaUpload size={18} />
                     <span className="hidden sm:inline">Upload</span>
+                  </button>
+
+                  <button
+                    className="flex items-center gap-2 px-5 py-3 text-white rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+                    style={{ backgroundColor: '#074F06' }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#053d05'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = '#074F06'}
+                    onClick={handleAddStudentsClick}
+                  >
+                    <FaUserPlus size={18} />
+                    <span className="hidden sm:inline">Add Students</span>
+                  </button>
+
+                  <button
+                    className="flex items-center gap-2 px-5 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+                    style={{ backgroundColor: '#D5F2D5', color: '#074F06' }}
+                    onClick={handleViewStudentsClick}
+                  >
+                    <FaUsers size={18} />
+                    <span className="hidden sm:inline">View Students</span>
                   </button>
                 </>
               )}
@@ -350,6 +501,291 @@ const Docs = () => {
             uploadDocs={classAPI.uploadDocs}
             onClose={() => setUploadDoc(false)}
           />
+        )}
+
+        {/* Add Students Modal */}
+        {showAddStudentsModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden">
+              {/* Modal Header */}
+              <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between" style={{ backgroundColor: '#D5F2D5' }}>
+                <h2 className="text-2xl font-bold flex items-center gap-2" style={{ color: '#074F06' }}>
+                  <FaUserPlus size={24} />
+                  Add Students to Class
+                </h2>
+                <button
+                  onClick={() => {
+                    setShowAddStudentsModal(false);
+                    setSelectedStudents([]);
+                  }}
+                  className="p-2 hover:bg-white rounded-lg transition-colors"
+                >
+                  <FiX size={24} style={{ color: '#074F06' }} />
+                </button>
+              </div>
+
+              {/* Modal Body */}
+              <div className="p-6 overflow-y-auto max-h-[calc(80vh-180px)]">
+                {loadingStudents ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderColor: '#074F06' }}></div>
+                    <p className="text-gray-600">Loading students...</p>
+                  </div>
+                ) : availableStudents.length === 0 ? (
+                  <div className="text-center py-8">
+                    <FaUsers size={48} className="mx-auto mb-4 text-gray-400" />
+                    <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                      No Available Students
+                    </h3>
+                    <p className="text-gray-600">
+                      All approved students are already in this class.
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="mb-4 p-3 rounded-lg" style={{ backgroundColor: '#D5F2D5' }}>
+                      <p className="text-sm font-semibold" style={{ color: '#074F06' }}>
+                        Select students to add to this class ({selectedStudents.length} selected)
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      {availableStudents.map((student) => (
+                        <label
+                          key={student.id}
+                          className="flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all hover:shadow-md"
+                          style={{
+                            borderColor: selectedStudents.includes(student.id) ? '#074F06' : '#e5e7eb',
+                            backgroundColor: selectedStudents.includes(student.id) ? '#D5F2D5' : 'white'
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedStudents.includes(student.id)}
+                            onChange={() => toggleStudentSelection(student.id)}
+                            className="w-5 h-5 rounded cursor-pointer"
+                            style={{ accentColor: '#074F06' }}
+                          />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-semibold text-gray-800">{student.name}</h4>
+                              {selectedStudents.includes(student.id) && (
+                                <FaCheckCircle size={16} style={{ color: '#074F06' }} />
+                              )}
+                            </div>
+                            <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
+                              <span>Army ID: {student.army_id}</span>
+                              <span>Batch: {student.batch_no}</span>
+                              <span>Regiment: {student.regiment}</span>
+                            </div>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Modal Footer */}
+              <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-end gap-3" style={{ backgroundColor: '#f9fafb' }}>
+                <button
+                  onClick={() => {
+                    setShowAddStudentsModal(false);
+                    setSelectedStudents([]);
+                  }}
+                  className="px-5 py-2 rounded-lg font-semibold text-gray-700 bg-gray-200 hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAddSelectedStudents}
+                  disabled={selectedStudents.length === 0}
+                  className="px-5 py-2 rounded-lg font-semibold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ backgroundColor: '#074F06' }}
+                  onMouseEnter={(e) => !e.target.disabled && (e.target.style.backgroundColor = '#053d05')}
+                  onMouseLeave={(e) => !e.target.disabled && (e.target.style.backgroundColor = '#074F06')}
+                >
+                  Add {selectedStudents.length > 0 && `(${selectedStudents.length})`} Student{selectedStudents.length !== 1 ? 's' : ''}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* View Students Modal */}
+        {showViewStudentsModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[80vh] overflow-hidden">
+              {/* Modal Header */}
+              <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between" style={{ backgroundColor: '#D5F2D5' }}>
+                <h2 className="text-2xl font-bold flex items-center gap-2" style={{ color: '#074F06' }}>
+                  <FaUsers size={24} />
+                  Students in {classData.class_name}
+                </h2>
+                <button
+                  onClick={() => {
+                    setShowViewStudentsModal(false);
+                    setDeleteMode(false);
+                    setStudentsToDelete([]);
+                  }}
+                  className="p-2 hover:bg-white rounded-lg transition-colors"
+                >
+                  <FiX size={24} style={{ color: '#074F06' }} />
+                </button>
+              </div>
+
+              {/* Modal Body */}
+              <div className="p-6 overflow-y-auto max-h-[calc(80vh-180px)]">
+                {classStudents.length === 0 ? (
+                  <div className="text-center py-8">
+                    <FaUsers size={48} className="mx-auto mb-4 text-gray-400" />
+                    <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                      No Students Enrolled
+                    </h3>
+                    <p className="text-gray-600 mb-4">
+                      This class doesn't have any students yet.
+                    </p>
+                    <button
+                      onClick={() => {
+                        setShowViewStudentsModal(false);
+                        handleAddStudentsClick();
+                      }}
+                      className="px-5 py-2 rounded-lg font-semibold text-white transition-all"
+                      style={{ backgroundColor: '#074F06' }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = '#053d05'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = '#074F06'}
+                    >
+                      Add Students
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="mb-4 p-3 rounded-lg flex items-center justify-between" style={{ backgroundColor: '#D5F2D5' }}>
+                      <p className="text-sm font-semibold" style={{ color: '#074F06' }}>
+                        {deleteMode
+                          ? `${studentsToDelete.length} student${studentsToDelete.length !== 1 ? 's' : ''} selected for removal`
+                          : `Total: ${classStudents.length} student${classStudents.length !== 1 ? 's' : ''}`
+                        }
+                      </p>
+                      {!deleteMode && (
+                        <button
+                          onClick={toggleDeleteMode}
+                          className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-white transition-all hover:shadow-md"
+                          style={{ backgroundColor: '#dc2626' }}
+                          onMouseEnter={(e) => e.target.style.backgroundColor = '#b91c1c'}
+                          onMouseLeave={(e) => e.target.style.backgroundColor = '#dc2626'}
+                        >
+                          <FaTrash size={14} />
+                          Remove Students
+                        </button>
+                      )}
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="text-white" style={{ backgroundColor: '#074F06' }}>
+                          <tr>
+                            {deleteMode && (
+                              <th className="px-4 py-3 text-left">
+                                <input
+                                  type="checkbox"
+                                  checked={studentsToDelete.length === classStudents.length}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setStudentsToDelete(classStudents.map(s => s.id));
+                                    } else {
+                                      setStudentsToDelete([]);
+                                    }
+                                  }}
+                                  className="w-5 h-5 rounded cursor-pointer"
+                                  style={{ accentColor: '#dc2626' }}
+                                />
+                              </th>
+                            )}
+                            <th className="px-4 py-3 text-left">#</th>
+                            <th className="px-4 py-3 text-left">Name</th>
+                            <th className="px-4 py-3 text-left">Army ID</th>
+                            <th className="px-4 py-3 text-left">Batch</th>
+                            <th className="px-4 py-3 text-left">Regiment</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {classStudents.map((student, index) => (
+                            <tr
+                              key={student.id}
+                              className={`border-b transition-colors ${deleteMode && studentsToDelete.includes(student.id)
+                                  ? 'bg-red-50'
+                                  : 'hover:bg-green-50'
+                                }`}
+                            >
+                              {deleteMode && (
+                                <td className="px-4 py-3">
+                                  <input
+                                    type="checkbox"
+                                    checked={studentsToDelete.includes(student.id)}
+                                    onChange={() => toggleStudentForDeletion(student.id)}
+                                    className="w-5 h-5 rounded cursor-pointer"
+                                    style={{ accentColor: '#dc2626' }}
+                                  />
+                                </td>
+                              )}
+                              <td className="px-4 py-3 font-semibold" style={{ color: '#074F06' }}>
+                                {index + 1}
+                              </td>
+                              <td className="px-4 py-3 font-medium text-gray-800">
+                                {student.name}
+                              </td>
+                              <td className="px-4 py-3 text-gray-600">
+                                {student.army_id}
+                              </td>
+                              <td className="px-4 py-3 text-gray-600">
+                                {student.batch_no}
+                              </td>
+                              <td className="px-4 py-3 text-gray-600">
+                                {student.regiment}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Modal Footer */}
+              <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-end gap-3" style={{ backgroundColor: '#f9fafb' }}>
+                {deleteMode ? (
+                  <>
+                    <button
+                      onClick={() => {
+                        setDeleteMode(false);
+                        setStudentsToDelete([]);
+                      }}
+                      className="px-5 py-2 rounded-lg font-semibold text-gray-700 bg-gray-200 hover:bg-gray-300 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleRemoveSelectedStudents}
+                      disabled={studentsToDelete.length === 0}
+                      className="px-5 py-2 rounded-lg font-semibold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      style={{ backgroundColor: '#dc2626' }}
+                      onMouseEnter={(e) => !e.target.disabled && (e.target.style.backgroundColor = '#b91c1c')}
+                      onMouseLeave={(e) => !e.target.disabled && (e.target.style.backgroundColor = '#dc2626')}
+                    >
+                      Remove {studentsToDelete.length > 0 && `(${studentsToDelete.length})`} Student{studentsToDelete.length !== 1 ? 's' : ''}
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => setShowViewStudentsModal(false)}
+                    className="px-5 py-2 rounded-lg font-semibold text-gray-700 bg-gray-200 hover:bg-gray-300 transition-colors"
+                  >
+                    Close
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>

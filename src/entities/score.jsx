@@ -1,5 +1,4 @@
 
-
 const API_URL = "http://localhost:5000/score";
 
 export const RoomService = {
@@ -32,7 +31,7 @@ export const RoomService = {
 };
 
 
-   
+
 
 
 export default RoomService;

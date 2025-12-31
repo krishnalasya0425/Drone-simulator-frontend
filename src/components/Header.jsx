@@ -1,24 +1,44 @@
+
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import RouteConfig from "../routes/RouteConfig";
 import { useAuth } from "../context/AuthContext";
 import { FiLogOut } from "react-icons/fi";
+import { FaUserCircle } from "react-icons/fa";
 
-export default function Header({ role }) {
+export default function Header({ role: propRole }) {
     const location = useLocation();
     const navigate = useNavigate();
     const { logout } = useAuth();
+
+    // Get role from prop or localStorage as fallback
+    const role = propRole || localStorage.getItem("role");
+    const username = localStorage.getItem("name") || "User";
 
     const handleLogout = () => {
         logout();
         navigate("/login");
     };
 
-    const username = localStorage.getItem("name") || "User";
+    // Helper: Capitalize path for display
+    const capitalize = (str) =>
+        str.charAt(0).toUpperCase() + str.slice(1);
 
+    // Filter routes based on role and exclude dynamic paths
     const filteredRoutes = RouteConfig.filter(
         (r) => !r.roles || r.roles.includes(role)
     );
+
+    // Paths to exclude from navigation (dynamic routes)
+    const excludedPaths = [
+        "/forgotpassword",
+        "/resetpassword",
+        "/:classId/docs",
+        "/:classId/generatetest",
+        "/:classId/review",
+        "/:testId/questions",
+        "/:testId/review"
+    ];
 
     return (
         <header className="w-full text-white shadow-lg" style={{ backgroundColor: '#074F06' }}>
@@ -36,18 +56,33 @@ export default function Header({ role }) {
                 {/* CENTER: NAV LINKS */}
                 <nav className="flex items-center gap-2">
                     {filteredRoutes
-                        .filter((r) => r.label)
+                        .filter((r) => {
+                            // Exclude dynamic paths
+                            if (excludedPaths.includes(r.path)) return false;
+                            // Exclude routes without labels
+                            if (!r.label && r.path !== '/forgotpassword') return false;
+
+                            // For students, hide Classes and Scores from navbar
+                            if (role === 'Student') {
+                                if (r.path === '/classes' || r.path === '/scores') {
+                                    return false;
+                                }
+                            }
+
+                            return true;
+                        })
                         .map((r, idx) => {
                             const isActive = location.pathname === r.path;
-                            const label = r.label;
+                            // Use explicit label or capitalize the path
+                            const label = r.label || capitalize(r.path.replace("/", "") || "Dashboard");
 
                             return (
                                 <Link
                                     key={idx}
                                     to={r.path}
                                     className={`text-sm font-medium px-4 py-2 rounded-lg transition-all duration-200 ${isActive
-                                            ? "bg-white font-semibold shadow-md nav-link-active"
-                                            : "nav-link-inactive hover:shadow-md"
+                                        ? "bg-white font-semibold shadow-md nav-link-active"
+                                        : "nav-link-inactive hover:shadow-md"
                                         }`}
                                     style={{ textDecoration: 'none' }}
                                 >
@@ -60,10 +95,7 @@ export default function Header({ role }) {
                 {/* RIGHT SIDE: USERNAME + LOGOUT */}
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2 px-4 py-2 rounded-lg" style={{ backgroundColor: '#074F06' }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="12" cy="8" r="4" fill="white" />
-                            <path d="M4 20C4 16.6863 6.68629 14 10 14H14C17.3137 14 20 16.6863 20 20V21H4V20Z" fill="white" />
-                        </svg>
+                        <FaUserCircle size={20} className="text-white" />
                         <span className="text-sm font-medium text-white">{username}</span>
                     </div>
 

@@ -2,9 +2,9 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:5000/users'; // Adjust base URL as needed
 
-const Users= {
+const Users = {
     // Get all songs
-    async getByRole(role){
+    async getByRole(role) {
         try {
             const response = await axios.get(`${API_URL}/${role}`);
             return response.data;

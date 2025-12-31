@@ -1,3 +1,5 @@
+
+
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { classAPI } from "../../entities/class";
@@ -38,7 +40,7 @@ const SyllabusPage = () => {
 
   const loadSyllabus = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/c/syllabus`);
+      const res = await fetch(`http://localhost:5000/classes/syllabus`);
       const docs1 = await classAPI.getDocs(1);
 
       setDocs(docs1.docs)

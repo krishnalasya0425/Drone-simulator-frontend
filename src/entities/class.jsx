@@ -1,6 +1,6 @@
 
 
-const API_BASE_URL = "http://localhost:5000/c";
+const API_BASE_URL = "http://localhost:5000/classes";
 
 // Generic request helper
 async function apiRequest(url, method = "GET", body = null) {
@@ -120,5 +120,3 @@ export const classAPI = {
 
 
 export default classAPI;
-
-

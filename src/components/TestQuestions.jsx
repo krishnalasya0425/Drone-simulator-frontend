@@ -1,6 +1,10 @@
-import React, { useState } from "react";
+
+
 import test from "../entities/test.jsx";
 import score1 from "../entities/score.jsx";
+import { useParams } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+
 
 const TestQuestions = () => {
   const [questions, setQuestions] = useState([]);
@@ -8,23 +12,36 @@ const TestQuestions = () => {
   const [correctAnswers, setCorrectAnswers] = useState({});
   const [currentIndex, setCurrentIndex] = useState(0);
   const [score, setScore] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const testName = "JavaScript Basic Test";  // SHOW ON TOP
-  const testId = 1;
-  const student_id = 1;
 
-  const startTest = async () => {
-    try {
-      const fetchQuestions = await test.getQuestionsByTestId(testId);
-      setQuestions(fetchQuestions);
+  const testName = "JavaScript Basic Test"; 
 
-      const map = {};
-      fetchQuestions.forEach((q) => (map[q.id] = q.answer));
-      setCorrectAnswers(map);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  const { testId } = 12;
+
+  const student_id = localStorage.getItem("id")
+
+  useEffect(() => {
+  startTest();
+}, [testId]);
+
+
+ const startTest = async () => {
+  try {
+    setLoading(true);
+    const fetchQuestions = await test.getQuestionsByTestId(testId);
+    setQuestions(fetchQuestions);
+
+    const map = {};
+    fetchQuestions.forEach((q) => (map[q.id] = q.answer));
+    setCorrectAnswers(map);
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const handleAnswerChange = (qid, choice) => {
     setUserAnswers((prev) => ({ ...prev, [qid]: choice }));
@@ -43,6 +60,15 @@ const TestQuestions = () => {
   };
 
   const q = questions[currentIndex];
+
+  if (loading) {
+  return (
+    <div className="p-6 text-center text-lg font-semibold">
+      Loading questions...
+    </div>
+  );
+}
+
 
   // =========================================================================================
   // RESULT PAGE UI
@@ -63,8 +89,7 @@ const TestQuestions = () => {
             return (
               <div
                 key={q.id}
-                className="p-4 shadow rounded-lg border"
-                style={{ backgroundColor: '#9FCF9F' }}
+                className="p-4 bg-white shadow rounded-lg border"
               >
                 <h3 className="font-bold text-lg">{q.question_text}</h3>
 
@@ -141,7 +166,7 @@ const TestQuestions = () => {
       </div>
 
       {/* ======================== START BUTTON ======================== */}
-      {questions.length === 0 && (
+      {/* {questions.length === 0 && (
         <div className="text-center">
           <button
             onClick={startTest}
@@ -150,7 +175,7 @@ const TestQuestions = () => {
             Start Test
           </button>
         </div>
-      )}
+      )} */}
 
       {/* ====================== QUESTIONS UI ====================== */}
       {questions.length > 0 && (
@@ -218,10 +243,11 @@ const TestQuestions = () => {
             <button
               disabled={currentIndex === 0}
               onClick={() => setCurrentIndex(currentIndex - 1)}
-              className={`px-4 py-2 rounded-lg ${currentIndex === 0
-                ? "bg-gray-300 cursor-not-allowed"
-                : "bg-gray-700 text-white hover:bg-gray-800"
-                }`}
+              className={`px-4 py-2 rounded-lg ${
+                currentIndex === 0
+                  ? "bg-gray-300 cursor-not-allowed"
+                  : "bg-gray-700 text-white hover:bg-gray-800"
+              }`}
             >
               Previous
             </button>

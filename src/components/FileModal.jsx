@@ -1,7 +1,9 @@
+
+
 import React from "react";
 
 const FileModal = ({ fileId, docType, onClose }) => {
-  const fileURL = `http://localhost:5000/c/docs/file/${fileId}`;
+  const fileURL = `http://localhost:5000/classes/docs/file/${fileId}`;
 
   const isPDF = docType.includes("pdf");
   const isImage = docType.startsWith("image");

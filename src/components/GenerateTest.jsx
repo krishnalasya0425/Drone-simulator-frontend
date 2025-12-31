@@ -1,6 +1,8 @@
+
+
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import classAPI from "../entities/class";
+import { classAPI } from "../entities/class";
 import test from "../entities/test";
 import {
   FaFilePdf,
@@ -12,19 +14,52 @@ import {
 } from "react-icons/fa";
 
 const GenerateTest = () => {
-  const { classId } = useParams();
+  const { classId: urlClassId } = useParams();
   const navigate = useNavigate();
 
+  // Get user info from localStorage
+  const role = localStorage.getItem("role");
+  const userId = localStorage.getItem("id");
+
+  // State management
+  const [classes, setClasses] = useState([]);
+  const [selectedClassId, setSelectedClassId] = useState(urlClassId || "");
   const [docs, setDocs] = useState([]);
   const [title, setTitle] = useState("");
   const [noQuestions, setNoQuestions] = useState(10);
   const [questionType, setQuestionType] = useState([]);
   const [selectedPdfs, setSelectedPdfs] = useState([]);
+  const [testId, setTestId] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
 
-  const loadDocs = async () => {
+  // Load classes for instructor (if no classId in URL)
+  useEffect(() => {
+    if (role === "Instructor" && !urlClassId) {
+      loadClasses();
+    }
+  }, []);
+
+  const loadClasses = async () => {
+    try {
+      const data = await classAPI.getAllClasses(userId);
+      setClasses(data);
+    } catch (err) {
+      console.error("Failed to load classes", err);
+      setMessage("Failed to load classes");
+      setMessageType("error");
+    }
+  };
+
+  // Load PDFs when class changes
+  useEffect(() => {
+    if (selectedClassId) {
+      loadDocs(selectedClassId);
+    }
+  }, [selectedClassId]);
+
+  const loadDocs = async (classId) => {
     try {
       const res = await classAPI.getDocs(classId);
       const pdfDocs = res.docs.filter((d) => d.file_type === "application/pdf");
@@ -35,10 +70,6 @@ const GenerateTest = () => {
       setMessageType("error");
     }
   };
-
-  useEffect(() => {
-    loadDocs();
-  }, [classId]);
 
   const toggleQuestionType = (type) => {
     setQuestionType((prev) =>
@@ -55,6 +86,18 @@ const GenerateTest = () => {
   const AddTest = async () => {
     if (!title.trim()) {
       setMessage("Please enter a test name");
+      setMessageType("error");
+      return;
+    }
+
+    if (!selectedClassId) {
+      setMessage("Please select a class");
+      setMessageType("error");
+      return;
+    }
+
+    if (!userId) {
+      setMessage("User ID not found. Please log in again.");
       setMessageType("error");
       return;
     }
@@ -82,17 +125,35 @@ const GenerateTest = () => {
       setMessage("Generating your test...");
       setMessageType("info");
 
-      const res = await test.addTest(title);
+      // Debug logging
+      console.log('Test creation parameters:', {
+        title,
+        userId,
+        selectedClassId,
+        questionType,
+        noQuestions,
+        selectedPdfs
+      });
+
+      // Call API with userId and classId
+      const res = await test.addTest(title, userId, selectedClassId);
+
+      console.log('Test creation response:', res);
+
+      // Store the test ID for future use
+      if (res.testId) {
+        setTestId(res.testId);
+      }
 
       setMessage("Test created successfully!");
       setMessageType("success");
 
       setTimeout(() => {
-        navigate(`/${classId}/docs`);
+        navigate(`/${selectedClassId}/docs`);
       }, 1500);
     } catch (error) {
-      console.error(error);
-      setMessage("Failed to create test. Please try again.");
+      console.error('Test creation error:', error);
+      setMessage(`Failed to create test: ${error.message || 'Unknown error'}`);
       setMessageType("error");
     } finally {
       setLoading(false);
@@ -112,11 +173,11 @@ const GenerateTest = () => {
         {/* Header */}
         <div className="mb-8">
           <button
-            onClick={() => navigate(`/${classId}/docs`)}
+            onClick={() => navigate(selectedClassId ? `/${selectedClassId}/docs` : '/classes')}
             className="flex items-center gap-2 mb-4 text-gray-600 hover:text-gray-800 transition-colors"
           >
             <FaArrowLeft size={18} />
-            <span>Back to Documents</span>
+            <span>Back to {selectedClassId ? 'Documents' : 'Classes'}</span>
           </button>
 
           <div className="flex items-center gap-3 mb-3">
@@ -167,6 +228,31 @@ const GenerateTest = () => {
             boxShadow: "0 20px 60px rgba(7, 79, 6, 0.2)",
           }}
         >
+          {/* Class Selection (only if no classId in URL) */}
+          {role === "Instructor" && !urlClassId && (
+            <div className="mb-5">
+              <label className="flex items-center gap-2 font-semibold text-sm mb-2" style={{ color: '#074F06' }}>
+                <FaFileAlt size={14} />
+                Select Class *
+              </label>
+              <select
+                className="w-full p-3 border-2 rounded-lg outline-none transition-all bg-white"
+                style={{ borderColor: '#074F06' }}
+                value={selectedClassId}
+                onChange={(e) => setSelectedClassId(e.target.value)}
+                onFocus={(e) => e.target.style.boxShadow = '0 0 0 3px rgba(7, 79, 6, 0.1)'}
+                onBlur={(e) => e.target.style.boxShadow = 'none'}
+              >
+                <option value="">-- Select Class --</option>
+                {classes.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.class_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           {/* Test Name */}
           <div className="mb-5">
             <label className="flex items-center gap-2 font-semibold text-sm mb-2" style={{ color: '#074F06' }}>
