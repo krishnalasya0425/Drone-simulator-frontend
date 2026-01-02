@@ -4,6 +4,7 @@ import classAPI from "../../entities/class";
 import api from "../../entities/axios";
 import Modal from "../../components/FileModal";
 import UploadDocs from "../../components/UploadDocs";
+import LaunchingAnimation from "../../components/LaunchingAnimation";
 import {
   FaFilePdf,
   FaFileImage,
@@ -18,6 +19,7 @@ import {
   FaUserPlus,
   FaUsers,
   FaCheckCircle,
+  FaVrCardboard,
 } from "react-icons/fa";
 import { FiGrid, FiList, FiX } from "react-icons/fi";
 
@@ -40,6 +42,10 @@ const Docs = () => {
   const [loadingStudents, setLoadingStudents] = useState(false);
   const [deleteMode, setDeleteMode] = useState(false);
   const [studentsToDelete, setStudentsToDelete] = useState([]);
+
+  // Practice/VR launch states
+  const [showLaunchModal, setShowLaunchModal] = useState(false);
+  const [launchMode, setLaunchMode] = useState("practice"); // "practice" or "vr"
 
   const role = localStorage.getItem("role");
 
@@ -197,6 +203,68 @@ const Docs = () => {
     }
   };
 
+  // Launch Unity Practice Build
+  const launchUnityBuild = async () => {
+    const instructorId = localStorage.getItem("id");
+
+    // Show loading modal
+    setLaunchMode("practice");
+    setShowLaunchModal(true);
+
+    try {
+      const url = `http://localhost:5000/unity/practice/${classId}/${instructorId}`;
+
+      // Make background API call to trigger Unity launch (no browser navigation)
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+      console.log('Unity build launched:', data.message);
+
+      // Keep modal open to show success message
+      // Modal will transition to success state automatically after loading completes
+    } catch (err) {
+      console.error(err);
+      setShowLaunchModal(false);
+      alert("Failed to launch Unity build");
+    }
+  };
+
+  // Launch VR Practice
+  const launchVRPractice = async () => {
+    const instructorId = localStorage.getItem("id");
+
+    // Show loading modal with VR mode
+    setLaunchMode("vr");
+    setShowLaunchModal(true);
+
+    try {
+      const url = `http://localhost:5000/unity/practice/${classId}/${instructorId}`;
+
+      // Make background API call to trigger VR launch (no browser navigation)
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+      console.log('VR build launched:', data.message);
+
+      // Keep modal open to show success message
+      // Modal will transition to success state automatically after loading completes
+    } catch (err) {
+      console.error(err);
+      setShowLaunchModal(false);
+      alert("Failed to launch VR build");
+    }
+  };
+
   return (
     <div className="min-h-screen p-6">
       <div className="max-w-7xl mx-auto">
@@ -278,12 +346,28 @@ const Docs = () => {
                 </>
               )}
 
+              {/* Practice Button */}
               <button
-                className="flex items-center gap-2 px-5 py-3 rounded-lg font-semibold shadow-lg transition-all"
-                style={{ backgroundColor: '#9FCF9F', color: '#074F06' }}
+                className="flex items-center gap-2 px-5 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+                style={{ backgroundColor: '#6366f1', color: 'white' }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#4f46e5'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#6366f1'}
+                onClick={launchUnityBuild}
               >
                 <FaClipboardList size={18} />
                 <span className="hidden sm:inline">Practice</span>
+              </button>
+
+              {/* VR Practice Button */}
+              <button
+                className="flex items-center gap-2 px-5 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+                style={{ backgroundColor: '#10b981', color: 'white' }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#059669'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#10b981'}
+                onClick={launchVRPractice}
+              >
+                <FaVrCardboard size={18} />
+                <span className="hidden sm:inline">Practice in VR</span>
               </button>
             </div>
           </div>
@@ -712,8 +796,8 @@ const Docs = () => {
                             <tr
                               key={student.id}
                               className={`border-b transition-colors ${deleteMode && studentsToDelete.includes(student.id)
-                                  ? 'bg-red-50'
-                                  : 'hover:bg-green-50'
+                                ? 'bg-red-50'
+                                : 'hover:bg-green-50'
                                 }`}
                             >
                               {deleteMode && (
@@ -787,6 +871,13 @@ const Docs = () => {
             </div>
           </div>
         )}
+
+        {/* Launching Animation Modal */}
+        <LaunchingAnimation
+          isOpen={showLaunchModal}
+          onClose={() => setShowLaunchModal(false)}
+          mode={launchMode}
+        />
       </div>
     </div>
   );

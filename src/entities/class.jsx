@@ -1,6 +1,6 @@
 
 
-const API_BASE_URL = "http://localhost:5000/classes";
+    const API_BASE_URL = "http://localhost:5000/classes";
 
 // Generic request helper
 async function apiRequest(url, method = "GET", body = null) {
@@ -48,6 +48,27 @@ export const classAPI = {
 
   addClass(className, createdBy) {
     return apiRequest(`${API_BASE_URL}/`, "POST", { className, createdBy });
+  },
+
+  async adminAddClass(formData) {
+    const token = localStorage.getItem("token");
+
+    const headers = {};
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    const res = await fetch(`${API_BASE_URL}/`, {
+      method: "POST",
+      headers, // ❗ do NOT set Content-Type for FormData
+      body: formData,
+    });
+
+    if (!res.ok) {
+      throw new Error(`API error: ${res.status}`);
+    }
+
+    return await res.json();
   },
 
   updateClass(classId, className) {

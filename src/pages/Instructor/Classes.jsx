@@ -20,6 +20,10 @@ const Classes = () => {
   const [editClassName, setEditClassName] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
 
+  // Admin-specific states for class creation
+  const [adminClassName, setAdminClassName] = useState("");
+  const [adminInstructorId, setAdminInstructorId] = useState("");
+
   useEffect(() => {
     loadClasses();
   }, [selectedInstructorId]);
@@ -86,6 +90,33 @@ const Classes = () => {
     setEditClassId(null);
   };
 
+  // Admin: Create class with instructor assignment
+  const submitAddClass = async () => {
+    if (!adminClassName.trim() || !adminInstructorId) {
+      alert("Please fill all fields");
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append("class_name", adminClassName);
+      formData.append("instructor_id", adminInstructorId);
+
+      await classAPI.adminAddClass(formData);
+
+      alert("Class created successfully");
+
+      setShowAddModal(false);
+      setAdminClassName("");
+      setAdminInstructorId("");
+
+      loadClasses();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to create class");
+    }
+  };
+
   return (
     <div className="min-h-screen p-6">
       <div className="max-w-7xl mx-auto">
@@ -104,7 +135,8 @@ const Classes = () => {
               </p>
             </div>
 
-            {role === "Instructor" && (
+            {/* Add Class Button - Instructor and Admin */}
+            {(role === "Instructor" || role === "admin") && (
               <button
                 onClick={() => setShowAddModal(true)}
                 className="flex items-center gap-2 px-6 py-3 text-white rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
@@ -113,7 +145,7 @@ const Classes = () => {
                 onMouseLeave={(e) => e.target.style.backgroundColor = '#074F06'}
               >
                 <FiPlus size={20} />
-                Create New Class
+                {role === "admin" ? "Add New Class" : "Create New Class"}
               </button>
             )}
           </div>
@@ -351,23 +383,24 @@ const Classes = () => {
         )}
       </div>
 
-      {/* Add Class Modal */}
+      {/* Add Class Modal - Different for Admin vs Instructor */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="rounded-xl shadow-2xl w-full max-w-md animate-fadeIn" style={{ backgroundColor: '#D5F2D5' }}>
             <div className="p-6">
               <h3 className="text-2xl font-bold mb-4" style={{ color: '#074F06' }}>
-                Create New Class
+                {role === "admin" ? "Add New Class" : "Create New Class"}
               </h3>
 
-              <div className="mb-6">
+              {/* Class Name Input */}
+              <div className="mb-4">
                 <label className="block text-sm font-semibold mb-2 text-gray-700">
                   Class Name
                 </label>
                 <input
                   type="text"
-                  value={addClassName}
-                  onChange={(e) => setAddClassName(e.target.value)}
+                  value={role === "admin" ? adminClassName : addClassName}
+                  onChange={(e) => role === "admin" ? setAdminClassName(e.target.value) : setAddClassName(e.target.value)}
                   placeholder="Enter class name..."
                   className="w-full px-4 py-3 border-2 rounded-lg outline-none transition-all"
                   style={{ borderColor: '#074F06' }}
@@ -377,25 +410,51 @@ const Classes = () => {
                 />
               </div>
 
+              {/* Instructor Selection - Admin Only */}
+              {role === "admin" && (
+                <div className="mb-6">
+                  <label className="block text-sm font-semibold mb-2 text-gray-700">
+                    Assign to Instructor
+                  </label>
+                  <select
+                    className="w-full px-4 py-3 border-2 rounded-lg outline-none transition-all bg-white"
+                    style={{ borderColor: '#074F06', color: '#074F06' }}
+                    value={adminInstructorId}
+                    onChange={(e) => setAdminInstructorId(e.target.value)}
+                    onFocus={(e) => e.target.style.boxShadow = '0 0 0 3px rgba(7, 79, 6, 0.1)'}
+                    onBlur={(e) => e.target.style.boxShadow = 'none'}
+                  >
+                    <option value="">Select Instructor</option>
+                    {instructors.map((i) => (
+                      <option key={i.id} value={i.id}>
+                        {i.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div className="flex gap-3">
                 <button
                   onClick={() => {
                     setShowAddModal(false);
                     setAddClassName("");
+                    setAdminClassName("");
+                    setAdminInstructorId("");
                   }}
                   className="flex-1 px-4 py-3 bg-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-400 transition-all"
                 >
                   Cancel
                 </button>
                 <button
-                  onClick={handleAdd}
-                  disabled={!addClassName.trim()}
+                  onClick={role === "admin" ? submitAddClass : handleAdd}
+                  disabled={role === "admin" ? (!adminClassName.trim() || !adminInstructorId) : !addClassName.trim()}
                   className="flex-1 px-4 py-3 text-white rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{ backgroundColor: '#074F06' }}
                   onMouseEnter={(e) => !e.target.disabled && (e.target.style.backgroundColor = '#053d05')}
                   onMouseLeave={(e) => !e.target.disabled && (e.target.style.backgroundColor = '#074F06')}
                 >
-                  Create Class
+                  {role === "admin" ? "Add Class" : "Create Class"}
                 </button>
               </div>
             </div>
