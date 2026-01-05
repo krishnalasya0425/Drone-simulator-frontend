@@ -55,14 +55,14 @@ const CreateSubTestModal = ({ testId, onClose }) => {
       );
 
       if (!res.ok) {
-        throw new Error("Failed to create subtests");
+        throw new Error("Failed to create subsets");
       }
 
-      alert("🚀 Subtests created successfully!");
+      alert("🚀 subsets created successfully!");
       onClose();
     } catch (err) {
       console.error(err);
-      alert("❌ Failed to create subtests. Please check your connection.");
+      alert("❌ Failed to create subsets. Please check your connection.");
     } finally {
       setLoading(false);
     }
@@ -79,7 +79,7 @@ const CreateSubTestModal = ({ testId, onClose }) => {
               <FiLayers size={24} />
             </div>
             <div>
-              <h2 className="text-xl font-bold">Create Sub-Tests</h2>
+              <h2 className="text-xl font-bold">Create Sub-Sets</h2>
               <p className="text-xs text-white/70">Configure your exam parameters</p>
             </div>
           </div>
@@ -246,7 +246,7 @@ const CreateSubTestModal = ({ testId, onClose }) => {
             ) : (
               <>
                 <FiCheckCircle size={20} />
-                <span>Create Sub-Tests</span>
+                <span>Create Sub-Sets</span>
               </>
             )}
           </button>

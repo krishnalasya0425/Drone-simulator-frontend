@@ -164,7 +164,6 @@ const GenerateTest = () => {
   const questionTypes = [
     { value: "MCQ", label: "Multiple Choice Questions" },
     { value: "True/False", label: "True/False" },
-    { value: "Fill in the Blanks", label: "Fill in the Blanks" },
   ];
 
   return (

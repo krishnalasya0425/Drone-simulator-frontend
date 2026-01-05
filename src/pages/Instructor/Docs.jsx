@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import classAPI from "../../entities/class";
@@ -20,6 +21,7 @@ import {
   FaUsers,
   FaCheckCircle,
   FaVrCardboard,
+  FaVideo,
 } from "react-icons/fa";
 import { FiGrid, FiList, FiX } from "react-icons/fi";
 
@@ -46,7 +48,7 @@ const Docs = () => {
 
   // Practice/VR launch states
   const [showLaunchModal, setShowLaunchModal] = useState(false);
-  const [launchMode, setLaunchMode] = useState("practice"); // "practice" or "vr"
+  const [launchMode, setLaunchMode] = useState("vr"); // "practice" or "vr"
 
   const role = localStorage.getItem("role");
 
@@ -137,6 +139,7 @@ const Docs = () => {
     if (!mime) return <FaFile size={40} className="text-gray-500" />;
     if (mime.includes("pdf")) return <FaFilePdf size={40} className="text-red-500" />;
     if (mime.startsWith("image")) return <FaFileImage size={40} className="text-blue-500" />;
+    if (mime.startsWith("video")) return <FaVideo size={40} className="text-purple-500" />;
     return <FaFile size={40} className="text-gray-500" />;
   };
 
@@ -144,6 +147,7 @@ const Docs = () => {
     if (!mime) return "Unknown";
     if (mime.includes("pdf")) return "PDF Document";
     if (mime.startsWith("image")) return "Image";
+    if (mime.startsWith("video")) return "Video";
     return "File";
   };
 
@@ -204,36 +208,7 @@ const Docs = () => {
     }
   };
 
-  // Launch Unity Practice Build
-  const launchUnityBuild = async () => {
-    const instructorId = localStorage.getItem("id");
 
-    // Show loading modal
-    setLaunchMode("practice");
-    setShowLaunchModal(true);
-
-    try {
-      const url = `http://localhost:5000/unity/practice/${classId}/${instructorId}`;
-
-      // Make background API call to trigger Unity launch (no browser navigation)
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const data = await response.json();
-      console.log('Unity build launched:', data.message);
-
-      // Keep modal open to show success message
-      // Modal will transition to success state automatically after loading completes
-    } catch (err) {
-      console.error(err);
-      setShowLaunchModal(false);
-      alert("Failed to launch Unity build");
-    }
-  };
 
   // Launch VR Practice
   const launchVRPractice = async () => {
@@ -347,17 +322,7 @@ const Docs = () => {
                 </>
               )}
 
-              {/* Practice Button */}
-              <button
-                className="flex items-center gap-2 px-5 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
-                style={{ backgroundColor: '#6366f1', color: 'white' }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = '#4f46e5'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = '#6366f1'}
-                onClick={launchUnityBuild}
-              >
-                <FaClipboardList size={18} />
-                <span className="hidden sm:inline">Practice</span>
-              </button>
+
 
               {/* VR Practice Button */}
               <button
@@ -368,7 +333,7 @@ const Docs = () => {
                 onClick={launchVRPractice}
               >
                 <FaVrCardboard size={18} />
-                <span className="hidden sm:inline">Practice in VR</span>
+                <span className="hidden sm:inline">Practice </span>
               </button>
             </div>
           </div>
@@ -397,6 +362,15 @@ const Docs = () => {
                 <FaFileImage className="text-blue-500" size={20} />
                 <span className="font-semibold" style={{ color: '#074F06' }}>
                   {docs.filter(d => d.file_type?.startsWith('image')).length} Images
+                </span>
+              </div>
+              <div
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer transition-all hover:shadow-md ${activeFilter === 'video' ? 'ring-2 ring-purple-500 bg-purple-50' : 'bg-white'}`}
+                onClick={() => setActiveFilter(activeFilter === 'video' ? 'all' : 'video')}
+              >
+                <FaVideo className="text-purple-500" size={20} />
+                <span className="font-semibold" style={{ color: '#074F06' }}>
+                  {docs.filter(d => d.file_type?.startsWith('video')).length} Videos
                 </span>
               </div>
             </div>
@@ -462,6 +436,7 @@ const Docs = () => {
                   .filter(doc => {
                     if (activeFilter === 'pdf') return doc.file_type?.includes('pdf');
                     if (activeFilter === 'image') return doc.file_type?.startsWith('image');
+                    if (activeFilter === 'video') return doc.file_type?.startsWith('video');
                     return true;
                   })
                   .map((doc) => (
@@ -476,7 +451,7 @@ const Docs = () => {
                         boxShadow: '0 8px 32px 0 rgba(7, 79, 6, 0.1)'
                       }}
                       onClick={() => {
-                        if (doc.file_type.includes("pdf") || doc.file_type.startsWith("image")) {
+                        if (doc.file_type.includes("pdf") || doc.file_type.startsWith("image") || doc.file_type.startsWith("video")) {
                           setPreviewId(doc.id);
                           setDocType(doc.file_type);
                         }
@@ -545,6 +520,7 @@ const Docs = () => {
                   .filter(doc => {
                     if (activeFilter === 'pdf') return doc.file_type?.includes('pdf');
                     if (activeFilter === 'image') return doc.file_type?.startsWith('image');
+                    if (activeFilter === 'video') return doc.file_type?.startsWith('video');
                     return true;
                   })
                   .map((doc) => (
@@ -558,7 +534,7 @@ const Docs = () => {
                         borderColor: 'rgba(7, 79, 6, 0.2)'
                       }}
                       onClick={() => {
-                        if (doc.file_type.includes("pdf") || doc.file_type.startsWith("image")) {
+                        if (doc.file_type.includes("pdf") || doc.file_type.startsWith("image") || doc.file_type.startsWith("video")) {
                           setPreviewId(doc.id);
                           setDocType(doc.file_type);
                         }

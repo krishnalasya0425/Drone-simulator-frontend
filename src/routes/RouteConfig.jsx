@@ -25,7 +25,7 @@ const routesConfig = [
   { path: '/test-maker', element: <TestMaker />, roles: ['admin', 'Instructor'], label: 'Test Maker' },
   { path: '/:testId/questions', element: <Test />, roles: ['Student'] },
   { path: '/:testId/review', element: <ClassWiseScore />, roles: ['admin', 'Instructor', 'Student'] },
-  { path: '/scores', element: <Scoremodal />, roles: ['admin', 'Instructor', 'Student'], label: 'Scores' },
+  { path: '/scores', element: <Scoremodal />, roles: ['admin', 'Instructor', 'Student'], label: 'Tests' },
   { path: '/review/:test_set_id/:student_id', element: <TestReview />, roles: ['admin', 'Instructor', 'Student'] },
 ];
 

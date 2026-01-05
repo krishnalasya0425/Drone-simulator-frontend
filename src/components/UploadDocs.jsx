@@ -122,16 +122,16 @@ const UploadDocs = ({ classId, uploadDocs, onClose }) => {
         {message && (
           <div
             className={`mx-6 mb-4 p-4 rounded-lg flex items-center gap-3 ${messageType === 'success' ? 'bg-green-100' :
-                messageType === 'error' ? 'bg-red-100' :
-                  'bg-blue-100'
+              messageType === 'error' ? 'bg-red-100' :
+                'bg-blue-100'
               }`}
           >
             {messageType === 'success' && <FaCheckCircle className="text-green-600" size={20} />}
             {messageType === 'error' && <FaExclamationCircle className="text-red-600" size={20} />}
             {messageType === 'info' && <FaFileAlt className="text-blue-600" size={20} />}
             <p className={`font-medium ${messageType === 'success' ? 'text-green-800' :
-                messageType === 'error' ? 'text-red-800' :
-                  'text-blue-800'
+              messageType === 'error' ? 'text-red-800' :
+                'text-blue-800'
               }`}>
               {message}
             </p>
@@ -187,7 +187,7 @@ const UploadDocs = ({ classId, uploadDocs, onClose }) => {
                     Click to upload or drag and drop
                   </p>
                   <p className="text-sm text-gray-500">
-                    PDF, Images
+                    PDF, Images, Videos
                   </p>
                 </div>
               ) : (

@@ -167,7 +167,26 @@ const ClassWiseScore = () => {
               }}
             >
               <FiDownload size={16} />
-              Download PDF
+              Download Questions PDF
+            </button>
+
+            <button
+              onClick={() => window.open(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/score/report/all-sets/${testId}`, "_blank")}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all shadow-md"
+              style={{
+                backgroundColor: '#074F06',
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = '#053d05';
+                e.target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = '#074F06';
+                e.target.style.boxShadow = 'none';
+              }}
+            >
+              <FiDownload size={16} />
+              Full Report
             </button>
           </div>
         </div>
