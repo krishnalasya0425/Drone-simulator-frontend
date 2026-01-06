@@ -356,7 +356,7 @@ const ClassWiseScore = () => {
                 onMouseLeave={(e) => e.target.style.backgroundColor = '#074F06'}
               >
                 <FiDownload size={16} />
-                Download Full Report
+                Download Full Set Report
               </button>
             </div>
 

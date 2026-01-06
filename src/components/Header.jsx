@@ -66,11 +66,12 @@ export default function Header({ role: propRole }) {
                 {/* LEFT SIDE: LOGO & BRAND */}
                 <div className="flex items-center gap-3">
                     {/* Logo Icon */}
-                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-white bg-opacity-10 backdrop-blur-sm">
-                        <svg width="24" height="24" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="20" cy="20" r="20" fill="white" />
-                            <path d="M20 10C16.134 10 13 13.134 13 17C13 22.25 20 30 20 30C20 30 27 22.25 27 17C27 13.134 23.866 10 20 10ZM20 19.5C18.619 19.5 17.5 18.381 17.5 17C17.5 15.619 18.619 14.5 20 14.5C21.381 14.5 22.5 15.619 22.5 17C22.5 18.381 21.381 19.5 20 19.5Z" fill="#074F06" />
-                        </svg>
+                    <div className="flex items-center justify-center w-12 h-12 rounded-lg overflow-hidden bg-white shadow-sm">
+                        <img
+                            src="/map-reading-logo.png"
+                            alt="Map Reading Logo"
+                            className="w-full h-full object-contain"
+                        />
                     </div>
 
                     {/* Brand Name */}
