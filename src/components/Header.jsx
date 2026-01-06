@@ -66,13 +66,15 @@ export default function Header({ role: propRole }) {
                 {/* LEFT SIDE: LOGO & BRAND */}
                 <div className="flex items-center gap-3">
                     {/* Logo Icon */}
-                    <div className="flex items-center justify-center w-12 h-12 rounded-lg overflow-hidden bg-white shadow-sm">
-                        <img
-                            src="/map-reading-logo.png"
-                            alt="Map Reading Logo"
-                            className="w-full h-full object-contain"
-                        />
-                    </div>
+                             <div className="flex items-center justify-center w-12 h-12 rounded-full overflow-hidden bg-white shadow-sm">
+    <img
+      src="/map-reading-logo-1.png"
+      alt="Map Reading Logo"
+      className="w-full h-full object-contain scale-110 transform -translate-y-1"
+    />
+  </div>
+
+
 
                     {/* Brand Name */}
                     <div className="flex flex-col">
