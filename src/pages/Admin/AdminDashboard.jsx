@@ -262,13 +262,31 @@ export default function AdminDashboard() {
                 {u.status || "Pending"}
               </td>
 
-              <td
-                className="p-3 font-semibold"
-                style={{
-                  color: u.otpValid ? "green" : "red",
-                }}
-              >
-                {u.otp}
+              <td className="p-3 font-semibold text-center">
+                {(() => {
+                  if (!u.otp) return "-";
+
+                  // Check if OTP is older than 24 hours
+                  const timestamp = u.otp_at || u.otp_generated_at || u.updated_at || u.createdAt;
+                  if (timestamp) {
+                    const generatedAt = new Date(timestamp).getTime();
+                    const now = new Date().getTime();
+                    const diffHrs = (now - generatedAt) / (1000 * 60 * 60);
+
+                    // If more than 24 hours have passed, it must disappear
+                    if (diffHrs > 24) return "-";
+                  }
+
+                  // If we don't have a timestamp but it's marked as invalid, 
+                  // we hide it to be safe, assuming it's expired.
+                  if (!timestamp && u.otpValid === false) return "-";
+
+                  return (
+                    <span style={{ color: u.otpValid ? "green" : "red" }}>
+                      {u.otp}
+                    </span>
+                  );
+                })()}
               </td>
 
               <td className="p-3 flex gap-2 justify-center">
