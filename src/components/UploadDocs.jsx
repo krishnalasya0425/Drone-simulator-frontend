@@ -154,7 +154,7 @@ const UploadDocs = ({ classId, uploadDocs, onClose }) => {
             </div>
             <div>
               <h2 className="text-lg font-bold" style={{ color: '#074F06' }}>
-                Upload Document
+                Upload
               </h2>
               <p className="text-xs text-gray-500">Add file to class</p>
             </div>
@@ -202,7 +202,7 @@ const UploadDocs = ({ classId, uploadDocs, onClose }) => {
               onChange={(e) => setDocTitle(e.target.value)}
               className="w-full px-3 py-2 text-sm border-2 rounded-lg outline-none transition-all bg-white"
               style={{ borderColor: '#D5F2D5' }}
-              placeholder="Enter document title..."
+              placeholder="Enter title..."
               onFocus={(e) => {
                 e.target.style.borderColor = '#074F06';
                 e.target.style.boxShadow = '0 0 0 3px rgba(7, 79, 6, 0.1)';

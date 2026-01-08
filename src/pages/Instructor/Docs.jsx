@@ -350,26 +350,28 @@ const Docs = () => {
           {/* Title and Actions */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
             <div>
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-3 rounded-lg" style={{ backgroundColor: '#074F06' }}>
-                  <FaFolderOpen className="text-white" size={28} />
+              <div className="flex items-center gap-4">
+                <div className="p-2.5 rounded-xl shadow-md border border-white/20 flex-shrink-0" style={{ backgroundColor: '#074F06' }}>
+                  <FaFolderOpen className="text-white" size={22} />
                 </div>
                 <div>
-                  <h1 className="text-4xl font-bold" style={{ color: '#074F06' }}>
+                  <h1 className="text-2xl font-extrabold tracking-tight mb-1" style={{ color: '#074F06' }}>
                     {classData.class_name || 'Class Documents'}
                   </h1>
-                  <div className="flex items-center gap-4 mt-1">
-                    <p className="text-gray-600">
-                      {docs.length} {docs.length === 1 ? 'document' : 'documents'} available
-                    </p>
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-white/60 border border-gray-200 shadow-sm">
+                      <FaFile size={12} className="text-gray-500" />
+                      <span className="text-xs font-semibold text-gray-600">
+                        {docs.length} {docs.length === 1 ? 'file' : 'files'}
+                      </span>
+                    </div>
                     {role !== "Student" && (
-                      <p className="text-gray-600 flex items-center gap-1">
-                        <FaUsers size={14} style={{ color: '#074F06' }} />
-                        <span className="font-semibold" style={{ color: '#074F06' }}>
-                          {classStudents.length}
+                      <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-green-50/80 border border-green-100 shadow-sm">
+                        <FaUsers size={12} style={{ color: '#074F06' }} />
+                        <span className="text-xs font-bold" style={{ color: '#074F06' }}>
+                          {classStudents.length} {classStudents.length === 1 ? 'student' : 'students'}
                         </span>
-                        {classStudents.length === 1 ? ' student' : ' students'}
-                      </p>
+                      </div>
                     )}
                   </div>
                 </div>
