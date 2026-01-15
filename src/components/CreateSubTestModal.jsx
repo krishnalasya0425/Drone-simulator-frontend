@@ -1,10 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FiX,
   FiLayers,
   FiHash,
   FiClock,
-  FiCalendar,
   FiAward,
   FiAlertCircle,
   FiCheckCircle
@@ -15,10 +14,36 @@ const CreateSubTestModal = ({ testId, onClose }) => {
   const [questions, setQuestions] = useState(5);
   const [examType, setExamType] = useState("UNTIMED");
   const [duration, setDuration] = useState("");
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
+
   const [passThreshold, setPassThreshold] = useState(3);
   const [loading, setLoading] = useState(false);
+  const [classId, setClassId] = useState(null);
+
+  // Fetch test details to get classId
+  useEffect(() => {
+    const fetchTestDetails = async () => {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/tests/${testId}`,
+          {
+            headers: {
+              "Authorization": `Bearer ${localStorage.getItem("token")}`
+            }
+          }
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setClassId(data.class_id);
+        }
+      } catch (err) {
+        console.error("Failed to fetch test details:", err);
+      }
+    };
+
+    if (testId) {
+      fetchTestDetails();
+    }
+  }, [testId]);
 
   const submit = async () => {
     try {
@@ -47,22 +72,25 @@ const CreateSubTestModal = ({ testId, onClose }) => {
             questionsPerSet: questions,
             examType,
             durationMinutes: duration || null,
-            startTime: examType === "FIXED_TIME" ? startTime : null,
-            endTime: examType === "FIXED_TIME" ? endTime : null,
-            passThreshold: passThreshold
+            passThreshold: passThreshold,
+            classId: classId // Send classId for student validation
           })
         }
       );
 
+      const data = await res.json();
+
       if (!res.ok) {
-        throw new Error("Failed to create subsets");
+        // Display the specific error message from backend
+        throw new Error(data.message || "Failed to create subsets");
       }
 
-      alert("🚀 subsets created successfully!");
+      alert("✅ Test sets created successfully!");
       onClose();
     } catch (err) {
       console.error(err);
-      alert("❌ Failed to create subsets. Please check your connection.");
+      // Display the actual error message from the backend
+      alert(err.message || "❌ Failed to create subsets. Please check your connection.");
     } finally {
       setLoading(false);
     }
@@ -134,17 +162,17 @@ const CreateSubTestModal = ({ testId, onClose }) => {
               <FiClock className="text-green-700" size={16} />
               Exam Type
             </label>
-            <div className="grid grid-cols-3 gap-3">
-              {['UNTIMED', 'TIMED', 'FIXED_TIME'].map((type) => (
+            <div className="grid grid-cols-2 gap-3">
+              {['UNTIMED', 'TIMED'].map((type) => (
                 <button
                   key={type}
                   onClick={() => setExamType(type)}
-                  className={`py-2 text-xs font-bold rounded-lg border-2 transition-all ${examType === type
+                  className={`py-2 text-sm font-bold rounded-lg border-2 transition-all ${examType === type
                     ? 'bg-green-50 border-green-700 text-green-700'
                     : 'border-gray-100 text-gray-500 hover:border-gray-200'
                     }`}
                 >
-                  {type.replace("_", " ")}
+                  {type}
                 </button>
               ))}
             </div>
@@ -185,35 +213,7 @@ const CreateSubTestModal = ({ testId, onClose }) => {
             )}
           </div>
 
-          {/* Fixed Time Parameters */}
-          {examType === "FIXED_TIME" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-scale-in">
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
-                  <FiCalendar className="text-purple-700" size={16} />
-                  Start Window
-                </label>
-                <input
-                  type="datetime-local"
-                  value={startTime}
-                  onChange={e => setStartTime(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-purple-100 rounded-xl focus:border-purple-700 focus:ring-0 transition-all outline-none text-sm font-medium"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
-                  <FiCalendar className="text-purple-700" size={16} />
-                  End Window
-                </label>
-                <input
-                  type="datetime-local"
-                  value={endTime}
-                  onChange={e => setEndTime(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-purple-100 rounded-xl focus:border-purple-700 focus:ring-0 transition-all outline-none text-sm font-medium"
-                />
-              </div>
-            </div>
-          )}
+
 
           {/* Warning Message */}
           <div className="p-4 bg-amber-50 rounded-2xl flex gap-3 border border-amber-100 shadow-sm">

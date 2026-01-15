@@ -12,7 +12,6 @@ import {
   FiFileText,
   FiCheckCircle,
   FiClock,
-  FiCalendar,
   FiAward,
   FiUsers,
   FiDownload
@@ -85,10 +84,7 @@ const TestManagement = () => {
     setEditTestName("");
   };
 
-  const formatDateTime = (date) => {
-    if (!date) return "-";
-    return new Date(date).toLocaleString();
-  };
+
 
   return (
     <div className="min-h-screen p-6">
@@ -316,19 +312,7 @@ const TestManagement = () => {
                               </div>
                             )}
 
-                            {/* Fixed Time Info */}
-                            {role === "Student" && test.exam_type === "FIXED_TIME" && (
-                              <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mt-2">
-                                <div className="flex items-center gap-1">
-                                  <FiCalendar size={14} />
-                                  <span>Start: {formatDateTime(test.start_time)}</span>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <FiCalendar size={14} />
-                                  <span>End: {formatDateTime(test.end_time)}</span>
-                                </div>
-                              </div>
-                            )}
+
                           </>
                         )}
                       </div>

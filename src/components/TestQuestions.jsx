@@ -28,13 +28,139 @@ const TestQuestions = () => {
   const [timerExpired, setTimerExpired] = useState(false);
   const [startedAt, setStartedAt] = useState(null);
   const [showSidebar, setShowSidebar] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isResumed, setIsResumed] = useState(false);
 
   const { testId } = useParams();
   const student_id = localStorage.getItem("id");
+  const navigate = useNavigate();
+
+  // Generate unique storage key for this test attempt
+  const getStorageKey = (suffix) => `test_${testId}_${student_id}_${suffix}`;
+
+  // Check if test is already submitted and fetch results
+  const checkIfSubmitted = async () => {
+    try {
+      const submittedFlag = localStorage.getItem(getStorageKey('submitted'));
+      if (submittedFlag === 'true') {
+        // Test already submitted, fetch and show results
+        console.log('Test already submitted, fetching results...');
+        await fetchSubmittedResults();
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error('Error checking submission status:', err);
+      return false;
+    }
+  };
+
+  // Fetch results for already submitted test
+  const fetchSubmittedResults = async () => {
+    try {
+      setLoading(true);
+      const res = await test.getQuestionsByTestId(testId);
+
+      if (!res || !res.questions) {
+        console.error('No questions found');
+        navigate('/student-dashboard');
+        return;
+      }
+
+      setExamMeta(res);
+      setQuestions(res.questions);
+
+      // Load saved answers and calculate score
+      const savedAnswers = localStorage.getItem(getStorageKey('answers'));
+      if (savedAnswers) {
+        const answers = JSON.parse(savedAnswers);
+        setUserAnswers(answers);
+
+        // Calculate score
+        let result = 0;
+        res.questions.forEach((q) => {
+          if (answers[q.id] === q.answer) result++;
+        });
+        setScore(result);
+      } else {
+        // No saved answers, redirect to dashboard
+        alert('No test data found. Redirecting to dashboard...');
+        navigate('/student-dashboard');
+      }
+    } catch (err) {
+      console.error('Error fetching submitted results:', err);
+      navigate('/student-dashboard');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load saved state from localStorage
+  const loadSavedState = () => {
+    try {
+      const savedAnswers = localStorage.getItem(getStorageKey('answers'));
+      const savedReviewed = localStorage.getItem(getStorageKey('reviewed'));
+      const savedStartTime = localStorage.getItem(getStorageKey('startTime'));
+      const savedCurrentIndex = localStorage.getItem(getStorageKey('currentIndex'));
+
+      let hasState = false;
+      if (savedAnswers) {
+        setUserAnswers(JSON.parse(savedAnswers));
+        hasState = true;
+      }
+      if (savedReviewed) setReviewedQuestions(JSON.parse(savedReviewed));
+      if (savedCurrentIndex) setCurrentIndex(parseInt(savedCurrentIndex));
+
+      if (hasState && savedStartTime) {
+        setIsResumed(true);
+      }
+
+      return savedStartTime ? new Date(savedStartTime) : null;
+    } catch (err) {
+      console.error('Error loading saved state:', err);
+      return null;
+    }
+  };
+
+  // Save state to localStorage
+  const saveState = () => {
+    try {
+      localStorage.setItem(getStorageKey('answers'), JSON.stringify(userAnswers));
+      localStorage.setItem(getStorageKey('reviewed'), JSON.stringify(reviewedQuestions));
+      localStorage.setItem(getStorageKey('currentIndex'), currentIndex.toString());
+    } catch (err) {
+      console.error('Error saving state:', err);
+    }
+  };
+
+  // Clear test state from localStorage (but keep answers for result display)
+  const clearTestState = () => {
+    try {
+      // DON'T remove answers - we need them to show results
+      // localStorage.removeItem(getStorageKey('answers'));
+
+      // Remove temporary state
+      localStorage.removeItem(getStorageKey('reviewed'));
+      localStorage.removeItem(getStorageKey('startTime'));
+      localStorage.removeItem(getStorageKey('currentIndex'));
+
+      // Mark as submitted
+      localStorage.setItem(getStorageKey('submitted'), 'true');
+    } catch (err) {
+      console.error('Error clearing state:', err);
+    }
+  };
 
   const startTest = async () => {
     try {
       setLoading(true);
+
+      // Check if already submitted
+      const alreadySubmitted = await checkIfSubmitted();
+      if (alreadySubmitted) {
+        return;
+      }
+
       const res = await test.getQuestionsByTestId(testId);
 
       if (!res || !res.questions) {
@@ -54,8 +180,23 @@ const TestQuestions = () => {
       });
       setCorrectAnswers(map);
 
-      setStartedAt(new Date());
-      handleExamTiming(res);
+      // Try to load saved state
+      const savedStartTime = loadSavedState();
+
+      let actualStartTime;
+      if (savedStartTime) {
+        // Resuming test
+        actualStartTime = savedStartTime;
+        console.log('Resuming test from:', savedStartTime);
+      } else {
+        // Starting fresh
+        actualStartTime = new Date();
+        localStorage.setItem(getStorageKey('startTime'), actualStartTime.toISOString());
+        console.log('Starting new test at:', actualStartTime);
+      }
+
+      setStartedAt(actualStartTime);
+      handleExamTiming(res, actualStartTime);
     } catch (err) {
       console.error("Error starting test:", err);
     } finally {
@@ -63,37 +204,53 @@ const TestQuestions = () => {
     }
   };
 
-  const handleExamTiming = (exam) => {
-    const now = new Date();
+  const handleExamTiming = (exam, startTime) => {
+    console.log('=== EXAM TIMING DEBUG ===');
+    console.log('Raw exam object:', exam);
+    console.log('Exam type:', exam.exam_type);
+    console.log('Duration minutes from API:', exam.duration_minutes);
 
     if (exam.exam_type === "UNTIMED") {
+      console.log('Test is UNTIMED, no timer set');
       return;
     }
 
     if (exam.exam_type === "TIMED") {
-      const seconds = exam.duration_minutes * 60;
-      setRemainingSeconds(seconds);
+      const totalSeconds = exam.duration_minutes * 60;
+
+      // Calculate elapsed time since start
+      const now = new Date();
+      const elapsedSeconds = Math.floor((now - startTime) / 1000);
+      const remaining = Math.max(0, totalSeconds - elapsedSeconds);
+
+      console.log('Timer calculation:', {
+        duration_minutes: exam.duration_minutes,
+        totalSeconds,
+        elapsedSeconds,
+        remaining,
+        remainingMinutes: Math.floor(remaining / 60),
+        startTime: startTime.toISOString(),
+        now: now.toISOString()
+      });
+
+      setRemainingSeconds(remaining);
+
+      // If time already expired, trigger auto-submit
+      if (remaining <= 0) {
+        console.log('Time already expired, triggering auto-submit');
+        setTimerExpired(true);
+        setTimeout(() => submitTest(true), 100);
+      }
       return;
     }
-
-    if (exam.exam_type === "FIXED_TIME") {
-      const start = new Date(exam.start_time);
-      const end = new Date(exam.end_time);
-
-      if (now < start) {
-        alert("Exam has not started yet");
-        return;
-      }
-
-      if (now > end) {
-        alert("Exam already ended");
-        return;
-      }
-
-      const remaining = Math.floor((end - now) / 1000);
-      setRemainingSeconds(remaining);
-    }
   };
+
+  // Save state whenever answers or reviewed questions change
+  useEffect(() => {
+    if (!loading && questions.length > 0) {
+      saveState();
+    }
+  }, [userAnswers, reviewedQuestions, currentIndex]);
 
   useEffect(() => {
     if (remainingSeconds === null) return;
@@ -105,19 +262,24 @@ const TestQuestions = () => {
     }
 
     const interval = setInterval(() => {
-      setRemainingSeconds((prev) => prev - 1);
+      setRemainingSeconds((prev) => {
+        const newValue = prev - 1;
+        if (newValue <= 0) {
+          clearInterval(interval);
+          return 0;
+        }
+        return newValue;
+      });
     }, 1000);
 
     return () => clearInterval(interval);
   }, [remainingSeconds]);
 
-  const navigate = useNavigate();
-
   useEffect(() => {
     startTest();
   }, [testId]);
 
-  // Prevent Navigation Logic
+  // Prevent Navigation Logic and Screenshot Prevention
   useEffect(() => {
     if (score !== null) return;
 
@@ -136,9 +298,64 @@ const TestQuestions = () => {
 
     window.addEventListener("beforeunload", preventReload);
 
+    // Prevent screenshots and screen capture
+    const preventScreenshot = (e) => {
+      // Prevent PrintScreen key
+      if (e.key === 'PrintScreen' || e.keyCode === 44) {
+        e.preventDefault();
+        alert('Screenshots are not allowed during the test!');
+        return false;
+      }
+
+      // Prevent Ctrl+Shift+S (Firefox screenshot)
+      if (e.ctrlKey && e.shiftKey && e.key === 'S') {
+        e.preventDefault();
+        alert('Screenshots are not allowed during the test!');
+        return false;
+      }
+
+      // Prevent Windows+Shift+S (Windows Snipping Tool)
+      if (e.key === 'Meta' && e.shiftKey && e.key === 'S') {
+        e.preventDefault();
+        alert('Screenshots are not allowed during the test!');
+        return false;
+      }
+
+      // Prevent Ctrl+P (Print)
+      if (e.ctrlKey && e.key === 'p') {
+        e.preventDefault();
+        alert('Printing is not allowed during the test!');
+        return false;
+      }
+    };
+
+    // Prevent right-click context menu
+    const preventContextMenu = (e) => {
+      e.preventDefault();
+      alert('Right-click is disabled during the test!');
+      return false;
+    };
+
+    document.addEventListener('keyup', preventScreenshot);
+    document.addEventListener('keydown', preventScreenshot);
+    document.addEventListener('contextmenu', preventContextMenu);
+
+    // Add CSS to prevent text selection
+    document.body.style.userSelect = 'none';
+    document.body.style.webkitUserSelect = 'none';
+    document.body.style.msUserSelect = 'none';
+
     return () => {
       window.removeEventListener("popstate", preventBack);
       window.removeEventListener("beforeunload", preventReload);
+      document.removeEventListener('keyup', preventScreenshot);
+      document.removeEventListener('keydown', preventScreenshot);
+      document.removeEventListener('contextmenu', preventContextMenu);
+
+      // Restore text selection
+      document.body.style.userSelect = '';
+      document.body.style.webkitUserSelect = '';
+      document.body.style.msUserSelect = '';
     };
   }, [score]);
 
@@ -153,24 +370,67 @@ const TestQuestions = () => {
     }));
   };
 
-  const submitTest = async () => {
-    let result = 0;
+  const submitTest = async (autoSubmit = false) => {
+    // Prevent double submission
+    if (isSubmitting) {
+      console.log('Already submitting, ignoring duplicate call');
+      return;
+    }
 
-    questions.forEach((q) => {
-      if (userAnswers[q.id] === correctAnswers[q.id]) result++;
-    });
+    setIsSubmitting(true);
 
-    setScore(result);
+    try {
+      let result = 0;
 
-    await scoreAPI.postScore({
-      test_set_id: examMeta?.test_set_id,
-      student_id,
-      score: result,
-      total_questions: questions.length,
-      started_at: startedAt,
-      submitted_at: new Date(),
-      answers: userAnswers,
-    });
+      // Build correct answers map if not already built
+      const correctMap = {};
+      questions.forEach((q) => {
+        if (q && q.id) {
+          correctMap[q.id] = q.answer;
+        }
+      });
+      setCorrectAnswers(correctMap);
+
+      // Calculate score
+      questions.forEach((q) => {
+        if (userAnswers[q.id] === correctMap[q.id]) result++;
+      });
+
+      console.log('Submitting test:', {
+        score: result,
+        total: questions.length,
+        answers: userAnswers
+      });
+
+      setScore(result);
+
+      await scoreAPI.postScore({
+        test_set_id: examMeta?.test_set_id,
+        student_id,
+        score: result,
+        total_questions: questions.length,
+        started_at: startedAt,
+        submitted_at: new Date(),
+        answers: userAnswers,
+      });
+
+      // Clear test state from localStorage after successful submission
+      clearTestState();
+
+      if (autoSubmit) {
+        console.log('Test auto-submitted due to timer expiry');
+      } else {
+        console.log('Test submitted manually');
+      }
+
+      // Results will be shown because score is now set
+      console.log('Submission successful, score set to:', result);
+    } catch (error) {
+      console.error('Error submitting test:', error);
+      alert('Failed to submit test. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const formatTime = (seconds) => {
@@ -403,7 +663,7 @@ const TestQuestions = () => {
   const progress = ((currentIndex + 1) / questions.length) * 100;
 
   return (
-    <div className="min-h-screen flex" style={{ backgroundColor: '#f0fdf4' }}>
+    <div className="min-h-screen flex relative" style={{ backgroundColor: '#f0fdf4' }}>
       {/* Question Navigation Sidebar */}
       <div className={`${showSidebar ? 'w-72' : 'w-0'} transition-all duration-300 bg-white shadow-xl overflow-hidden flex flex-col`}>
         <div className="p-6 border-b border-gray-200">
@@ -450,6 +710,19 @@ const TestQuestions = () => {
       {/* Main Content */}
       <div className="flex-1 p-6 overflow-y-auto">
         <div className="max-w-4xl mx-auto">
+          {/* Resumed Test Notification */}
+          {isResumed && !score && (
+            <div className="mb-4 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg">
+              <div className="flex items-center gap-2">
+                <FiAlertCircle className="text-blue-600" size={20} />
+                <div>
+                  <p className="font-semibold text-blue-800">Test Resumed</p>
+                  <p className="text-sm text-blue-700">Your previous progress has been restored. Continue from where you left off.</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Header */}
           <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
@@ -614,8 +887,8 @@ const TestQuestions = () => {
               <button
                 onClick={() => toggleReview(q.id)}
                 className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all shadow-md hover:shadow-lg ${reviewedQuestions[q.id]
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-white text-purple-600 border-2 border-purple-600'
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-white text-purple-600 border-2 border-purple-600'
                   }`}
               >
                 <MdFlag size={18} />

@@ -8,7 +8,7 @@ import {
   FiInfo,
   FiUser,
   FiFileText,
-  FiCalendar,
+
   FiClock,
   FiAward
 } from "react-icons/fi";
@@ -77,16 +77,7 @@ const TestReview = () => {
   const passed = testReview.score >= (testReview.pass_threshold || 5);
 
   // Format date safely
-  const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
-    try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) return "N/A";
-      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-    } catch {
-      return "N/A";
-    }
-  };
+
 
   return (
     <div className="min-h-screen p-4" style={{ backgroundColor: '#f0fdf4' }}>
@@ -113,9 +104,7 @@ const TestReview = () => {
                 <div>
                   <h1 className="text-lg font-bold text-gray-800">Test Review</h1>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-xs text-gray-600">{testReview.student_name || "Student"}</span>
-                    <span className="text-gray-300">•</span>
-                    <span className="text-xs text-gray-500">{formatDate(testReview.submitted_at)}</span>
+                    <span className="text-xs text-gray-600 font-bold uppercase tracking-wider">{testReview.student_name || "Student"}</span>
                   </div>
                 </div>
               </div>
@@ -141,7 +130,7 @@ const TestReview = () => {
           </div>
 
           {/* Stats Grid - Compact */}
-          <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-y md:divide-y-0 border-t">
+          <div className="grid grid-cols-2 md:grid-cols-3 divide-x border-t">
             <div className="p-3 flex items-center gap-2">
               <div className="p-1.5 rounded-md" style={{ backgroundColor: '#fffbeb' }}>
                 <FiAward className="text-amber-600" size={16} />
@@ -169,15 +158,7 @@ const TestReview = () => {
                 <p className="text-base font-bold text-gray-800">{testReview.pass_threshold || 5} Score</p>
               </div>
             </div>
-            <div className="p-3 flex items-center gap-2">
-              <div className="p-1.5 rounded-md" style={{ backgroundColor: '#f3f4f6' }}>
-                <FiFileText className="text-gray-600" size={16} />
-              </div>
-              <div>
-                <p className="text-[10px] text-gray-500 font-semibold uppercase">Exam Code</p>
-                <p className="text-base font-bold text-gray-800">#{test_set_id?.toString().substring(0, 6) || 'N/A'}</p>
-              </div>
-            </div>
+
           </div>
         </div>
 

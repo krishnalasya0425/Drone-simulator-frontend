@@ -84,45 +84,66 @@ const GenerateTest = () => {
   };
 
   const AddTest = async () => {
+    // Check if user is Admin (Admins cannot create tests)
+    if (role === "Admin") {
+      setMessage("⚠️ Access Denied: You are an Admin and are not allowed to generate tests. Only Instructors can create tests.");
+      setMessageType("error");
+      return;
+    }
+
+    // Check if user is Instructor
+    if (role !== "Instructor") {
+      setMessage("⚠️ Access Denied: Only Instructors can generate tests. Your current role is: " + role);
+      setMessageType("error");
+      return;
+    }
+
     if (!title.trim()) {
-      setMessage("Please enter a test name");
+      setMessage("❌ Test Name Required: Please enter a name for your test before proceeding.");
       setMessageType("error");
       return;
     }
 
     if (!selectedClassId) {
-      setMessage("Please select a class");
+      setMessage("❌ Class Selection Required: Please select a class to generate the test for.");
       setMessageType("error");
       return;
     }
 
     if (!userId) {
-      setMessage("User ID not found. Please log in again.");
+      setMessage("❌ Authentication Error: User ID not found. Please log out and log in again.");
       setMessageType("error");
       return;
     }
 
     if (questionType.length === 0) {
-      setMessage("Please select at least one question type");
+      setMessage("❌ Question Type Required: Please select at least one question type (MCQ or True/False).");
+      setMessageType("error");
+      return;
+    }
+
+    // Check if there are any PDFs available
+    if (docs.length === 0) {
+      setMessage("❌ No PDF Documents Found: This class has no PDF documents uploaded. Please upload PDF documents first before generating a test.");
       setMessageType("error");
       return;
     }
 
     if (selectedPdfs.length === 0) {
-      setMessage("Please select at least one PDF source");
+      setMessage("❌ PDF Selection Required: Please select at least one PDF document as the source for test questions.");
       setMessageType("error");
       return;
     }
 
-    if (noQuestions === 0) {
-      setMessage("Please set number of questions greater than 0");
+    if (noQuestions === 0 || noQuestions < 5) {
+      setMessage("❌ Invalid Question Count: Please set the number of questions to at least 5.");
       setMessageType("error");
       return;
     }
 
     try {
       setLoading(true);
-      setMessage("Generating your test...");
+      setMessage("🔄 Generating your test... Please wait.");
       setMessageType("info");
 
       // Debug logging
@@ -132,7 +153,8 @@ const GenerateTest = () => {
         selectedClassId,
         questionType,
         noQuestions,
-        selectedPdfs
+        selectedPdfs,
+        role
       });
 
       // Call API with userId and classId
@@ -145,16 +167,41 @@ const GenerateTest = () => {
         setTestId(res.testId);
       }
 
-      setMessage("Test created successfully!");
+      setMessage("✅ Success! Test created successfully!");
       setMessageType("success");
-      alert("generation of test is completed");
+      alert("✅ Test generation completed successfully!");
 
       setTimeout(() => {
         navigate(`/${selectedClassId}/docs`);
       }, 1500);
     } catch (error) {
       console.error('Test creation error:', error);
-      setMessage(`Failed to create test: ${error.message || 'Unknown error'}`);
+
+      // Provide detailed error messages based on error type
+      let errorMessage = "❌ Failed to create test: ";
+
+      if (error.response) {
+        // Server responded with error
+        if (error.response.status === 403) {
+          errorMessage += "Access denied. You don't have permission to create tests.";
+        } else if (error.response.status === 404) {
+          errorMessage += "Class not found. Please select a valid class.";
+        } else if (error.response.status === 400) {
+          errorMessage += error.response.data?.message || "Invalid request. Please check your inputs.";
+        } else if (error.response.status === 500) {
+          errorMessage += "Server error. Please try again later or contact support.";
+        } else {
+          errorMessage += error.response.data?.message || error.message || "Unknown error occurred.";
+        }
+      } else if (error.request) {
+        // Request made but no response
+        errorMessage += "Network error. Please check your internet connection and try again.";
+      } else {
+        // Something else happened
+        errorMessage += error.message || "An unexpected error occurred. Please try again.";
+      }
+
+      setMessage(errorMessage);
       setMessageType("error");
     } finally {
       setLoading(false);

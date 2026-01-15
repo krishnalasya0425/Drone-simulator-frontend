@@ -305,18 +305,7 @@ export default function StudentDashboard() {
                               )}
                             </div>
 
-                            {test.exam_type === "FIXED_TIME" && (
-                              <div className="flex flex-col gap-1 text-[11px] text-gray-500 mb-3 bg-gray-50 p-2 rounded border border-gray-100">
-                                <div className="flex justify-between">
-                                  <span className="font-bold">Starts:</span>
-                                  <span>{new Date(test.start_time).toLocaleString()}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="font-bold">Ends:</span>
-                                  <span>{new Date(test.end_time).toLocaleString()}</span>
-                                </div>
-                              </div>
-                            )}
+
 
                             {/* Status Badge */}
                             <div className="flex items-center gap-2">

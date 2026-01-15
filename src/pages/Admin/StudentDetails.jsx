@@ -11,7 +11,7 @@ import {
     FiArrowLeft,
     FiArrowRight,
     FiAward,
-    FiCalendar,
+    FiHash,
     FiMapPin,
     FiShield,
     FiDownload
@@ -149,7 +149,7 @@ const StudentDetails = () => {
 
                                     <div className="flex items-center gap-3 text-gray-600">
                                         <div className="p-2 bg-green-50 rounded-lg text-[#074F06]">
-                                            <FiCalendar size={18} />
+                                            <FiHash size={18} />
                                         </div>
                                         <div>
                                             <p className="text-[10px] uppercase font-bold text-gray-400">Batch Number</p>
