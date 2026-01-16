@@ -1,8 +1,12 @@
 import { useState } from "react";
 import api from "../entities/axios";
 import React from "react";
+import { useNavigate } from "react-router-dom";
+import InfoModal from "../components/InfoModal";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 
 export default function Register() {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     name: "",
     regiment: "",
@@ -12,23 +16,91 @@ export default function Register() {
     password: "",
   });
 
-  const [msg, setMsg] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
+  // Modal State
+  const [modal, setModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "info"
+  });
+
+  const closeModal = () => {
+    setModal(prev => ({ ...prev, isOpen: false }));
+    // If it was a success message, redirect to login
+    if (modal.type === "success") {
+      navigate("/login");
+    }
+  };
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
-      await api.post("/users/register", form);
-      setMsg("Registration submitted. Await approval.");
+      const response = await api.post("/auth/register", form);
+      console.log('Registration success:', response.data);
+
+      setModal({
+        isOpen: true,
+        title: "Registration Successful",
+        message: response.data.message || "Registration submitted. Await approval.",
+        type: "success"
+      });
+
     } catch (err) {
-      setMsg(err.response?.data?.message || "Error registering");
+      console.error('Registration error:', err);
+
+      let errorMessage = "Error registering";
+      let errorTitle = "Registration Failed";
+
+      if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.response?.data?.error) {
+        errorMessage = err.response.data.error;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+
+      // Specific handling based on backend messages
+      if (errorMessage.includes("Already Registered") || errorMessage.includes("already exists")) {
+        errorTitle = "User Already Exists";
+      } else if (errorMessage.includes("Weak Password")) {
+        errorTitle = "Weak Password";
+      } else if (errorMessage.includes("Missing")) {
+        errorTitle = "Missing Information";
+      } else if (errorMessage.includes("Invalid Name")) {
+        errorTitle = "Invalid Name";
+      } else if (errorMessage.includes("Invalid Army ID")) {
+        errorTitle = "Invalid Army ID";
+      }
+
+      // If the backend sent a nice formatted message with an emoji, use it directly? 
+      // The message is already extracted into 'errorMessage'. 
+      // We rely on the backend to send descriptive text.
+
+      setModal({
+        isOpen: true,
+        title: errorTitle,
+        message: errorMessage,
+        type: "error"
+      });
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-green-100 p-4">
+      <InfoModal
+        isOpen={modal.isOpen}
+        onClose={closeModal}
+        title={modal.title}
+        message={modal.message}
+        type={modal.type}
+      />
+
       <div className="bg-white rounded-xl shadow-xl p-8 w-full max-w-2xl">
 
         {/* Logo */}
@@ -109,17 +181,26 @@ export default function Register() {
             <option value="instructor">Instructor</option>
           </select>
 
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            onChange={handleChange}
-            className="col-span-2 w-full px-4 py-2 border rounded-lg outline-none"
-            style={{ transition: 'box-shadow 0.2s' }}
-            onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px #074F06'}
-            onBlur={(e) => e.target.style.boxShadow = ''}
-            required
-          />
+          <div className="relative col-span-2">
+            <input
+              type={showPassword ? "text" : "password"}
+              name="password"
+              placeholder="Password"
+              onChange={handleChange}
+              className="w-full px-4 py-2 border rounded-lg outline-none pr-10"
+              style={{ transition: 'box-shadow 0.2s' }}
+              onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px #074F06'}
+              onBlur={(e) => e.target.style.boxShadow = ''}
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+            >
+              {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
+            </button>
+          </div>
 
           <button
             type="submit"
@@ -131,13 +212,6 @@ export default function Register() {
             Register
           </button>
         </form>
-
-        {/* Success/Error Message */}
-        {msg && (
-          <p className="text-green-600 text-center mt-3 font-medium">
-            {msg}
-          </p>
-        )}
 
         {/* Link to Login */}
         <p className="text-center text-sm text-gray-600 mt-6">

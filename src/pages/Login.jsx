@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import InfoModal from "../components/InfoModal";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 
 export default function Login() {
   const { login } = useAuth();
@@ -8,27 +10,72 @@ export default function Login() {
 
   const [armyId, setArmyId] = useState("");
   const [password, setPassword] = useState("");
-  const [msg, setMsg] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
+  // Modal State
+  const [modal, setModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "info" // success, error, info
+  });
+
+  const closeModal = () => setModal(prev => ({ ...prev, isOpen: false }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMsg("");
 
     try {
       const user = await login(armyId, password);
-
-
 
       if (user.role === "admin") navigate("/dashboard");
       else if (user.role === "Instructor") navigate("/dashboard");
       else navigate("/student-dashboard");
     } catch (err) {
-      setMsg(err.response?.data?.message || "Login failed");
+      console.error('Login error:', err);
+
+      let errorMessage = "Login failed";
+      let errorTitle = "Error";
+
+      // Precise handling based on backend response
+      if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.response?.data?.error) {
+        errorMessage = err.response.data.error;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+
+      // Check for specific error cases
+      if (errorMessage.includes("Incorrect Password") || errorMessage.includes("password")) {
+        errorTitle = "Invalid Password";
+      } else if (errorMessage.includes("Invalid Army ID") || errorMessage.includes("Army ID")) {
+        errorTitle = "Invalid Army ID";
+      } else if (errorMessage.includes("Pending") || errorMessage.includes("Denied") || errorMessage.includes("Not Approved")) {
+        errorTitle = "Account Status";
+      } else if (errorMessage.includes("Missing Credentials")) {
+        errorTitle = "Missing Information";
+      }
+
+      setModal({
+        isOpen: true,
+        title: errorTitle,
+        message: errorMessage,
+        type: "error"
+      });
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-green-100 p-4">
+      <InfoModal
+        isOpen={modal.isOpen}
+        onClose={closeModal}
+        title={modal.title}
+        message={modal.message}
+        type={modal.type}
+      />
+
       <div className="bg-white rounded-xl shadow-xl p-8 w-full max-w-md">
 
         {/* Logo */}
@@ -58,17 +105,26 @@ export default function Login() {
             onBlur={(e) => e.target.style.boxShadow = ''}
           />
 
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="w-full px-4 py-2 border rounded-lg outline-none"
-            style={{ transition: 'box-shadow 0.2s' }}
-            onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px #074F06'}
-            onBlur={(e) => e.target.style.boxShadow = ''}
-          />
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="w-full px-4 py-2 border rounded-lg outline-none pr-10"
+              style={{ transition: 'box-shadow 0.2s' }}
+              onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px #074F06'}
+              onBlur={(e) => e.target.style.boxShadow = ''}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+            >
+              {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
+            </button>
+          </div>
 
           <button
             type="submit"
@@ -80,11 +136,6 @@ export default function Login() {
             Login
           </button>
         </form>
-
-        {/* Error Message */}
-        {msg && (
-          <p className="text-red-600 text-center mt-3 font-medium">{msg}</p>
-        )}
 
         {/* Links */}
         <div className="text-center text-sm text-gray-600 mt-6">
