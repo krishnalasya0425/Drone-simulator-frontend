@@ -34,6 +34,25 @@ const GenerateTest = () => {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
 
+  // New State for Manual Upload Mode
+  const [creationMode, setCreationMode] = useState('manual_upload'); // 'manual_upload' or 'ai_generate'
+  const [numberOfSets, setNumberOfSets] = useState(1);
+  const [setFiles, setSetFiles] = useState({}); // {0: File, 1: File}
+  const [examConfig, setExamConfig] = useState({
+    examType: "UNTIMED",
+    durationMinutes: 60,
+    startTime: "",
+    endTime: "",
+    passThreshold: 5
+  });
+
+  const handleSetFileChange = (index, file) => {
+    setSetFiles(prev => ({
+      ...prev,
+      [index]: file
+    }));
+  };
+
   // Load classes for instructor (if no classId in URL)
   useEffect(() => {
     if (role === "Instructor" && !urlClassId) {
@@ -84,127 +103,125 @@ const GenerateTest = () => {
   };
 
   const AddTest = async () => {
-    // Check if user is Admin (Admins cannot create tests)
+    // Check access
     if (role === "Admin") {
-      setMessage("⚠️ Access Denied: You are an Admin and are not allowed to generate tests. Only Instructors can create tests.");
+      setMessage("⚠️ Access Denied: You are an Admin. Only Instructors can create tests.");
       setMessageType("error");
       return;
     }
-
-    // Check if user is Instructor
     if (role !== "Instructor") {
-      setMessage("⚠️ Access Denied: Only Instructors can generate tests. Your current role is: " + role);
+      setMessage("⚠️ Access Denied: Only Instructors can generate tests.");
       setMessageType("error");
       return;
     }
 
+    // Common Valdiation
     if (!title.trim()) {
-      setMessage("❌ Test Name Required: Please enter a name for your test before proceeding.");
+      setMessage("❌ Test Name Required");
       setMessageType("error");
       return;
     }
-
     if (!selectedClassId) {
-      setMessage("❌ Class Selection Required: Please select a class to generate the test for.");
+      setMessage("❌ Class Selection Required");
       setMessageType("error");
       return;
     }
-
     if (!userId) {
-      setMessage("❌ Authentication Error: User ID not found. Please log out and log in again.");
-      setMessageType("error");
-      return;
-    }
-
-    if (questionType.length === 0) {
-      setMessage("❌ Question Type Required: Please select at least one question type (MCQ or True/False).");
-      setMessageType("error");
-      return;
-    }
-
-    // Check if there are any PDFs available
-    if (docs.length === 0) {
-      setMessage("❌ No PDF Documents Found: This class has no PDF documents uploaded. Please upload PDF documents first before generating a test.");
-      setMessageType("error");
-      return;
-    }
-
-    if (selectedPdfs.length === 0) {
-      setMessage("❌ PDF Selection Required: Please select at least one PDF document as the source for test questions.");
-      setMessageType("error");
-      return;
-    }
-
-    if (noQuestions === 0 || noQuestions < 5) {
-      setMessage("❌ Invalid Question Count: Please set the number of questions to at least 5.");
+      setMessage("❌ Authentication Error");
       setMessageType("error");
       return;
     }
 
     try {
       setLoading(true);
-      setMessage("🔄 Generating your test... Please wait.");
+      setMessage("🔄 Processing... Please wait.");
       setMessageType("info");
 
-      // Debug logging
-      console.log('Test creation parameters:', {
-        title,
-        userId,
-        selectedClassId,
-        questionType,
-        noQuestions,
-        selectedPdfs,
-        role
-      });
+      // =================================================
+      // MODE 1: MANUAL UPLOAD (New)
+      // =================================================
+      if (creationMode === 'manual_upload') {
+        // Validate Files
+        const filesCount = Object.keys(setFiles).length;
+        if (filesCount < numberOfSets) {
+          setMessage(`❌ Please upload a PDF file for all ${numberOfSets} sets.`);
+          setMessageType("error");
+          setLoading(false);
+          return;
+        }
 
-      // Call API with userId and classId
-      const res = await test.addTest(title, userId, selectedClassId);
+        if (examConfig.examType === 'TIMED' && !examConfig.durationMinutes) {
+          setMessage("❌ Please specify duration for TIMED exam.");
+          setMessageType("error");
+          setLoading(false);
+          return;
+        }
 
-      console.log('Test creation response:', res);
+        // 1. Create Test Container
+        const res = await test.addTest(title, userId, selectedClassId);
+        const newTestId = res.testId;
 
-      // Store the test ID for future use
-      if (res.testId) {
-        setTestId(res.testId);
+        // 2. Upload Sets
+        const formData = new FormData();
+        formData.append('numberOfSets', numberOfSets);
+        formData.append('questionsPerSet', 0); // Not used in this mode, calculated from PDF
+        formData.append('examType', examConfig.examType);
+        formData.append('passThreshold', examConfig.passThreshold);
+        formData.append('classId', selectedClassId);
+
+        if (examConfig.durationMinutes) formData.append('durationMinutes', examConfig.durationMinutes);
+        if (examConfig.startTime) formData.append('startTime', examConfig.startTime);
+        if (examConfig.endTime) formData.append('endTime', examConfig.endTime);
+
+        // Append files in order
+        for (let i = 0; i < numberOfSets; i++) {
+          formData.append('pdfs', setFiles[i]);
+        }
+
+        await test.generateSetsFromPdf(newTestId, formData);
+
+        setMessage("✅ Success! Test and Sets created successfully!");
+        setMessageType("success");
+        setTimeout(() => {
+          navigate(`/${selectedClassId}/docs`); // Or wherever appropriate
+        }, 2000);
+
+      }
+      // =================================================
+      // MODE 2: AI GENERATE (Legacy)
+      // =================================================
+      else {
+        if (questionType.length === 0) {
+          setMessage("❌ Please select at least one question type");
+          setMessageType("error");
+          setLoading(false);
+          return;
+        }
+        if (selectedPdfs.length === 0) {
+          setMessage("❌ Please select at least one PDF document");
+          setMessageType("error");
+          setLoading(false);
+          return;
+        }
+
+        // Call API
+        const res = await test.addTest(title, userId, selectedClassId);
+        if (res.testId) setTestId(res.testId);
+
+        setMessage("✅ Success! Test created. Redirecting...");
+        setMessageType("success");
+        setTimeout(() => {
+          navigate(`/${selectedClassId}/docs`);
+        }, 1500);
       }
 
-      setMessage("✅ Success! Test created successfully!");
-      setMessageType("success");
-      alert("✅ Test generation completed successfully!");
-
-      setTimeout(() => {
-        navigate(`/${selectedClassId}/docs`);
-      }, 1500);
     } catch (error) {
       console.error('Test creation error:', error);
-
-      // Provide detailed error messages based on error type
-      let errorMessage = "❌ Failed to create test: ";
-
-      if (error.response) {
-        // Server responded with error
-        if (error.response.status === 403) {
-          errorMessage += "Access denied. You don't have permission to create tests.";
-        } else if (error.response.status === 404) {
-          errorMessage += "Class not found. Please select a valid class.";
-        } else if (error.response.status === 400) {
-          errorMessage += error.response.data?.message || "Invalid request. Please check your inputs.";
-        } else if (error.response.status === 500) {
-          errorMessage += "Server error. Please try again later or contact support.";
-        } else {
-          errorMessage += error.response.data?.message || error.message || "Unknown error occurred.";
-        }
-      } else if (error.request) {
-        // Request made but no response
-        errorMessage += "Network error. Please check your internet connection and try again.";
-      } else {
-        // Something else happened
-        errorMessage += error.message || "An unexpected error occurred. Please try again.";
-      }
-
-      setMessage(errorMessage);
+      setMessage("❌ Failed: " + (error.response?.data?.message || error.message));
       setMessageType("error");
     } finally {
-      setLoading(false);
+      if (creationMode === 'ai_generate') setLoading(false);
+      // For manual upload, we might want to keep loading until redirect, but false is fine.
     }
   };
 
@@ -214,9 +231,9 @@ const GenerateTest = () => {
   ];
 
   return (
+
     <div className="min-h-screen p-6">
       <div className="max-w-4xl mx-auto">
-
         {/* Header */}
         <div className="mb-8">
           <button
@@ -236,7 +253,7 @@ const GenerateTest = () => {
                 Generate Test
               </h1>
               <p className="text-sm text-gray-600">
-                Create AI-powered tests from your PDF documents
+                Create tests by uploading PDF question sets or using existing class documents
               </p>
             </div>
           </div>
@@ -275,7 +292,25 @@ const GenerateTest = () => {
             boxShadow: "0 20px 60px rgba(7, 79, 6, 0.2)",
           }}
         >
-          {/* Class Selection (only if no classId in URL) */}
+          {/* Mode Switcher */}
+          <div className="flex bg-white rounded-lg p-1 mb-6 shadow-inner">
+            <button
+              className={`flex-1 py-2 rounded-md text-sm font-semibold transition-all ${creationMode === 'manual_upload' ? 'bg-green-100 text-green-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              onClick={() => setCreationMode('manual_upload')}
+            >
+              <FaFilePdf className="inline mr-2" />
+              Upload Question Sets (PDF)
+            </button>
+            <button
+              className={`flex-1 py-2 rounded-md text-sm font-semibold transition-all ${creationMode === 'ai_generate' ? 'bg-green-100 text-green-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              onClick={() => setCreationMode('ai_generate')}
+            >
+              <FaMagic className="inline mr-2" />
+              AI Generate from Class Docs
+            </button>
+          </div>
+
+          {/* Class Selection */}
           {role === "Instructor" && !urlClassId && (
             <div className="mb-5">
               <label className="flex items-center gap-2 font-semibold text-sm mb-2" style={{ color: '#074F06' }}>
@@ -310,7 +345,7 @@ const GenerateTest = () => {
               type="text"
               className="w-full p-3 border-2 rounded-lg outline-none transition-all bg-white"
               style={{ borderColor: '#074F06' }}
-              placeholder="e.g., Map Reading Fundamentals Quiz"
+              placeholder="e.g., Map Reading Set A-D"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               onFocus={(e) => e.target.style.boxShadow = '0 0 0 3px rgba(7, 79, 6, 0.1)'}
@@ -318,98 +353,214 @@ const GenerateTest = () => {
             />
           </div>
 
-          {/* Number of Questions */}
-          <div className="mb-5">
-            <label className="flex items-center gap-2 font-semibold text-sm mb-2" style={{ color: '#074F06' }}>
-              <FaListOl size={14} />
-              Number of Questions: <span className="text-lg ml-1 font-bold">{noQuestions}</span>
-            </label>
-            <div className="bg-white p-4 rounded-lg">
-              <input
-                type="range"
-                min="5"
-                max="50"
-                step="5"
-                className="w-full h-3 rounded-lg appearance-none cursor-pointer"
-                style={{
-                  background: `linear-gradient(to right, #074F06 0%, #074F06 ${(noQuestions / 50) * 100}%, #e5e7eb ${(noQuestions / 50) * 100}%, #e5e7eb 100%)`
-                }}
-                value={noQuestions}
-                onChange={(e) => setNoQuestions(e.target.value)}
-              />
-              <div className="flex justify-between text-sm text-gray-600 mt-2">
-                <span>5</span>
-                <span>25</span>
-                <span>50</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Question Types */}
-          <div className="mb-5">
-            <label className="font-semibold text-sm mb-2 block" style={{ color: '#074F06' }}>
-              Question Types *
-            </label>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {questionTypes.map((type) => (
-                <label
-                  key={type.value}
-                  className={`cursor-pointer p-3 rounded-lg border-2 transition-all ${questionType.includes(type.value)
-                    ? "border-green-600 bg-white shadow-lg"
-                    : "border-gray-300 bg-white hover:border-green-400"
-                    }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      checked={questionType.includes(type.value)}
-                      onChange={() => toggleQuestionType(type.value)}
-                      className="w-5 h-5 accent-green-600"
-                    />
-                    <div className="text-sm font-semibold text-gray-800">{type.label}</div>
-                  </div>
+          {/* ========================================================= */}
+          {/* MANUAL UPLOAD MODE */}
+          {/* ========================================================= */}
+          {creationMode === 'manual_upload' && (
+            <>
+              {/* Number of Sets */}
+              <div className="mb-5">
+                <label className="flex items-center gap-2 font-semibold text-sm mb-2" style={{ color: '#074F06' }}>
+                  <FaListOl size={14} />
+                  Number of Sets *
                 </label>
-              ))}
-            </div>
-          </div>
-
-          {/* Select PDF Source */}
-          <div className="mb-5">
-            <label className="font-semibold text-sm mb-2 block" style={{ color: '#074F06' }}>
-              Select Source PDFs *
-            </label>
-
-            {docs.length === 0 ? (
-              <div className="text-center py-8 bg-white rounded-lg">
-                <FaFilePdf className="mx-auto mb-2 text-gray-400" size={32} />
-                <p className="text-sm text-gray-500 font-medium">No PDFs uploaded for this class.</p>
-                <p className="text-xs text-gray-400 mt-1">Upload PDF documents to generate tests</p>
+                <input
+                  type="number"
+                  min="1"
+                  max="10"
+                  className="w-full p-3 border-2 rounded-lg outline-none bg-white font-bold text-lg"
+                  style={{ borderColor: '#074F06', width: '100px' }}
+                  value={numberOfSets}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value);
+                    if (val > 0 && val <= 10) setNumberOfSets(val);
+                  }}
+                />
               </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {docs.map((pdf) => (
-                  <label
-                    key={pdf.id}
-                    className={`cursor-pointer p-3 rounded-lg border-2 transition-all ${selectedPdfs.includes(pdf.id)
-                      ? "border-green-600 bg-white shadow-lg"
-                      : "border-gray-300 bg-white hover:border-green-400"
-                      }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="checkbox"
-                        checked={selectedPdfs.includes(pdf.id)}
-                        onChange={() => togglePdf(pdf.id)}
-                        className="w-5 h-5 accent-green-600"
-                      />
-                      <FaFilePdf size={24} className="text-red-500 flex-shrink-0" />
-                      <span className="text-sm font-medium text-gray-800 truncate">{pdf.doc_title}</span>
-                    </div>
-                  </label>
+
+              {/* Dynamic File Inputs */}
+              <div className="mb-5 space-y-3">
+                <label className="font-semibold text-sm block" style={{ color: '#074F06' }}>
+                  Upload PDF for each Set *
+                </label>
+                {Array.from({ length: numberOfSets }).map((_, idx) => (
+                  <div key={idx} className="flex items-center gap-3 bg-white p-3 rounded-lg border shadow-sm">
+                    <span className="font-bold text-green-800 w-16">Set {String.fromCharCode(65 + idx)}</span>
+                    <input
+                      type="file"
+                      accept=".pdf"
+                      className="flex-1 text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+                      onChange={(e) => handleSetFileChange(idx, e.target.files[0])}
+                    />
+                  </div>
                 ))}
               </div>
-            )}
-          </div>
+
+              {/* Exam Configuration */}
+              <div className="mb-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="font-semibold text-sm mb-2 block" style={{ color: '#074F06' }}>To Pass (Questions)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    className="w-full p-2 border rounded"
+                    value={examConfig.passThreshold}
+                    onChange={e => setExamConfig({ ...examConfig, passThreshold: parseInt(e.target.value) })}
+                  />
+                </div>
+                <div>
+                  <label className="font-semibold text-sm mb-2 block" style={{ color: '#074F06' }}>Exam Type</label>
+                  <select
+                    className="w-full p-2 border rounded"
+                    value={examConfig.examType}
+                    onChange={e => setExamConfig({ ...examConfig, examType: e.target.value })}
+                  >
+                    <option value="UNTIMED">Untimed</option>
+                    <option value="TIMED">Timed (Duration)</option>
+                    <option value="FIXED_TIME">Fixed Time Window</option>
+                  </select>
+                </div>
+              </div>
+
+              {examConfig.examType === 'TIMED' && (
+                <div className="mb-5">
+                  <label className="font-semibold text-sm mb-2 block" style={{ color: '#074F06' }}>Duration (Minutes)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    className="w-full p-2 border rounded"
+                    value={examConfig.durationMinutes}
+                    onChange={e => setExamConfig({ ...examConfig, durationMinutes: parseInt(e.target.value) })}
+                  />
+                </div>
+              )}
+
+              {examConfig.examType === 'FIXED_TIME' && (
+                <div className="mb-5 grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="font-semibold text-sm mb-2 block" style={{ color: '#074F06' }}>Start Time</label>
+                    <input
+                      type="datetime-local"
+                      className="w-full p-2 border rounded"
+                      value={examConfig.startTime}
+                      onChange={e => setExamConfig({ ...examConfig, startTime: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="font-semibold text-sm mb-2 block" style={{ color: '#074F06' }}>End Time</label>
+                    <input
+                      type="datetime-local"
+                      className="w-full p-2 border rounded"
+                      value={examConfig.endTime}
+                      onChange={e => setExamConfig({ ...examConfig, endTime: e.target.value })}
+                    />
+                  </div>
+                </div>
+              )}
+
+            </>
+          )}
+
+          {/* ========================================================= */}
+          {/* AI GENERATE MODE (Legacy) */}
+          {/* ========================================================= */}
+          {creationMode === 'ai_generate' && (
+            <>
+              {/* Number of Questions */}
+              <div className="mb-5">
+                <label className="flex items-center gap-2 font-semibold text-sm mb-2" style={{ color: '#074F06' }}>
+                  <FaListOl size={14} />
+                  Number of Questions: <span className="text-lg ml-1 font-bold">{noQuestions}</span>
+                </label>
+                <div className="bg-white p-4 rounded-lg">
+                  <input
+                    type="range"
+                    min="5"
+                    max="50"
+                    step="5"
+                    className="w-full h-3 rounded-lg appearance-none cursor-pointer"
+                    style={{
+                      background: `linear-gradient(to right, #074F06 0%, #074F06 ${(noQuestions / 50) * 100}%, #e5e7eb ${(noQuestions / 50) * 100}%, #e5e7eb 100%)`
+                    }}
+                    value={noQuestions}
+                    onChange={(e) => setNoQuestions(e.target.value)}
+                  />
+                  <div className="flex justify-between text-sm text-gray-600 mt-2">
+                    <span>5</span>
+                    <span>25</span>
+                    <span>50</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Question Types */}
+              <div className="mb-5">
+                <label className="font-semibold text-sm mb-2 block" style={{ color: '#074F06' }}>
+                  Question Types *
+                </label>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {questionTypes.map((type) => (
+                    <label
+                      key={type.value}
+                      className={`cursor-pointer p-3 rounded-lg border-2 transition-all ${questionType.includes(type.value)
+                        ? "border-green-600 bg-white shadow-lg"
+                        : "border-gray-300 bg-white hover:border-green-400"
+                        }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={questionType.includes(type.value)}
+                          onChange={() => toggleQuestionType(type.value)}
+                          className="w-5 h-5 accent-green-600"
+                        />
+                        <div className="text-sm font-semibold text-gray-800">{type.label}</div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Select PDF Source */}
+              <div className="mb-5">
+                <label className="font-semibold text-sm mb-2 block" style={{ color: '#074F06' }}>
+                  Select Source PDFs *
+                </label>
+
+                {docs.length === 0 ? (
+                  <div className="text-center py-8 bg-white rounded-lg">
+                    <FaFilePdf className="mx-auto mb-2 text-gray-400" size={32} />
+                    <p className="text-sm text-gray-500 font-medium">No PDFs uploaded for this class.</p>
+                    <p className="text-xs text-gray-400 mt-1">Upload PDF documents to generate tests</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {docs.map((pdf) => (
+                      <label
+                        key={pdf.id}
+                        className={`cursor-pointer p-3 rounded-lg border-2 transition-all ${selectedPdfs.includes(pdf.id)
+                          ? "border-green-600 bg-white shadow-lg"
+                          : "border-gray-300 bg-white hover:border-green-400"
+                          }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="checkbox"
+                            checked={selectedPdfs.includes(pdf.id)}
+                            onChange={() => togglePdf(pdf.id)}
+                            className="w-5 h-5 accent-green-600"
+                          />
+                          <FaFilePdf size={24} className="text-red-500 flex-shrink-0" />
+                          <span className="text-sm font-medium text-gray-800 truncate">{pdf.doc_title}</span>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+
 
           {/* Create Test Button */}
           <button
@@ -423,12 +574,12 @@ const GenerateTest = () => {
             {loading ? (
               <>
                 <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
-                Generating Test...
+                {creationMode === 'manual_upload' ? 'Uploading & Creating Sets...' : 'Generating Test...'}
               </>
             ) : (
               <>
                 <FaMagic size={16} />
-                Generate Test
+                {creationMode === 'manual_upload' ? 'Create Test & Upload Sets' : 'Generate Test'}
               </>
             )}
           </button>

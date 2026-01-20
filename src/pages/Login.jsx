@@ -12,7 +12,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  // Modal State
+  
   const [modal, setModal] = useState({
     isOpen: false,
     title: "",
@@ -37,7 +37,7 @@ export default function Login() {
       let errorMessage = "Login failed";
       let errorTitle = "Error";
 
-      // Precise handling based on backend response
+      
       if (err.response?.data?.message) {
         errorMessage = err.response.data.message;
       } else if (err.response?.data?.error) {
@@ -46,7 +46,7 @@ export default function Login() {
         errorMessage = err.message;
       }
 
-      // Check for specific error cases
+      
       if (errorMessage.includes("Incorrect Password") || errorMessage.includes("password")) {
         errorTitle = "Invalid Password";
       } else if (errorMessage.includes("Invalid Army ID") || errorMessage.includes("Army ID")) {

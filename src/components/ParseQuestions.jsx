@@ -1,97 +1,133 @@
-import React, { useState } from "react";
-import { parseRawQuestions } from "../utils/parseQuestions";
+
+
+import React, { useState, useEffect } from "react";
 import test from "../entities/test.jsx";
+import { classAPI } from "../entities/class";
+import { useNavigate } from "react-router-dom";
 import {
   FiUpload,
   FiCheckCircle,
   FiFileText,
-  FiCheck,
-  FiX,
-  FiAlertCircle
+  FiList,
+  FiClock,
+  FiActivity
 } from "react-icons/fi";
-import { FaClipboardList } from "react-icons/fa";
+import { FaClipboardList, FaFilePdf, FaLayerGroup } from "react-icons/fa";
 
-export default function ParseQuestions() {
-  const [questions, setQuestions] = useState([]);
-  const [selected, setSelected] = useState([]);
+export default function TestSetUploader() {
+  const navigate = useNavigate();
+
+  // User Info
+  const role = localStorage.getItem("role");
+  const userId = localStorage.getItem("id");
+
+  // State
+  const [classes, setClasses] = useState([]);
+  const [selectedClassId, setSelectedClassId] = useState("");
+  const [title, setTitle] = useState("");
+  const [numberOfSets, setNumberOfSets] = useState(1);
+  const [setFiles, setSetFiles] = useState({});
   const [uploading, setUploading] = useState(false);
+  const [examConfig, setExamConfig] = useState({
+    examType: "UNTIMED",
+    durationMinutes: 60,
+    startTime: "",
+    endTime: "",
+    passThreshold: 5
+  });
+  const [showFormatModal, setShowFormatModal] = useState(false);
+  const [showFormatGuide, setShowFormatGuide] = useState(false);
 
-  const handleFileUpload = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
+  // Load Classes
+  useEffect(() => {
+    if (role === "Instructor" || role === "admin") {
+      loadClasses();
+    }
+  }, []);
+
+  const loadClasses = async () => {
+    try {
+      // If admin, might want all classes, but usually instructors create tests
+      const data = await classAPI.getAllClasses(userId);
+      setClasses(data);
+    } catch (err) {
+      console.error("Failed to load classes", err);
+    }
+  };
+
+  const handleSetFileChange = (index, file) => {
+    setSetFiles(prev => ({
+      ...prev,
+      [index]: file
+    }));
+  };
+
+  const handleSubmit = async () => {
+    if (!title.trim() || !selectedClassId) {
+      alert("Please provide Test Name and Select a Class.");
+      return;
+    }
+
+    const filesCount = Object.keys(setFiles).length;
+    if (filesCount < numberOfSets) {
+      alert(`Please upload a PDF file for all ${numberOfSets} sets.`);
+      return;
+    }
+
+    if (examConfig.examType === 'TIMED' && !examConfig.durationMinutes) {
+      alert("Please specify duration for TIMED exam.");
+      return;
+    }
 
     setUploading(true);
     try {
-      const text = await file.text();
-      const rawJson = JSON.parse(text);
-      const cleaned = parseRawQuestions(rawJson);
-      setQuestions(cleaned);
-      // Select all by default
-      setSelected(cleaned.map(q => q.id));
-    } catch (err) {
-      console.error("Error parsing: ", err);
-      alert("Invalid JSON file! Please check the format.");
+      // 1. Create Test Container
+      const res = await test.addTest(title, userId, selectedClassId);
+      const newTestId = res.testId;
+
+      // 2. Upload Sets
+      const formData = new FormData();
+      formData.append('numberOfSets', numberOfSets);
+      formData.append('questionsPerSet', 0); // Backend calculates from PDF
+      formData.append('examType', examConfig.examType);
+      formData.append('passThreshold', examConfig.passThreshold);
+      formData.append('classId', selectedClassId);
+
+      if (examConfig.durationMinutes) formData.append('durationMinutes', examConfig.durationMinutes);
+      if (examConfig.startTime) formData.append('startTime', examConfig.startTime);
+      if (examConfig.endTime) formData.append('endTime', examConfig.endTime);
+
+      for (let i = 0; i < numberOfSets; i++) {
+        formData.append('pdfs', setFiles[i]);
+      }
+
+      await test.generateSetsFromPdf(newTestId, formData);
+
+      alert("✅ Success! Test and Sets created successfully!");
+      navigate(`/${selectedClassId}/docs`); // Redirect to class docs or tests
+
+    } catch (error) {
+      console.error("Error creating test sets:", error);
+
+      // Check if error is related to PDF format/parsing
+      const errorMsg = error.message || "Unknown error";
+      if (errorMsg.includes("No questions found") ||
+        errorMsg.includes("Failed to parse PDF") ||
+        errorMsg.includes("corrupted") ||
+        errorMsg.includes("Failed to extract text")) {
+        setShowFormatModal(true);
+      } else {
+        alert("Failed to create test sets: " + errorMsg);
+      }
     } finally {
       setUploading(false);
     }
   };
 
-  const toggleSelection = (id) => {
-    setSelected(prev =>
-      prev.includes(id)
-        ? prev.filter(x => x !== id)
-        : [...prev, id]
-    );
-  };
-
-  const selectAll = () => {
-    setSelected(questions.map(q => q.id));
-  };
-
-  const deselectAll = () => {
-    setSelected([]);
-  };
-
-  const handleSubmit = async () => {
-    try {
-      if (selected.length === 0) {
-        alert("Please select at least one question!");
-        return;
-      }
-
-      const selectedQuestions = questions.filter(q => selected.includes(q.id));
-      const payload = buildPayload(selectedQuestions);
-
-      const data = await test.addQuestions(14, payload);
-
-      alert(`✅ ${selected.length} question(s) inserted successfully!`);
-      console.log("Inserted:", data);
-
-      // Reset after successful submission
-      setQuestions([]);
-      setSelected([]);
-    } catch (err) {
-      console.error(err);
-      alert("An error occurred while submitting questions!");
-    }
-  };
-
-  function buildPayload(questions) {
-    console.log("Building payload for questions:", questions);
-    return questions.map(q => ({
-      question_text: q.text,
-      type: q.type,
-      answer: q.answer,
-      options: q.options?.map((opt, idx) => ({
-        label: String.fromCharCode(65 + idx), // A/B/C/D
-        text: opt
-      }))
-    }));
-  }
 
   return (
     <div className="min-h-screen p-6" style={{ backgroundColor: '#f0fdf4' }}>
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-4xl mx-auto">
 
         {/* Header */}
         <div className="mb-8">
@@ -100,281 +136,357 @@ export default function ParseQuestions() {
               <FaClipboardList className="text-white" size={28} />
             </div>
             <div>
-              <h1 className="text-4xl font-bold" style={{ color: '#074F06' }}>
-                Question Parser
+              <h1 className="text-3xl font-bold" style={{ color: '#074F06' }}>
+                Test Set Uploader
               </h1>
-              <p className="text-gray-600">
-                Upload and parse JSON questions for your tests
-              </p>
+              {/* <p className="text-gray-600">
+                Create multi-set exams by uploading specific PDF question files for each set.
+              </p> */}
             </div>
           </div>
         </div>
 
-        {/* Upload Section */}
-        <div className="bg-white rounded-xl shadow-lg p-8 mb-6">
-          <div className="flex items-center gap-3 mb-4">
-            <FiUpload size={24} style={{ color: '#074F06' }} />
-            <h2 className="text-2xl font-bold" style={{ color: '#074F06' }}>
-              Upload Questions File
-            </h2>
-          </div>
-
-          <div className="border-2 border-dashed rounded-xl p-8 text-center transition-all"
-            style={{ borderColor: '#074F06' }}
-            onDragOver={(e) => {
-              e.preventDefault();
-              e.currentTarget.style.backgroundColor = '#D5F2D5';
-            }}
-            onDragLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
-            }}
-          >
-            <div className="mb-4">
-              <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-3"
-                style={{ backgroundColor: '#D5F2D5' }}>
-                <FiFileText size={32} style={{ color: '#074F06' }} />
+        {/* PDF Format Guide */}
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl shadow-md p-6 mb-6 border-2" style={{ borderColor: '#D5F2D5' }}>
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg" style={{ backgroundColor: '#074F06' }}>
+                <FiFileText className="text-white" size={24} />
               </div>
-              <p className="text-lg font-semibold text-gray-700 mb-2">
-                Drop your JSON file here or click to browse
-              </p>
-              <p className="text-sm text-gray-500">
-                Accepts .json files only
-              </p>
+              <div>
+                <h2 className="text-xl font-bold" style={{ color: '#074F06' }}>PDF Format Requirements</h2>
+                <p className="text-sm text-gray-700">Your PDF must follow this exact format for questions to be parsed correctly</p>
+              </div>
             </div>
-
-            <label className="inline-flex items-center gap-2 px-6 py-3 text-white rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all transform hover:scale-105 cursor-pointer"
+            <button
+              onClick={() => setShowFormatGuide(!showFormatGuide)}
+              className="px-4 py-2 text-white rounded-lg font-semibold transition-all"
               style={{ backgroundColor: '#074F06' }}
               onMouseEnter={(e) => e.target.style.backgroundColor = '#053d05'}
               onMouseLeave={(e) => e.target.style.backgroundColor = '#074F06'}
             >
-              <FiUpload size={20} />
-              {uploading ? 'Uploading...' : 'Choose File'}
-              <input
-                type="file"
-                accept=".json"
-                onChange={handleFileUpload}
-                className="hidden"
-                disabled={uploading}
-              />
-            </label>
+              {showFormatGuide ? 'Hide' : 'Show'} Example
+            </button>
           </div>
+
+          {showFormatGuide && (
+            <div className="mt-4 bg-white rounded-lg p-6 border-2" style={{ borderColor: '#D5F2D5' }}>
+              <h3 className="font-bold mb-3 flex items-center gap-2" style={{ color: '#074F06' }}>
+                <FiCheckCircle style={{ color: '#074F06' }} />
+                Correct Format Example:
+              </h3>
+              <div className="p-4 rounded-lg font-mono text-sm space-y-3 border-2 border-gray-300" style={{ backgroundColor: '#f0fdf4' }}>
+                <div>
+                  <span className="font-bold" style={{ color: '#074F06' }}>1.</span> <span className="text-gray-800">What is the capital of France?</span>
+                </div>
+                <div className="ml-4 space-y-1">
+                  <div><span className="font-bold" style={{ color: '#16a34a' }}>A.</span> <span className="text-gray-700">London</span></div>
+                  <div><span className="font-bold" style={{ color: '#16a34a' }}>B.</span> <span className="text-gray-700">Paris</span></div>
+                  <div><span className="font-bold" style={{ color: '#16a34a' }}>C.</span> <span className="text-gray-700">Berlin</span></div>
+                  <div><span className="font-bold" style={{ color: '#16a34a' }}>D.</span> <span className="text-gray-700">Madrid</span></div>
+                </div>
+                <div className="ml-4">
+                  <span className="font-bold" style={{ color: '#15803d' }}>Answer:</span> <span className="text-gray-800">B</span>
+                </div>
+
+                <div className="border-t-2 border-gray-300 pt-3 mt-3">
+                  <span className="font-bold" style={{ color: '#074F06' }}>2.</span> <span className="text-gray-800">The Earth is flat.</span>
+                </div>
+                <div className="ml-4 space-y-1">
+                  <div><span className="font-bold" style={{ color: '#16a34a' }}>A.</span> <span className="text-gray-700">True</span></div>
+                  <div><span className="text-blue-600 font-bold">B.</span> <span className="text-gray-700">False</span></div>
+                </div>
+                <div className="ml-4">
+                  <span className="font-bold" style={{ color: '#15803d' }}>Answer:</span> <span className="text-gray-800">False</span>
+                </div>
+              </div>
+
+              <div className="mt-4 p-4 rounded-lg border-2" style={{ backgroundColor: '#D5F2D5', borderColor: '#074F06' }}>
+                <h4 className="font-bold mb-2" style={{ color: '#074F06' }}>📋 Important Rules:</h4>
+                <ul className="list-disc list-inside space-y-1 text-sm" style={{ color: '#074F06' }}>
+                  <li>Start each question with a number followed by a period (1., 2., 3...)</li>
+                  <li>Options must start with A., B., C., or D. (with period)</li>
+                  <li>Each answer must be on a new line starting with "Answer:" followed by the letter or True/False</li>
+                  <li>Leave blank lines between questions for better readability</li>
+                  <li>PDF must contain selectable text (not scanned images)</li>
+                </ul>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Questions List */}
-        {questions.length > 0 && (
-          <>
-            {/* Selection Controls */}
-            <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-2xl font-bold mb-1" style={{ color: '#074F06' }}>
-                    Parsed Questions
-                  </h2>
-                  <p className="text-gray-600">
-                    {selected.length} of {questions.length} questions selected
-                  </p>
-                </div>
+        {/* Access Check */}
+        {role !== "Instructor" && role !== "admin" ? (
+          <div className="bg-red-100 text-red-700 p-4 rounded-lg">
+            Access Denied. Only Instructors can create tests.
+          </div>
+        ) : (
 
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={selectAll}
-                    className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg font-medium transition-all border-2"
-                    style={{ color: '#074F06', borderColor: '#074F06' }}
-                    onMouseEnter={(e) => e.target.style.backgroundColor = '#D5F2D5'}
-                    onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
-                  >
-                    <FiCheck size={18} />
-                    Select All
-                  </button>
+          <div className="bg-white rounded-xl shadow-lg p-8 space-y-6">
 
-                  <button
-                    onClick={deselectAll}
-                    className="flex items-center gap-2 px-4 py-2 bg-white text-gray-700 rounded-lg font-medium transition-all border-2 border-gray-300 hover:bg-gray-50"
-                  >
-                    <FiX size={18} />
-                    Deselect All
-                  </button>
-
-                  <button
-                    onClick={handleSubmit}
-                    disabled={selected.length === 0}
-                    className="flex items-center gap-2 px-6 py-2.5 text-white rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                    style={{ backgroundColor: '#074F06' }}
-                    onMouseEnter={(e) => {
-                      if (!e.target.disabled) e.target.style.backgroundColor = '#053d05';
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!e.target.disabled) e.target.style.backgroundColor = '#074F06';
-                    }}
-                  >
-                    <FiCheckCircle size={20} />
-                    Submit {selected.length > 0 && `(${selected.length})`}
-                  </button>
-                </div>
+            {/* 1. Test Details */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="flex items-center gap-2 font-semibold text-sm mb-2" style={{ color: '#074F06' }}>
+                  <FiFileText /> Test Name *
+                </label>
+                <input
+                  type="text"
+                  className="w-full p-3 border-2 rounded-lg outline-none transition-all focus:border-green-600"
+                  placeholder="e.g. Map Reading Mid-Term"
+                  value={title}
+                  onChange={e => setTitle(e.target.value)}
+                />
               </div>
 
-              {/* Progress Bar */}
-              <div className="mt-4">
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="h-2 rounded-full transition-all duration-300"
-                    style={{
-                      width: `${(selected.length / questions.length) * 100}%`,
-                      backgroundColor: '#074F06'
-                    }}
-                  ></div>
-                </div>
+              <div>
+                <label className="flex items-center gap-2 font-semibold text-sm mb-2" style={{ color: '#074F06' }}>
+                  <FiList /> Select Class *
+                </label>
+                <select
+                  className="w-full p-3 border-2 rounded-lg outline-none transition-all bg-white focus:border-green-600"
+                  value={selectedClassId}
+                  onChange={e => setSelectedClassId(e.target.value)}
+                >
+                  <option value="">-- Select Class --</option>
+                  {classes.map(c => (
+                    <option key={c.id} value={c.id}>{c.class_name}</option>
+                  ))}
+                </select>
               </div>
             </div>
 
-            {/* Questions Grid */}
-            <div className="space-y-4">
-              {questions.map((q, idx) => {
-                const isSelected = selected.includes(q.id);
+            <hr className="border-gray-100" />
 
-                return (
-                  <div
-                    key={q.id}
-                    className={`group bg-white rounded-xl shadow-lg transition-all duration-300 overflow-hidden border-2 cursor-pointer ${isSelected ? 'border-green-500' : 'border-gray-200'
-                      }`}
-                    onClick={() => toggleSelection(q.id)}
-                    onMouseEnter={(e) => {
-                      if (!isSelected) e.currentTarget.style.borderColor = '#074F06';
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!isSelected) e.currentTarget.style.borderColor = '#e5e7eb';
-                    }}
-                  >
-                    <div className="p-6">
-                      {/* Question Header */}
-                      <div className="flex items-start gap-4 mb-4">
-                        {/* Checkbox */}
-                        <div className="flex-shrink-0 mt-1">
-                          <div className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-all ${isSelected
-                              ? 'bg-green-500 border-green-500'
-                              : 'border-gray-300 group-hover:border-green-400'
-                            }`}>
-                            {isSelected && <FiCheck className="text-white" size={16} />}
-                          </div>
-                        </div>
+            {/* 2. Set Configuration */}
+            <div>
+              <label className="flex items-center gap-2 font-semibold text-sm mb-3" style={{ color: '#074F06' }}>
+                <FaLayerGroup /> Number of Sets
+              </label>
+              <div className="flex items-center gap-4">
+                <input
+                  type="number"
+                  min="1"
+                  max="10"
+                  className="w-24 p-3 border-2 rounded-lg font-bold text-lg text-center focus:border-green-600"
+                  value={numberOfSets}
+                  onChange={e => {
+                    const val = parseInt(e.target.value);
+                    if (val > 0 && val <= 10) setNumberOfSets(val);
+                  }}
+                />
+                <span className="text-gray-500 text-sm">
+                  Define how many variations (Set A, B, C...) you want to create.
+                </span>
+              </div>
+            </div>
 
-                        {/* Question Number Badge */}
-                        <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold flex-shrink-0"
-                          style={{ backgroundColor: '#074F06' }}>
-                          {idx + 1}
-                        </div>
-
-                        {/* Question Text */}
-                        <div className="flex-1">
-                          <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                            {q.text}
-                          </h3>
-
-                          {/* Type Badge */}
-                          <span className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${q.type === 'mcq'
-                              ? 'bg-blue-100 text-blue-700'
-                              : 'bg-purple-100 text-purple-700'
-                            }`}>
-                            {q.type === 'mcq' ? 'Multiple Choice' : 'True/False'}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Options */}
-                      {q.type !== "tf" && q.options && (
-                        <div className="ml-20 mb-4 space-y-2">
-                          {q.options.map((opt, optIdx) => {
-                            const letter = String.fromCharCode(65 + optIdx);
-                            const isCorrect = q.answer === letter;
-
-                            return (
-                              <div
-                                key={optIdx}
-                                className={`p-3 rounded-lg border-2 ${isCorrect
-                                    ? 'bg-green-50 border-green-300'
-                                    : 'bg-gray-50 border-gray-200'
-                                  }`}
-                              >
-                                <span className="font-semibold mr-2">{letter}.</span>
-                                {opt}
-                                {isCorrect && (
-                                  <FiCheckCircle className="inline ml-2 text-green-600" size={16} />
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-
-                      {/* True/False Options */}
-                      {q.type === "tf" && (
-                        <div className="ml-20 mb-4 space-y-2">
-                          {['True', 'False'].map((option) => {
-                            const isCorrect = q.answer === option;
-
-                            return (
-                              <div
-                                key={option}
-                                className={`p-3 rounded-lg border-2 ${isCorrect
-                                    ? 'bg-green-50 border-green-300'
-                                    : 'bg-gray-50 border-gray-200'
-                                  }`}
-                              >
-                                <span className="font-semibold">{option}</span>
-                                {isCorrect && (
-                                  <FiCheckCircle className="inline ml-2 text-green-600" size={16} />
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-
-                      {/* Answer */}
-                      <div className="ml-20 flex items-center gap-2 text-green-700 font-semibold">
-                        <FiCheckCircle size={18} />
-                        <span>Correct Answer: {q.answer}</span>
-                      </div>
+            {/* 3. PDF Uploads */}
+            <div className="space-y-3 bg-gray-50 p-4 rounded-xl border border-gray-200">
+              <h3 className="font-semibold text-sm text-gray-700 mb-2">Upload Question PDF for each Set</h3>
+              {Array.from({ length: numberOfSets }).map((_, idx) => (
+                <div key={idx} className="flex items-center gap-4 bg-white p-3 rounded-lg border shadow-sm">
+                  <div className="w-20 font-bold text-green-800 flex items-center gap-2">
+                    <div className="bg-green-100 p-1.5 rounded text-green-700">
+                      {String.fromCharCode(65 + idx)}
                     </div>
+                    Set {String.fromCharCode(65 + idx)}
                   </div>
-                );
-              })}
+                  <div className="flex-1">
+                    <input
+                      type="file"
+                      accept=".pdf"
+                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 cursor-pointer"
+                      onChange={(e) => handleSetFileChange(idx, e.target.files[0])}
+                    />
+                  </div>
+                  {setFiles[idx] && <FiCheckCircle className="text-green-500" size={20} />}
+                </div>
+              ))}
             </div>
 
-            {/* Bottom Submit Button */}
-            <div className="mt-6 flex justify-center">
-              <button
-                onClick={handleSubmit}
-                disabled={selected.length === 0}
-                className="flex items-center gap-2 px-8 py-4 text-white rounded-lg font-bold text-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                style={{ backgroundColor: '#074F06' }}
-                onMouseEnter={(e) => {
-                  if (!e.target.disabled) e.target.style.backgroundColor = '#053d05';
-                }}
-                onMouseLeave={(e) => {
-                  if (!e.target.disabled) e.target.style.backgroundColor = '#074F06';
-                }}
-              >
-                <FiCheckCircle size={24} />
-                Submit {selected.length} Selected Question{selected.length !== 1 ? 's' : ''}
-              </button>
+            <hr className="border-gray-100" />
+
+            {/* 4. Exam Config */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="flex items-center gap-2 font-semibold text-sm mb-2" style={{ color: '#074F06' }}>
+                   Exam Type
+                </label>
+                <select
+                  className="w-full p-3 border-2 rounded-lg bg-white focus:border-green-600"
+                  value={examConfig.examType}
+                  onChange={e => setExamConfig({ ...examConfig, examType: e.target.value })}
+                >
+                  <option value="UNTIMED">Untimed (Practice)</option>
+                  <option value="TIMED">Timed (Duration)</option>
+                  
+                </select>
+              </div>
+              <div>
+                <label className="flex items-center gap-2 font-semibold text-sm mb-2" style={{ color: '#074F06' }}>
+                  <FiCheckCircle /> Pass Threshold (Questions)
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  className="w-full p-3 border-2 rounded-lg focus:border-green-600"
+                  value={examConfig.passThreshold}
+                  onChange={e => {
+                    const val = parseInt(e.target.value) || 1;
+                    setExamConfig({ ...examConfig, passThreshold: val >= 1 ? val : 1 });
+                  }}
+                />
+              </div>
             </div>
-          </>
+
+            {/* Conditional Timed Config */}
+            {examConfig.examType === 'TIMED' && (
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 flex items-center gap-4">
+                <FiClock className="text-blue-600" size={24} />
+                <div className="flex-1">
+                  <label className="font-semibold text-sm text-blue-800 block mb-1">Duration (Minutes)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    className="w-full p-2 border rounded focus:border-blue-500"
+                    value={examConfig.durationMinutes}
+                    onChange={e => {
+                      const val = parseInt(e.target.value) || 1;
+                      setExamConfig({ ...examConfig, durationMinutes: val >= 1 ? val : 1 });
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {examConfig.examType === 'FIXED_TIME' && (
+              <div className="bg-purple-50 p-4 rounded-lg border border-purple-100 grid grid-cols-2 gap-4">
+                <div>
+                  <label className="font-semibold text-sm text-purple-800 block mb-1">Start Time</label>
+                  <input
+                    type="datetime-local"
+                    className="w-full p-2 border rounded focus:border-purple-500"
+                    value={examConfig.startTime}
+                    onChange={e => setExamConfig({ ...examConfig, startTime: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="font-semibold text-sm text-purple-800 block mb-1">End Time</label>
+                  <input
+                    type="datetime-local"
+                    className="w-full p-2 border rounded focus:border-purple-500"
+                    value={examConfig.endTime}
+                    onChange={e => setExamConfig({ ...examConfig, endTime: e.target.value })}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Submit */}
+            <button
+              onClick={handleSubmit}
+              disabled={uploading}
+              className="w-full py-4 text-white rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+              style={{ backgroundColor: '#074F06' }}
+            >
+              {uploading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Creating Test Sets...
+                </>
+              ) : (
+                <>
+                  <FiUpload size={24} />
+                  Create Test & Upload Sets
+                </>
+              )}
+            </button>
+
+          </div>
         )}
 
-        {/* Empty State */}
-        {questions.length === 0 && !uploading && (
-          <div className="bg-white rounded-xl shadow-lg p-12 text-center">
-            <div className="w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4"
-              style={{ backgroundColor: '#D5F2D5' }}>
-              <FiAlertCircle size={40} style={{ color: '#074F06' }} />
+        {/* Format Error Modal */}
+        {showFormatModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6 rounded-t-2xl" style={{ background: 'linear-gradient(to right, #074F06, #16a34a)' }}>
+                <div className="flex items-center gap-3 text-white">
+                  <FiActivity size={32} />
+                  <div>
+                    <h2 className="text-2xl font-bold">Invalid PDF Format</h2>
+                    <p className="text-green-100">Your PDF doesn't match the required format</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-6 space-y-4">
+                <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4">
+                  <h3 className="font-bold text-red-900 mb-2 flex items-center gap-2">
+                    <FiActivity className="text-red-600" />
+                    What went wrong?
+                  </h3>
+                  <p className="text-red-800 text-sm">
+                    We couldn't find any valid questions in your PDF. This usually means:
+                  </p>
+                  <ul className="list-disc list-inside mt-2 text-sm text-red-800 space-y-1">
+                    <li>The PDF format doesn't match our requirements</li>
+                    <li>The PDF is a scanned image (text must be selectable)</li>
+                    <li>Questions are not numbered correctly (must use 1., 2., 3...)</li>
+                    <li>Options don't start with A., B., C., D.</li>
+                    <li>Answer lines are missing or incorrectly formatted</li>
+                  </ul>
+                </div>
+
+                <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4">
+                  <h3 className="font-bold text-green-900 mb-3 flex items-center gap-2">
+                    <FiCheckCircle className="text-green-600" />
+                    Required Format:
+                  </h3>
+                  <div className="bg-white p-4 rounded-lg font-mono text-sm space-y-2 border border-green-300">
+                    <div><span className="text-green-600 font-bold">1.</span> <span className="text-gray-800">Your question text here?</span></div>
+                    <div className="ml-4"><span className="text-blue-600 font-bold">A.</span> <span className="text-gray-700">First option</span></div>
+                    <div className="ml-4"><span className="text-blue-600 font-bold">B.</span> <span className="text-gray-700">Second option</span></div>
+                    <div className="ml-4"><span className="text-blue-600 font-bold">C.</span> <span className="text-gray-700">Third option</span></div>
+                    <div className="ml-4"><span className="text-blue-600 font-bold">D.</span> <span className="text-gray-700">Fourth option</span></div>
+                    <div className="ml-4"><span className="text-purple-600 font-bold">Answer:</span> <span className="text-gray-800">A</span></div>
+                  </div>
+                </div>
+
+                <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+                  <h3 className="font-bold text-blue-900 mb-2">💡 Quick Tips:</h3>
+                  <ul className="list-disc list-inside text-sm text-blue-800 space-y-1">
+                    <li>Use a period (.) after question numbers and option letters</li>
+                    <li>Make sure text is selectable (not a scanned image)</li>
+                    <li>Each answer must be on its own line</li>
+                    <li>Leave blank lines between questions</li>
+                  </ul>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setShowFormatModal(false);
+                      setShowFormatGuide(true);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className="flex-1 px-6 py-3 text-white rounded-lg font-semibold transition-all flex items-center justify-center gap-2"
+                    style={{ backgroundColor: '#074F06' }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#053d05'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = '#074F06'}
+                  >
+                    <FiFileText />
+                    View Full Format Guide
+                  </button>
+                  <button
+                    onClick={() => setShowFormatModal(false)}
+                    className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 transition-all"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
             </div>
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">
-              No Questions Loaded
-            </h3>
-            <p className="text-gray-500">
-              Upload a JSON file to get started
-            </p>
           </div>
         )}
       </div>

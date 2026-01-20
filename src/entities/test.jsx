@@ -1,5 +1,6 @@
 
 
+
 const API_BASE_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/tests`;
 
 // Generic request helper
@@ -123,6 +124,39 @@ const testAPI = {
             return await response.json();
         } catch (error) {
             console.error('Error fetching answers:', error);
+            throw error;
+        }
+    },
+
+    // =======================
+    // TEST SETS (New)
+    // =======================
+    async generateSetsFromPdf(testId, formData) {
+        try {
+            // Note: We use the base URL + /test-sets route, but API_BASE_URL points to /tests.
+            // We need to construct the URL correctly or use absolute path if simpler.
+            // Based on list_dir, testSetRoutes are mounted at /test-sets (server.js line 74)
+            // So URL should be: API_ROOT/test-sets/generate-from-pdf/:testId
+
+            const API_ROOT = API_BASE_URL.replace('/tests', '');
+            const url = `${API_ROOT}/test-sets/generate-from-pdf/${testId}`;
+
+            console.log('Uploading sets to:', url);
+
+            const res = await fetch(url, {
+                method: "POST",
+                // Do NOT set Content-Type header when sending FormData, 
+                // browser sets it automatically with boundary
+                body: formData
+            });
+
+            if (!res.ok) {
+                const errData = await res.json();
+                throw new Error(errData.message || 'Failed to upload sets');
+            }
+            return await res.json();
+        } catch (error) {
+            console.error('Error generating sets:', error);
             throw error;
         }
     },

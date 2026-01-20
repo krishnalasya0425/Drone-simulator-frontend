@@ -78,9 +78,7 @@ export default function Register() {
         errorTitle = "Invalid Army ID";
       }
 
-      // If the backend sent a nice formatted message with an emoji, use it directly? 
-      // The message is already extracted into 'errorMessage'. 
-      // We rely on the backend to send descriptive text.
+      
 
       setModal({
         isOpen: true,
