@@ -435,7 +435,7 @@ const Docs = () => {
                 <button
                   className="flex items-center gap-2 px-3 py-2 rounded-lg text-white text-xs font-bold transition-all active:scale-95 hover:brightness-110 shadow-sm"
                   style={{ backgroundColor: '#10b981' }}
-                  onClick={launchVRPractice}
+                  onClick={() => { setLaunchMode("practice"); setShowLaunchModal(true); }}
                 >
                   <FaVrCardboard size={12} />
                   <span className="hidden sm:inline">Practice</span>
@@ -443,14 +443,14 @@ const Docs = () => {
 
                 <div className="w-px h-4 bg-gray-300 mx-1"></div>
 
-                <button
+                {/* <button
                   className="flex items-center gap-2 px-3 py-2 rounded-lg text-white text-xs font-bold transition-all active:scale-95 hover:brightness-110 shadow-sm"
                   style={{ backgroundColor: '#f59e0b' }}
                   onClick={launchExercise}
                 >
                   <FaClipboardList size={12} />
                   <span className="hidden sm:inline">Exercise</span>
-                </button>
+                </button> */}
               </div>
             </div>
           </div>
@@ -970,7 +970,7 @@ const Docs = () => {
         <LaunchingAnimation
           isOpen={showLaunchModal}
           onClose={() => setShowLaunchModal(false)}
-          onConfirm={launchMode === 'vr' ? handleActualLaunch : null}
+          onConfirm={launchMode === 'vr' || launchMode === 'practice' ? handleActualLaunch : null}
           mode={launchMode}
         />
       </div>

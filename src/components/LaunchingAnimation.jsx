@@ -7,8 +7,9 @@ import { FaVrCardboard } from "react-icons/fa";
 const LaunchingAnimation = ({ isOpen, onClose, onConfirm, mode = "practice" }) => {
 
     // Stages: animation -> readiness -> success (for VR mode)
-    // Stages: loading -> success (for practice mode)
+    // Stages: video -> readiness -> success (for practice mode)
     const [stage, setStage] = useState("animation");
+    const [videoEnded, setVideoEnded] = useState(false);
     const [animationComplete, setAnimationComplete] = useState(false);
     const [checklist, setChecklist] = useState({
         connected: false,
@@ -25,11 +26,8 @@ const LaunchingAnimation = ({ isOpen, onClose, onConfirm, mode = "practice" }) =
         }
 
         if (mode !== "vr") {
-            setStage("loading");
-            const timer = setTimeout(() => {
-                setStage("success");
-            }, 3000);
-            return () => clearTimeout(timer);
+            setStage("video");
+            setVideoEnded(false);
         } else {
             setStage("animation");
             // Reliability Fallback: Ensure animation completes even if transition event fails
@@ -53,6 +51,14 @@ const LaunchingAnimation = ({ isOpen, onClose, onConfirm, mode = "practice" }) =
 
     const handleReadinessNext = () => {
         setStage("success");
+    };
+
+    const handleVideoEnd = () => {
+        setVideoEnded(true);
+    };
+
+    const proceedFromVideo = () => {
+        setStage("readiness");
     };
 
     const handleFinalConfirm = () => {
@@ -91,7 +97,7 @@ const LaunchingAnimation = ({ isOpen, onClose, onConfirm, mode = "practice" }) =
                 </button>
 
                 {/* Content */}
-                <div className={mode === "vr" && stage === "animation" ? "p-0" : "p-6"}>
+                <div className={(mode === "vr" && stage === "animation") || (mode === "practice" && stage === "video") ? "p-0" : "p-6"}>
                     {/* ========================================
                         VR MODE: ANIMATION STAGE
                     ======================================== */}
@@ -275,20 +281,157 @@ const LaunchingAnimation = ({ isOpen, onClose, onConfirm, mode = "practice" }) =
                     )}
 
                     {/* ========================================
-                        PRACTICE MODE: LOADING STAGE
+                        PRACTICE MODE: VIDEO STAGE
                     ======================================== */}
-                    {mode === "practice" && stage === "loading" && (
-                        <div className="text-center py-4">
+                    {mode === "practice" && stage === "video" && (
+                        <div className="relative w-full">
+                            {/* Video Player */}
+                            <video
+                                className="w-full rounded-t-xl"
+                                controls
+                                autoPlay
+                                onEnded={handleVideoEnd}
+                                src="/Oculus Setup.mp4"
+                            >
+                                Your browser does not support the video tag.
+                            </video>
+
+                            {/* Proceed Button (visible after video ends or can be clicked anytime) */}
+                            {videoEnded && (
+                                <div className="p-6 animate-fadeIn">
+                                    <button
+                                        onClick={proceedFromVideo}
+                                        className="w-full bg-[#074F06] text-white font-bold py-3 px-6 rounded-xl transition-all shadow-md hover:shadow-xl hover:scale-[1.02]"
+                                    >
+                                        Continue to Setup Checklist
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Skip button (always visible) */}
+                            {!videoEnded && (
+                                <div className="p-6">
+                                    <button
+                                        onClick={proceedFromVideo}
+                                        className="w-full bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg transition-all hover:bg-gray-300"
+                                    >
+                                        Skip Video
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* ========================================
+                        PRACTICE MODE: READINESS STAGE
+                    ======================================== */}
+                    {mode === "practice" && stage === "readiness" && (
+                        <div className="text-center animate-fadeIn">
+                            {/* Icon */}
                             <div className="mb-4 flex justify-center">
-                                <div className="relative">
-                                    <div className="w-16 h-16 border-2 border-green-50 rounded-full animate-spin-slow"></div>
-                                    <div className="absolute inset-0 w-16 h-16 border-2 border-transparent border-t-[#074F06] rounded-full animate-spin"></div>
+                                <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center border border-green-100 shadow-sm">
+                                    <svg
+                                        className="w-10 h-10"
+                                        style={{ color: '#074F06' }}
+                                        fill="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path d="M20.74 6H3.26C2.01 6 1 7.01 1 8.26v7.48C1 16.99 2.01 18 3.26 18h4.59l2.1 2.1c.58.58 1.52.58 2.1 0l2.1-2.1h4.59c1.25 0 2.26-1.01 2.26-2.26V8.26C23 7.01 21.99 6 20.74 6zM7.5 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm9 0c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z" />
+                                    </svg>
                                 </div>
                             </div>
-                            <h2 className="text-lg font-bold text-gray-800 mb-1">
-                                {mode === "vr" ? "Launching VR..." : "Launching..."}
+
+                            {/* Title */}
+                            <h2 className="text-lg font-bold text-gray-800 mb-2">
+                                Are you ready to start Practice?
                             </h2>
-                            <p className="text-gray-400 text-[12px]">Preparing your session...</p>
+
+                            {/* Informational Text */}
+                            <p className="text-gray-500 text-[13px] mb-4 leading-relaxed max-w-[320px] mx-auto">
+                                Please ensure your VR headset is set up correctly before starting.
+                            </p>
+
+                            {/* Checklist */}
+                            <div className="bg-gray-50 border border-gray-100 rounded-xl p-4 mb-4 text-left">
+                                <h3 className="text-[10px] font-black text-gray-400 mb-3 uppercase tracking-widest text-center">
+                                    Pre-Launch Checklist
+                                </h3>
+                                <div className="space-y-2">
+                                    <label className="flex items-center gap-3 p-2 rounded-lg hover:bg-white transition-all cursor-pointer group border border-transparent hover:border-gray-100 shadow-sm hover:shadow-md">
+                                        <div className="relative flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                checked={checklist.connected}
+                                                onChange={() => toggleCheck('connected')}
+                                                className="w-5 h-5 rounded-md border-2 border-gray-200 checked:bg-[#074F06] checked:border-[#074F06] transition-all appearance-none cursor-pointer"
+                                            />
+                                            {checklist.connected && <FiCheck className="absolute left-0.5 text-white pointer-events-none" size={14} strokeWidth={4} />}
+                                        </div>
+                                        <span className={`text-[12px] font-bold transition-colors ${checklist.connected ? 'text-gray-800' : 'text-gray-400'}`}>
+                                            VR headset is connected to your PC
+                                        </span>
+                                    </label>
+
+                                    <label className="flex items-center gap-3 p-2 rounded-lg hover:bg-white transition-all cursor-pointer group border border-transparent hover:border-gray-100 shadow-sm hover:shadow-md">
+                                        <div className="relative flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                checked={checklist.powered}
+                                                onChange={() => toggleCheck('powered')}
+                                                className="w-5 h-5 rounded-md border-2 border-gray-200 checked:bg-[#074F06] checked:border-[#074F06] transition-all appearance-none cursor-pointer"
+                                            />
+                                            {checklist.powered && <FiCheck className="absolute left-0.5 text-white pointer-events-none" size={14} strokeWidth={4} />}
+                                        </div>
+                                        <span className={`text-[12px] font-bold transition-colors ${checklist.powered ? 'text-gray-800' : 'text-gray-400'}`}>
+                                            Headset is powered on and functional
+                                        </span>
+                                    </label>
+
+                                    <label className="flex items-center gap-3 p-2 rounded-lg hover:bg-white transition-all cursor-pointer group border border-transparent hover:border-gray-100 shadow-sm hover:shadow-md">
+                                        <div className="relative flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                checked={checklist.clear}
+                                                onChange={() => toggleCheck('clear')}
+                                                className="w-5 h-5 rounded-md border-2 border-gray-200 checked:bg-[#074F06] checked:border-[#074F06] transition-all appearance-none cursor-pointer"
+                                            />
+                                            {checklist.clear && <FiCheck className="absolute left-0.5 text-white pointer-events-none" size={14} strokeWidth={4} />}
+                                        </div>
+                                        <span className={`text-[12px] font-bold transition-colors ${checklist.clear ? 'text-gray-800' : 'text-gray-400'}`}>
+                                            Play area is clear and safe
+                                        </span>
+                                    </label>
+
+                                    <label className="flex items-center gap-3 p-2 rounded-lg hover:bg-white transition-all cursor-pointer group border border-transparent hover:border-gray-100 shadow-sm hover:shadow-md">
+                                        <div className="relative flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                checked={checklist.paired}
+                                                onChange={() => toggleCheck('paired')}
+                                                className="w-5 h-5 rounded-md border-2 border-gray-200 checked:bg-[#074F06] checked:border-[#074F06] transition-all appearance-none cursor-pointer"
+                                            />
+                                            {checklist.paired && <FiCheck className="absolute left-0.5 text-white pointer-events-none" size={14} strokeWidth={4} />}
+                                        </div>
+                                        <span className={`text-[12px] font-bold transition-colors ${checklist.paired ? 'text-gray-800' : 'text-gray-400'}`}>
+                                            Controllers are charged and paired
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            {/* Next Button */}
+                            <div className="mt-6">
+                                <button
+                                    onClick={allChecked ? handleReadinessNext : null}
+                                    disabled={!allChecked}
+                                    className={`w-full font-bold py-3 px-6 rounded-xl transition-all shadow-md transform ${allChecked
+                                        ? 'bg-[#074F06] text-white hover:shadow-xl hover:scale-[1.02] cursor-pointer'
+                                        : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                        }`}
+                                >
+                                    Proceed to Launch
+                                </button>
+                            </div>
                         </div>
                     )}
 
