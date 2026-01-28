@@ -73,9 +73,6 @@ export default function Header({ role: propRole }) {
       className="w-full h-full object-contain scale-110 transform -translate-y-1"
     />
   </div>
-
-
-
                     {/* Brand Name */}
                     <div className="flex flex-col">
                         <span className="font-bold text-xl leading-tight">VR-MaRS</span>

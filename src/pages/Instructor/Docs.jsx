@@ -50,6 +50,25 @@ const Docs = () => {
   const [showLaunchModal, setShowLaunchModal] = useState(false);
   const [launchMode, setLaunchMode] = useState("vr"); // "practice" or "vr"
 
+  // Unity build management states
+  const [showBuildModal, setShowBuildModal] = useState(false);
+  const [buildPath, setBuildPath] = useState("");
+  const [buildName, setBuildName] = useState("");
+  const [existingBuilds, setExistingBuilds] = useState({ practice: null, exercise: null });
+  const [loadingBuilds, setLoadingBuilds] = useState(false);
+  const [showDeleteBuildModal, setShowDeleteBuildModal] = useState(false);
+  const [buildToDelete, setBuildToDelete] = useState(null);
+
+  // Validation error modal states
+  const [showValidationErrorModal, setShowValidationErrorModal] = useState(false);
+  const [validationError, setValidationError] = useState({
+    message: '',
+    missing: [],
+    found: [],
+    details: ''
+  });
+
+
   const role = localStorage.getItem("role");
 
   const loadDocs = async () => {
@@ -68,6 +87,7 @@ const Docs = () => {
     loadDocs();
     if (role !== "Student") {
       loadClassStudents();
+      loadUnityBuilds();
     }
   }, [classId, uploadDoc]);
 
@@ -320,26 +340,157 @@ const Docs = () => {
 
 
 
-  // Actual backend trigger for VR launch
-  const handleActualLaunch = async () => {
-    const instructorId = localStorage.getItem("id");
+  // Load existing Unity builds for this class
+  const loadUnityBuilds = async () => {
     try {
-      const url = `http://localhost:5000/unity/practice/${classId}/${instructorId}`;
-      await fetch(url, {
+      setLoadingBuilds(true);
+      const response = await api.get(`/unity/builds/${classId}`);
+      const builds = response.data.builds || [];
+
+      const buildsObj = {
+        practice: builds.find(b => b.build_type === 'practice') || null,
+        exercise: builds.find(b => b.build_type === 'exercise') || null
+      };
+
+      setExistingBuilds(buildsObj);
+    } catch (err) {
+      console.error('Failed to load Unity builds:', err);
+      setExistingBuilds({ practice: null, exercise: null });
+    } finally {
+      setLoadingBuilds(false);
+    }
+  };
+
+  // Add/Update Unity build
+  const handleSaveBuild = async () => {
+    if (!buildPath.trim()) {
+      alert('Please enter a build path');
+      return;
+    }
+
+    try {
+      const uploaded_by = localStorage.getItem("id");
+
+      await api.post('/unity/builds', {
+        class_id: classId,
+        build_type: 'practice',
+        build_path: buildPath.trim(),
+        build_name: buildName.trim() || undefined,
+        uploaded_by
+      });
+
+      alert('Practice build path saved successfully!');
+      setBuildPath('');
+      setBuildName('');
+      setShowBuildModal(false);
+      await loadUnityBuilds();
+    } catch (err) {
+      console.error('Failed to save build:', err);
+
+      // Show detailed validation error if available
+      if (err.response?.data?.missing) {
+        setValidationError({
+          message: err.response.data.message,
+          missing: err.response.data.missing,
+          found: err.response.data.found || [],
+          details: err.response.data.details || '',
+          errorType: 'validation'
+        });
+        setShowValidationErrorModal(true);
+      } else if (err.response?.data?.message) {
+        // Check for common errors
+        const errorMsg = err.response.data.message;
+
+        if (errorMsg.includes('ENOTDIR') || errorMsg.includes('not a directory')) {
+          setValidationError({
+            message: 'Invalid Path',
+            missing: [],
+            found: [],
+            details: 'You must provide the path to the BUILD FOLDER, not the .exe file.\n\n✅ Correct: C:\\Builds\\MyGame\n❌ Wrong: C:\\Builds\\MyGame\\MyGame.exe\n\nPlease remove the .exe filename from the path and try again.',
+            errorType: 'path'
+          });
+          setShowValidationErrorModal(true);
+        } else if (errorMsg.includes('does not exist')) {
+          setValidationError({
+            message: 'Path Not Found',
+            missing: [],
+            found: [],
+            details: 'The specified path does not exist on the server.\n\nPlease check:\n• Path is correct\n• No typos in the path\n• Folder exists on this computer',
+            errorType: 'notfound'
+          });
+          setShowValidationErrorModal(true);
+        } else {
+          setValidationError({
+            message: 'Error',
+            missing: [],
+            found: [],
+            details: errorMsg,
+            errorType: 'generic'
+          });
+          setShowValidationErrorModal(true);
+        }
+      } else {
+        setValidationError({
+          message: 'Failed to save build path',
+          missing: [],
+          found: [],
+          details: 'Please check the path and try again.',
+          errorType: 'generic'
+        });
+        setShowValidationErrorModal(true);
+      }
+    }
+  };
+
+  // Delete Unity build
+  const handleDeleteBuild = async () => {
+    if (!buildToDelete) return;
+
+    try {
+      const response = await api.delete(`/unity/builds/${classId}/${buildToDelete.build_type}?delete_files=true`);
+
+      const data = response.data;
+      const message = data.files_deleted
+        ? `${buildToDelete.build_type} build deleted successfully!\n\n✅ Build files have been permanently deleted from your PC.`
+        : `${buildToDelete.build_type} build deleted successfully!${data.deletion_error ? `\n\n⚠️ Database entry removed, but: ${data.deletion_error}` : ''}`;
+      alert(message);
+      setShowDeleteBuildModal(false);
+      setBuildToDelete(null);
+      await loadUnityBuilds();
+    } catch (err) {
+      console.error('Failed to delete build:', err);
+      alert('Failed to delete build. Please try again.');
+    }
+  };
+
+  // Actual backend trigger for VR launch (updated to use new route)
+  const handleActualLaunch = async () => {
+    try {
+      const url = `http://localhost:5000/unity/practice/${classId}`;
+      const response = await fetch(url, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
       });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to launch VR build');
+      }
+
       console.log('VR build triggered after confirmation');
     } catch (err) {
       console.error('Failed to trigger VR build:', err);
+      alert(err.message || 'Failed to launch VR build. Please ensure a practice build is configured.');
     }
   };
 
   // Open the launch flow modal
   const launchVRPractice = () => {
-    setLaunchMode("vr");
+    setLaunchMode("practice");
     setShowLaunchModal(true);
   };
+
 
   return (
     <div className="min-h-screen p-6">
@@ -379,24 +530,28 @@ const Docs = () => {
             </div>
 
             {/* Action Buttons Group */}
-            <div className="flex flex-wrap items-center gap-3 md:justify-end">
+            <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 w-full lg:w-auto">
               {role !== "Student" && (
                 <>
                   {/* Management Tools Group */}
                   <div className="flex items-center p-1 bg-white/40 backdrop-blur-md rounded-xl border border-white/50 shadow-sm">
-                    <button
-                      className="flex items-center gap-2 px-3 py-2 text-white rounded-lg text-xs font-bold transition-all active:scale-95 hover:brightness-110 shadow-sm"
-                      style={{ backgroundColor: '#8B5CF6' }}
-                      onClick={() => navigate(`/${classId}/generatetest`)}
-                    >
-                      <FaMagic size={12} />
-                      <span className="hidden sm:inline">Generate Test</span>
-                    </button>
+                    {role === "Instructor" && (
+                      <>
+                        <button
+                          className="flex items-center gap-2 px-3 py-2 text-white rounded-lg text-xs font-bold transition-all active:scale-95 hover:brightness-110 shadow-sm whitespace-nowrap"
+                          style={{ backgroundColor: '#8B5CF6' }}
+                          onClick={() => navigate(`/${classId}/generatetest`)}
+                        >
+                          <FaMagic size={12} />
+                          <span className="hidden sm:inline">Generate Test</span>
+                        </button>
 
-                    <div className="w-px h-4 bg-gray-300 mx-1"></div>
+                        <div className="w-px h-4 bg-gray-300 mx-1"></div>
+                      </>
+                    )}
 
                     <button
-                      className="flex items-center gap-2 px-3 py-2 text-white rounded-lg text-xs font-bold transition-all active:scale-95 hover:brightness-110 shadow-sm"
+                      className="flex items-center gap-2 px-3 py-2 text-white rounded-lg text-xs font-bold transition-all active:scale-95 hover:brightness-110 shadow-sm whitespace-nowrap"
                       style={{ backgroundColor: '#074F06' }}
                       onClick={() => setUploadDoc(true)}
                     >
@@ -408,7 +563,7 @@ const Docs = () => {
                   {/* Class Management Group */}
                   <div className="flex items-center p-1 bg-white/40 backdrop-blur-md rounded-xl border border-white/50 shadow-sm">
                     <button
-                      className="flex items-center gap-2 px-3 py-2 text-white rounded-lg text-xs font-bold transition-all active:scale-95 hover:brightness-110 shadow-sm"
+                      className="flex items-center gap-2 px-3 py-2 text-white rounded-lg text-xs font-bold transition-all active:scale-95 hover:brightness-110 shadow-sm whitespace-nowrap"
                       style={{ backgroundColor: '#056005' }}
                       onClick={handleAddStudentsClick}
                     >
@@ -419,7 +574,7 @@ const Docs = () => {
                     <div className="w-px h-4 bg-gray-300 mx-1"></div>
 
                     <button
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all active:scale-95 hover:bg-white/60 shadow-sm text-[#074F06]"
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all active:scale-95 hover:bg-white/60 shadow-sm text-[#074F06] whitespace-nowrap"
                       style={{ backgroundColor: '#D5F2D5' }}
                       onClick={handleViewStudentsClick}
                     >
@@ -430,27 +585,57 @@ const Docs = () => {
                 </>
               )}
 
-              {/* Simulation/Practice Group */}
-              <div className="flex items-center p-1 bg-white/40 backdrop-blur-md rounded-xl border border-white/50 shadow-sm">
-                <button
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-white text-xs font-bold transition-all active:scale-95 hover:brightness-110 shadow-sm"
-                  style={{ backgroundColor: '#10b981' }}
-                  onClick={() => { setLaunchMode("practice"); setShowLaunchModal(true); }}
-                >
-                  <FaVrCardboard size={12} />
-                  <span className="hidden sm:inline">Practice</span>
-                </button>
+              {/* VR Build Management Group - Separate row on mobile, inline on desktop */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto">
+                {/* Practice Launch Button */}
+                <div className="flex items-center p-1 bg-white/40 backdrop-blur-md rounded-xl border border-white/50 shadow-sm">
+                  <button
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-white text-xs font-bold transition-all active:scale-95 hover:brightness-110 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                    style={{ backgroundColor: existingBuilds.practice ? '#10b981' : '#6b7280' }}
+                    onClick={() => { setLaunchMode("practice"); setShowLaunchModal(true); }}
+                    disabled={!existingBuilds.practice}
+                    title={existingBuilds.practice ? 'Launch Practice Build' : 'No practice build configured'}
+                  >
+                    <FaVrCardboard size={12} />
+                    <span className="hidden sm:inline">Practice</span>
+                    {!existingBuilds.practice && <span className="text-[10px] opacity-75 ml-1">(Not Set)</span>}
+                  </button>
+                </div>
 
-                <div className="w-px h-4 bg-gray-300 mx-1"></div>
+                {/* Build Management Buttons - Only for Instructors */}
+                {role === "Instructor" && (
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center p-1 bg-white/40 backdrop-blur-md rounded-xl border border-white/50 shadow-sm">
+                      <button
+                        className="flex items-center gap-2 px-3 py-2 rounded-lg text-white text-xs font-bold transition-all active:scale-95 hover:brightness-110 shadow-sm whitespace-nowrap"
+                        style={{ backgroundColor: '#8B5CF6' }}
+                        onClick={() => setShowBuildModal(true)}
+                        title="Manage Practice Build"
+                      >
+                        <FaUpload size={12} />
+                        <span className="hidden sm:inline">{existingBuilds.practice ? 'Update' : 'Add'} Build</span>
+                        <span className="sm:hidden">{existingBuilds.practice ? 'Update' : 'Add'}</span>
+                      </button>
+                    </div>
 
-                {/* <button
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-white text-xs font-bold transition-all active:scale-95 hover:brightness-110 shadow-sm"
-                  style={{ backgroundColor: '#f59e0b' }}
-                  onClick={launchExercise}
-                >
-                  <FaClipboardList size={12} />
-                  <span className="hidden sm:inline">Exercise</span>
-                </button> */}
+                    {existingBuilds.practice && (
+                      <div className="flex items-center p-1 bg-white/40 backdrop-blur-md rounded-xl border border-white/50 shadow-sm">
+                        <button
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg text-white text-xs font-bold transition-all active:scale-95 hover:brightness-110 shadow-sm whitespace-nowrap"
+                          style={{ backgroundColor: '#ef4444' }}
+                          onClick={() => {
+                            setBuildToDelete(existingBuilds.practice);
+                            setShowDeleteBuildModal(true);
+                          }}
+                          title="Delete Practice Build"
+                        >
+                          <FaTrash size={12} />
+                          <span className="hidden sm:inline">Remove</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -961,6 +1146,293 @@ const Docs = () => {
                     Close
                   </button>
                 )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Add/Update Build Modal */}
+        {showBuildModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-xl">
+              {/* Modal Header */}
+              <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between" style={{ backgroundColor: '#D5F2D5' }}>
+                <h2 className="text-2xl font-bold flex items-center gap-2" style={{ color: '#074F06' }}>
+                  <FaVrCardboard size={24} />
+                  {existingBuilds.practice ? 'Update' : 'Add'} Practice Build
+                </h2>
+                <button
+                  onClick={() => {
+                    setShowBuildModal(false);
+                    setBuildPath('');
+                    setBuildName('');
+                  }}
+                  className="p-2 hover:bg-white rounded-lg transition-colors"
+                >
+                  <FiX size={24} style={{ color: '#074F06' }} />
+                </button>
+              </div>
+
+              {/* Modal Body */}
+              <div className="p-6">
+                {existingBuilds.practice && (
+                  <div className="mb-4 p-4 rounded-lg bg-blue-50 border border-blue-200">
+                    <p className="text-sm font-semibold text-blue-900 mb-1">Current Build:</p>
+                    <p className="text-sm text-blue-700 font-mono break-all">{existingBuilds.practice.build_path}</p>
+                    <p className="text-xs text-blue-600 mt-1">Uploaded: {new Date(existingBuilds.practice.uploaded_at).toLocaleString()}</p>
+                  </div>
+                )}
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Build Path <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={buildPath}
+                      onChange={(e) => {
+                        // Automatically remove quotes if user pastes path with quotes
+                        const value = e.target.value.replace(/^["']|["']$/g, '');
+                        setBuildPath(value);
+                      }}
+                      placeholder="C:\path\to\unity\build\folder"
+                      className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-[#074F06] focus:outline-none font-mono text-sm"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Enter the full path to the folder containing your Unity build (.exe file)
+                    </p>
+                    <p className="text-xs text-amber-600 font-semibold mt-1">
+                      ⚠️ Note: Enter the path without quotes (e.g., C:\Builds\MyApp not "C:\Builds\MyApp")
+                    </p>
+                    <p className="text-xs text-red-600 font-semibold mt-1">
+                      ⚠️ Important: Enter the FOLDER path, not the .exe file path!
+                    </p>
+                    {/* <div className="mt-2 p-2 rounded bg-green-50 border border-green-200">
+                      <p className="text-xs text-green-800">
+                        <strong>✅ Correct:</strong> <code className="bg-white px-1 rounded">C:\Builds\MyGame</code>
+                      </p>
+                    </div>
+                    <div className="mt-1 p-2 rounded bg-red-50 border border-red-200">
+                      <p className="text-xs text-red-800">
+                        <strong>❌ Wrong:</strong> <code className="bg-white px-1 rounded">C:\Builds\MyGame\MyGame.exe</code>
+                      </p>
+                    </div> */}
+
+                    {/* Required Files Information */}
+                    <div className="mt-3 p-3 rounded-lg bg-blue-50 border border-blue-200">
+                      <p className="text-xs font-semibold text-blue-900 mb-2">📋 Required Unity Build Files:</p>
+                      <ul className="text-xs text-blue-800 space-y-1 ml-4">
+                        <li className="list-disc"><strong>[GameName].exe</strong> - Main executable file</li>
+                        <li className="list-disc"><strong>[GameName]_Data/</strong> - Game data folder</li>
+                        <li className="list-disc"><strong>UnityPlayer.dll</strong> - Unity runtime library</li>
+                      </ul>
+                      <p className="text-xs text-blue-700 mt-2 italic">
+                        All these files must be present in the build folder for it to be accepted.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Build Name (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={buildName}
+                      onChange={(e) => setBuildName(e.target.value)}
+                      placeholder="My VR Training Build"
+                      className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-[#074F06] focus:outline-none"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Optional friendly name for this build
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-end gap-3" style={{ backgroundColor: '#f9fafb' }}>
+                <button
+                  onClick={() => {
+                    setShowBuildModal(false);
+                    setBuildPath('');
+                    setBuildName('');
+                  }}
+                  className="px-5 py-2 rounded-lg font-semibold text-gray-700 bg-gray-200 hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveBuild}
+                  disabled={!buildPath.trim()}
+                  className="px-5 py-2 rounded-lg font-semibold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ backgroundColor: '#074F06' }}
+                  onMouseEnter={(e) => !e.target.disabled && (e.target.style.backgroundColor = '#053d05')}
+                  onMouseLeave={(e) => !e.target.disabled && (e.target.style.backgroundColor = '#074F06')}
+                >
+                  {existingBuilds.practice ? 'Update Build' : 'Add Build'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Validation Error Modal */}
+        {showValidationErrorModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+              {/* Modal Header */}
+              <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-red-50">
+                <h2 className="text-2xl font-bold flex items-center gap-2 text-red-900">
+                  <span className="text-3xl">❌</span>
+                  Invalid Unity Build
+                </h2>
+                <button
+                  onClick={() => setShowValidationErrorModal(false)}
+                  className="p-2 hover:bg-white rounded-lg transition-colors"
+                >
+                  <FiX size={24} className="text-red-900" />
+                </button>
+              </div>
+
+              {/* Modal Body */}
+              <div className="p-6">
+                {/* Error Message */}
+                <div className="mb-6">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">{validationError.message}</h3>
+                  {validationError.details && (
+                    <p className="text-gray-700 whitespace-pre-line">{validationError.details}</p>
+                  )}
+                </div>
+
+                {/* Missing Files Section */}
+                {validationError.missing && validationError.missing.length > 0 && (
+                  <div className="mb-6 p-4 rounded-lg bg-red-50 border-2 border-red-300">
+                    <h4 className="text-lg font-bold text-red-900 mb-3 flex items-center gap-2">
+                      <span>🚫</span> Missing Required Files
+                    </h4>
+                    <ul className="space-y-2">
+                      {validationError.missing.map((item, index) => (
+                        <li key={index} className="flex items-start gap-2 text-red-800">
+                          <span className="text-red-600 font-bold">•</span>
+                          <span className="font-mono text-sm">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Found Files Section */}
+                {validationError.found && validationError.found.length > 0 && (
+                  <div className="mb-6 p-4 rounded-lg bg-green-50 border-2 border-green-300">
+                    <h4 className="text-lg font-bold text-green-900 mb-3 flex items-center gap-2">
+                      <span>✅</span> Found Files
+                    </h4>
+                    <ul className="space-y-2">
+                      {validationError.found.map((item, index) => (
+                        <li key={index} className="flex items-start gap-2 text-green-800">
+                          <span className="text-green-600 font-bold">•</span>
+                          <span className="font-mono text-sm">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Help Section */}
+                <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
+                  <h4 className="text-sm font-bold text-blue-900 mb-2">💡 What to do:</h4>
+                  <ul className="text-sm text-blue-800 space-y-1 ml-4">
+                    <li className="list-disc">Ensure you're pointing to the correct build folder</li>
+                    <li className="list-disc">Verify all required Unity build files are present</li>
+                    <li className="list-disc">Check that the build was exported correctly from Unity</li>
+                    <li className="list-disc">Make sure you're providing the folder path, not the .exe file path</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-end gap-3 bg-gray-50">
+                <button
+                  onClick={() => setShowValidationErrorModal(false)}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+                >
+                  Got it, I'll fix this
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Build Confirmation Modal */}
+        {showDeleteBuildModal && buildToDelete && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl">
+              {/* Modal Header */}
+              <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-red-50">
+                <h2 className="text-2xl font-bold flex items-center gap-2 text-red-900">
+                  <FaTrash size={24} />
+                  Delete Practice Build
+                </h2>
+                <button
+                  onClick={() => {
+                    setShowDeleteBuildModal(false);
+                    setBuildToDelete(null);
+                  }}
+                  className="p-2 hover:bg-white rounded-lg transition-colors"
+                >
+                  <FiX size={24} className="text-red-900" />
+                </button>
+              </div>
+
+              {/* Modal Body */}
+              <div className="p-6">
+                <div className="mb-4">
+                  <p className="text-gray-700 mb-4 font-semibold text-lg">
+                    ⚠️ Are you sure you want to permanently delete this practice build?
+                  </p>
+
+                  <div className="p-4 rounded-lg bg-red-50 border-2 border-red-300 mb-4">
+                    <p className="text-sm font-bold text-red-900 mb-2">🗑️ WARNING: This action cannot be undone!</p>
+                    <p className="text-sm text-red-800 mb-2">
+                      This will <strong>permanently delete</strong>:
+                    </p>
+                    <ul className="text-sm text-red-800 ml-6 list-disc space-y-1">
+                      <li>The build configuration from the database</li>
+                      <li><strong>All build files from your PC</strong> (including .exe, _Data folder, and all assets)</li>
+                    </ul>
+                  </div>
+
+                  <div className="p-4 rounded-lg bg-gray-100 border border-gray-300">
+                    <p className="text-sm font-semibold text-gray-900 mb-2">📂 Build Location:</p>
+                    <p className="text-sm text-gray-800 font-mono break-all">
+                      {buildToDelete.build_path}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-end gap-3" style={{ backgroundColor: '#f9fafb' }}>
+                <button
+                  onClick={() => {
+                    setShowDeleteBuildModal(false);
+                    setBuildToDelete(null);
+                  }}
+                  className="px-5 py-2 rounded-lg font-semibold text-gray-700 bg-gray-200 hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteBuild}
+                  className="px-5 py-2 rounded-lg font-semibold text-white transition-all"
+                  style={{ backgroundColor: '#dc2626' }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = '#b91c1c'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = '#dc2626'}
+                >
+                  Delete Configuration
+                </button>
               </div>
             </div>
           </div>

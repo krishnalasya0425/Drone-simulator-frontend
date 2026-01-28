@@ -138,7 +138,7 @@ const ClassWiseScore = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <button
+            {/* <button
               onClick={() => setOpen(true)}
               className="flex items-center gap-1.5 px-4 py-2 text-white rounded-lg text-sm font-semibold shadow-md hover:shadow-lg transition-all"
               style={{ backgroundColor: '#074F06' }}
@@ -147,7 +147,7 @@ const ClassWiseScore = () => {
             >
               <FiPlus size={16} />
               Create Sub-Sets
-            </button>
+            </button> */}
 
             <button
               onClick={() => window.open(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/tests/download/${testId}`, "_blank")}

@@ -19,7 +19,7 @@ const CreateSubTestModal = ({ testId, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [classId, setClassId] = useState(null);
 
-  // Fetch test details to get classId
+ 
   useEffect(() => {
     const fetchTestDetails = async () => {
       try {
@@ -73,7 +73,7 @@ const CreateSubTestModal = ({ testId, onClose }) => {
             examType,
             durationMinutes: duration || null,
             passThreshold: passThreshold,
-            classId: classId // Send classId for student validation
+            classId: classId 
           })
         }
       );
@@ -81,7 +81,7 @@ const CreateSubTestModal = ({ testId, onClose }) => {
       const data = await res.json();
 
       if (!res.ok) {
-        // Display the specific error message from backend
+        
         throw new Error(data.message || "Failed to create subsets");
       }
 
@@ -89,7 +89,7 @@ const CreateSubTestModal = ({ testId, onClose }) => {
       onClose();
     } catch (err) {
       console.error(err);
-      // Display the actual error message from the backend
+      
       alert(err.message || "❌ Failed to create subsets. Please check your connection.");
     } finally {
       setLoading(false);

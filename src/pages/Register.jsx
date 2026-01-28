@@ -107,7 +107,7 @@ export default function Register() {
             <circle cx="20" cy="20" r="20" fill="#074F06" />
             <path d="M20 10C16.134 10 13 13.134 13 17C13 22.25 20 30 20 30C20 30 27 22.25 27 17C27 13.134 23.866 10 20 10ZM20 19.5C18.619 19.5 17.5 18.381 17.5 17C17.5 15.619 18.619 14.5 20 14.5C21.381 14.5 22.5 15.619 22.5 17C22.5 18.381 21.381 19.5 20 19.5Z" fill="white" />
           </svg>
-          <h1 className="text-xl font-bold" style={{ color: '#074F06' }}>Map Reading</h1>
+          <h1 className="text-xl font-bold" style={{ color: '#074F06' }}>VR-MaRS</h1>
         </div>
 
         <h2 className="text-2xl font-semibold text-center mb-2 text-gray-800">
