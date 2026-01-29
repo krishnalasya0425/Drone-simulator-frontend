@@ -75,7 +75,7 @@ export default function Header({ role: propRole }) {
   </div>
                     {/* Brand Name */}
                     <div className="flex flex-col">
-                        <span className="font-bold text-xl leading-tight">VR-MaRS</span>
+                        <span className="font-bold text-xl leading-tight">VRMaRS-</span>
                         <span className="text-xs text-white text-opacity-80 leading-tight">Training Platform</span>
                     </div>
                 </div>
