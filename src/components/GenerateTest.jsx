@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { classAPI } from "../entities/class";
 import test from "../entities/test";
+import Users from "../entities/users";
 import {
   FaFilePdf,
   FaMagic,
@@ -17,9 +18,12 @@ const GenerateTest = () => {
   const { classId: urlClassId } = useParams();
   const navigate = useNavigate();
 
-  // Get user info from localStorage
+  // Get user info and URL params
   const role = localStorage.getItem("role");
   const userId = localStorage.getItem("id");
+  const queryParams = new URLSearchParams(window.location.search);
+  const studentId = queryParams.get("studentId");
+  const requestId = queryParams.get("requestId");
 
   // State management
   const [classes, setClasses] = useState([]);
@@ -30,6 +34,7 @@ const GenerateTest = () => {
   const [questionType, setQuestionType] = useState([]);
   const [selectedPdfs, setSelectedPdfs] = useState([]);
   const [testId, setTestId] = useState("");
+  const [retestStudentName, setRetestStudentName] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
@@ -57,6 +62,10 @@ const GenerateTest = () => {
     if (role === "Instructor" && !urlClassId) {
       loadClasses();
     }
+    if (studentId) {
+      // Fetch student name and set title
+      loadStudentName(studentId);
+    }
   }, []);
 
   const loadClasses = async () => {
@@ -67,6 +76,21 @@ const GenerateTest = () => {
       console.error("Failed to load classes", err);
       setMessage("Failed to load classes");
       setMessageType("error");
+    }
+  };
+
+  const loadStudentName = async (id) => {
+    try {
+      const userData = await Users.getUserById(id);
+      if (userData && userData.name) {
+        setRetestStudentName(userData.name);
+        setTitle(`Retest for ${userData.name}`);
+      } else {
+        setTitle(`Retest for Student #${id}`);
+      }
+    } catch (err) {
+      console.error("Failed to load student name", err);
+      setTitle(`Retest for Student #${id}`);
     }
   };
 
@@ -153,7 +177,7 @@ const GenerateTest = () => {
       }
 
       // 1. Create Test Container
-      const res = await test.addTest(title, userId, selectedClassId);
+      const res = await test.addTest(title, userId, selectedClassId, studentId, requestId);
       const newTestId = res.testId;
 
       // 2. Upload Sets
@@ -217,9 +241,12 @@ const GenerateTest = () => {
               <h1 className="text-2xl font-bold" style={{ color: '#074F06' }}>
                 Generate Test
               </h1>
-              {/* <p className="text-sm text-gray-600">
-                Create tests by uploading PDF question sets or using existing class documents
-              </p> */}
+              {studentId && (
+                <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold border border-blue-200">
+                  <FaMagic size={12} />
+                  Individual Retest for {retestStudentName || `Student #${studentId}`}
+                </div>
+              )}
             </div>
           </div>
 

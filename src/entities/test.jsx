@@ -61,8 +61,8 @@ const testAPI = {
     },
 
     // Create a new test
-    async addTest(title, ID, classId) {
-        console.log('Creating test:', { title, ID, classId });
+    async addTest(title, ID, classId, individualStudentId = null, requestId = null) {
+        console.log('Creating test:', { title, ID, classId, individualStudentId, requestId });
         try {
             const response = await fetch(`${API_BASE_URL}`, {
                 method: "POST",
@@ -70,7 +70,9 @@ const testAPI = {
                 body: JSON.stringify({
                     title,
                     ID,
-                    classId
+                    classId,
+                    individualStudentId,
+                    requestId
                 })
             });
             if (!response.ok) throw new Error('Failed to create test');

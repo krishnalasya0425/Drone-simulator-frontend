@@ -530,9 +530,9 @@ const TestQuestions = () => {
               </div>
 
               <div className="p-4 rounded-xl" style={{ backgroundColor: '#D5F2D5' }}>
-                <p className="text-sm text-gray-600 mb-1">Pass Mark</p>
-                <p className="text-3xl font-bold" style={{ color: '#074F06' }}>
-                  {examMeta?.pass_threshold || 5} Questions
+                <p className="text-sm text-gray-600 mb-1">Status</p>
+                <p className="text-3xl font-bold" style={{ color: passed ? '#10b981' : '#ef4444' }}>
+                  {passed ? 'Pass' : 'Fail'}
                 </p>
               </div>
             </div>

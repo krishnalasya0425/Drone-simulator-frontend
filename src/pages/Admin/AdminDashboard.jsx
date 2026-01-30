@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import api from "../../entities/axios";
 import { classAPI } from "../../entities/class";
+import retestAPI from "../../entities/retest";
 import { useNavigate } from "react-router-dom";
 import React from "react";
 import {
@@ -14,7 +15,10 @@ import {
   FaCheck,
   FaKey,
   FaSearch,
+  FaSync,
+  FaFileSignature
 } from "react-icons/fa";
+import { FiX } from "react-icons/fi";
 
 const DASHBOARD_STYLES = `
   .professional-modal-overlay {
@@ -116,6 +120,10 @@ export default function AdminDashboard() {
   const [allClasses, setAllClasses] = useState([]);
   const [approvingStudent, setApprovingStudent] = useState(null);
   const [selectedClassId, setSelectedClassId] = useState("");
+  const [retestRequests, setRetestRequests] = useState([]);
+  const [loadingRetests, setLoadingRetests] = useState(false);
+  const [retestHistory, setRetestHistory] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   const role = localStorage.getItem("role");
   const instructorId = localStorage.getItem("id");
@@ -125,7 +133,13 @@ export default function AdminDashboard() {
   }, []);
 
   useEffect(() => {
-    fetchUsers();
+    if (filter === "retest") {
+      fetchRetestRequests();
+    } else if (filter === "history") {
+      fetchRetestHistory();
+    } else {
+      fetchUsers();
+    }
   }, [filter]);
 
   // Fetch instructor's classes when role is Instructor
@@ -153,6 +167,40 @@ export default function AdminDashboard() {
       setInstructorClasses(classes);
     } catch (err) {
       console.error("Error fetching classes:", err);
+    }
+  };
+
+  const fetchRetestRequests = async () => {
+    try {
+      setLoadingRetests(true);
+      const res = await retestAPI.getInstructorRequests(instructorId);
+      setRetestRequests(res.data);
+    } catch (err) {
+      console.error("Error fetching retest requests:", err);
+    } finally {
+      setLoadingRetests(false);
+    }
+  };
+
+  const fetchRetestHistory = async () => {
+    try {
+      setLoadingHistory(true);
+      const res = await retestAPI.getRetestHistory();
+      setRetestHistory(res.data);
+    } catch (err) {
+      console.error("Error fetching retest history:", err);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
+  const handleRetestStatus = async (requestId, status) => {
+    try {
+      await retestAPI.updateStatus(requestId, status);
+      fetchRetestRequests();
+      alert(`Retest request ${status}`);
+    } catch (err) {
+      alert("Failed to update status");
     }
   };
 
@@ -384,7 +432,7 @@ export default function AdminDashboard() {
           Students
         </button>
 
-        {role === "admin" && <>
+        {role === "admin" && (
           <button
             className={`px-5 py-2 rounded-lg shadow flex items-center gap-2 ${filter === "instructor"
               ? "text-white"
@@ -399,18 +447,46 @@ export default function AdminDashboard() {
             <FaChalkboardTeacher />
             Instructors
           </button>
+        )}
 
-        </>}
-        {/* <button
-          onClick={() => {
-            setEditingUser(null);
-            setShowModal(true);
-          }}
-          className="ml-auto bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2 shadow"
-        >
-          <FaPlus />
-          Add User
-        </button> */}
+        {role === "admin" && (
+          <button
+            className={`px-5 py-2 rounded-lg shadow flex items-center gap-2 ${filter === "history"
+              ? "text-white"
+              : "bg-gray-200 text-gray-700"
+              }`}
+            style={filter === "history" ? { backgroundColor: '#074F06' } : {}}
+            onClick={() => {
+              setFilter("history");
+              setSearchQuery("");
+            }}
+          >
+            <FaFileSignature />
+            Retest History
+          </button>
+        )}
+
+        {role === "Instructor" && (
+          <button
+            className={`px-5 py-2 rounded-lg shadow flex items-center gap-2 ${filter === "retest"
+              ? "text-white"
+              : "bg-gray-200 text-gray-700"
+              }`}
+            style={filter === "retest" ? { backgroundColor: '#074F06' } : {}}
+            onClick={() => {
+              setFilter("retest");
+              setSearchQuery("");
+            }}
+          >
+            <FaSync className={loadingRetests ? "animate-spin" : ""} />
+            Retest Requests
+            {retestRequests.filter(r => r.status === 'Pending').length > 0 && (
+              <span className="bg-red-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full ml-1 font-bold">
+                {retestRequests.filter(r => r.status === 'Pending').length}
+              </span>
+            )}
+          </button>
+        )}
       </div>
 
       {/* SEARCH BAR */}
@@ -456,7 +532,140 @@ export default function AdminDashboard() {
       </div>
 
       {/* TABLE */}
-      {renderTable(filteredUsers)}
+      {filter === "retest" ? (
+        <div className="overflow-x-auto mt-4 shadow-md rounded-lg border border-gray-200">
+          <table className="w-full text-left">
+            <thead className="text-white" style={{ backgroundColor: '#074F06' }}>
+              <tr>
+                <th className="p-3">Student</th>
+                <th className="p-3">Class</th>
+                <th className="p-3">Original Test</th>
+                <th className="p-3">Previous Score</th>
+                <th className="p-3">Attempted At</th>
+                <th className="p-3">Requested At</th>
+                <th className="p-3">Status</th>
+                <th className="p-3 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {retestRequests.length === 0 ? (
+                <tr>
+                  <td colSpan="8" className="p-10 text-center text-gray-500 bg-white">
+                    No retest requests found.
+                  </td>
+                </tr>
+              ) : (
+                retestRequests.map((req) => (
+                  <tr key={req.id} className="border-b" style={{ backgroundColor: '#D5F2D5' }}>
+                    <td className="p-3 font-bold">{req.student_name}</td>
+                    <td className="p-3">{req.class_name}</td>
+                    <td className="p-3">{req.test_title}</td>
+                    <td className="p-3 text-red-600 font-bold">
+                      {req.score} / {req.total_questions} ({Math.round((req.score / req.total_questions) * 100)}%)
+                    </td>
+                    <td className="p-3 text-xs">
+                      {req.attempted_at ? new Date(req.attempted_at).toLocaleDateString() : 'N/A'}
+                    </td>
+                    <td className="p-3 text-xs">{new Date(req.created_at).toLocaleDateString()}</td>
+                    <td className="p-3">
+                      <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${req.status === 'Pending' ? 'bg-blue-100 text-blue-700' :
+                        req.status === 'Approved' ? 'bg-green-100 text-green-700' :
+                          req.status === 'Denied' ? 'bg-red-100 text-red-700' :
+                            'bg-gray-100 text-gray-700'
+                        }`}>
+                        {req.status}
+                      </span>
+                    </td>
+                    <td className="p-3">
+                      {req.status === 'Pending' && (
+                        <div className="flex gap-2 justify-center">
+                          <button
+                            onClick={() => handleRetestStatus(req.id, 'Approved')}
+                            className="bg-green-600 text-white p-2 rounded hover:bg-green-700 transition-all flex items-center gap-1 text-[10px]"
+                            title="Approve Request"
+                          >
+                            <FaCheck size={12} /> Approve
+                          </button>
+                          <button
+                            onClick={() => handleRetestStatus(req.id, 'Denied')}
+                            className="bg-red-600 text-white p-2 rounded hover:bg-red-700 transition-all flex items-center gap-1 text-[10px]"
+                            title="Deny Request"
+                          >
+                            <FiX size={12} /> Deny
+                          </button>
+                        </div>
+                      )}
+                      {req.status === 'Approved' && (
+                        <button
+                          onClick={() => navigate(`/${req.class_id}/generatetest?studentId=${req.student_id}&requestId=${req.id}`)}
+                          className="w-full bg-[#074F06] text-white p-2 rounded hover:bg-green-800 transition-all flex items-center justify-center gap-1 text-[10px]"
+                        >
+                          <FaPlus size={12} /> Create New Test
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      ) : filter === "history" ? (
+        <div className="overflow-x-auto mt-4 shadow-md rounded-lg border border-gray-200">
+          <table className="w-full text-left">
+            <thead className="text-white" style={{ backgroundColor: '#074F06' }}>
+              <tr>
+                <th className="p-3">Student</th>
+                <th className="p-3">Class</th>
+                <th className="p-3">Original Test</th>
+                <th className="p-3">Original Score</th>
+                <th className="p-3">Attempted At</th>
+                <th className="p-3">Retest</th>
+                <th className="p-3">Retest Score</th>
+                <th className="p-3">Retest Submitted</th>
+              </tr>
+            </thead>
+            <tbody>
+              {retestHistory.length === 0 ? (
+                <tr>
+                  <td colSpan="8" className="p-10 text-center text-gray-500 bg-white">
+                    {loadingHistory ? "Loading..." : "No retest history found."}
+                  </td>
+                </tr>
+              ) : (
+                retestHistory.map((record) => (
+                  <tr key={record.id} className="border-b" style={{ backgroundColor: '#D5F2D5' }}>
+                    <td className="p-3 font-bold">{record.student_name}</td>
+                    <td className="p-3">{record.class_name}</td>
+                    <td className="p-3">{record.original_test_title}</td>
+                    <td className="p-3 text-red-600 font-bold">
+                      {record.score} / {record.total_questions} ({Math.round((record.score / record.total_questions) * 100)}%)
+                    </td>
+                    <td className="p-3 text-xs">
+                      {record.attempted_at ? new Date(record.attempted_at).toLocaleDateString() : 'N/A'}
+                    </td>
+                    <td className="p-3">{record.retest_title || 'Not taken yet'}</td>
+                    <td className="p-3">
+                      {record.retest_score !== null && record.retest_score !== undefined ? (
+                        <span className={`font-bold ${record.retest_score >= record.score ? 'text-green-600' : 'text-orange-600'}`}>
+                          {record.retest_score} / {record.total_questions} ({Math.round((record.retest_score / record.total_questions) * 100)}%)
+                        </span>
+                      ) : (
+                        <span className="text-gray-500 italic">Not submitted</span>
+                      )}
+                    </td>
+                    <td className="p-3 text-xs">
+                      {record.retest_submitted_at ? new Date(record.retest_submitted_at).toLocaleDateString() : 'N/A'}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        renderTable(filteredUsers)
+      )}
 
       {/* PROFESSIONALLY REDESIGNED MODAL */}
       {showModal && (

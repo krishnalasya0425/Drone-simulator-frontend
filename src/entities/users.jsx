@@ -14,6 +14,17 @@ const Users = {
         }
     },
 
+    // Get user by ID
+    async getUserById(id) {
+        try {
+            const response = await axios.get(`${API_URL}/id/${id}`);
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching user by ID:', error);
+            throw error;
+        }
+    },
+
 };
 
 export default Users;

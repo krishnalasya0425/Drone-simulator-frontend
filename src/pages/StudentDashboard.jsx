@@ -17,6 +17,8 @@ import {
 import { FaGraduationCap, FaPencilAlt, FaBook, FaImage, FaVideo } from "react-icons/fa";
 import progressAPI from "../entities/progress";
 import ProgressBar from "../components/ProgressBar";
+import retestAPI from "../entities/retest";
+import { FiRefreshCcw } from "react-icons/fi";
 
 export default function StudentDashboard() {
   const navigate = useNavigate();
@@ -25,6 +27,8 @@ export default function StudentDashboard() {
   const [tests, setTests] = useState([]);
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(true);
+  const [retestRequests, setRetestRequests] = useState([]);
+  const [requestingId, setRequestingId] = useState(null);
   const studentId = localStorage.getItem("id");
   const studentName = localStorage.getItem("name");
 
@@ -48,10 +52,15 @@ export default function StudentDashboard() {
       // Fetch available tests for student
       const testsData = await testAPI.getAllTests(studentId, "Student");
 
+      // Fetch retest requests
+      const retestRes = await retestAPI.getStudentRequests(studentId);
+      setRetestRequests(retestRes.data || []);
+
       // Transform the data to match the UI requirements
       const transformedTests = (testsData || []).map(test => ({
         id: test.id,
         test_set_id: test.test_set_id,
+        test_id: test.test_id,
         title: test.title || test.test_title,
         status: test.score !== null ? "completed" : "available",
         score: test.score !== null ? test.score : null,
@@ -59,7 +68,9 @@ export default function StudentDashboard() {
         exam_type: test.exam_type,
         duration: test.duration_minutes,
         start_time: test.start_time,
-        end_time: test.end_time
+        end_time: test.end_time,
+        class_id: test.class_id,
+        submitted_at: test.submitted_at
       }));
 
       setTests(transformedTests);
@@ -78,6 +89,32 @@ export default function StudentDashboard() {
   const handleTestClick = (testId, testSetId, status) => {
     if (status === "available" || status === "in-progress") {
       navigate(`/${testSetId || testId}/questions`);
+    }
+  };
+
+  const handleRetestRequest = async (test) => {
+    try {
+      setRequestingId(test.id);
+
+      const response = await retestAPI.requestRetest({
+        student_id: studentId,
+        class_id: test.class_id,
+        test_id: test.test_id,
+        score: test.score,
+        total_questions: test.total_questions,
+        attempted_at: test.submitted_at
+      });
+
+      // Refresh dashboard data to show the new request
+      await loadDashboardData();
+
+      alert("✅ Retest request submitted successfully! Your instructor will review it soon.");
+    } catch (err) {
+      console.error("Retest request failed:", err);
+      const errorMessage = err.response?.data?.message || err.message || "Failed to submit retest request";
+      alert(`❌ ${errorMessage}`);
+    } finally {
+      setRequestingId(null);
     }
   };
 
@@ -336,8 +373,8 @@ export default function StudentDashboard() {
 
 
 
-                            {/* Status Badge */}
-                            <div className="flex items-center gap-2">
+                            {/* Status Badge & Retest Logic */}
+                            <div className="flex flex-wrap items-center gap-2">
                               {test.status === "available" && (
                                 <span className="px-3 py-1 rounded-full text-xs font-semibold" style={{ backgroundColor: '#D5F2D5', color: '#074F06' }}>
                                   Available
@@ -349,47 +386,92 @@ export default function StudentDashboard() {
                                 </span>
                               )}
                               {test.status === "completed" && (
-                                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mt-2">
-                                  <div className="flex items-center gap-2">
+                                <div className="flex flex-col gap-3 mt-1 w-full">
+                                  <div className="flex flex-wrap items-center gap-2">
                                     <span className="px-3 py-1 rounded-full text-xs font-semibold" style={{ backgroundColor: '#D5F2D5', color: '#074F06' }}>
                                       Completed
                                     </span>
                                     <span className="text-sm font-bold" style={{ color: '#074F06' }}>
                                       Score: {test.score} / {test.total_questions}
                                     </span>
-                                  </div>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      navigate(`/review/${test.test_set_id}/${studentId}`);
-                                    }}
-                                    className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all border shadow-sm hover:shadow-md hover:bg-gray-50"
-                                    style={{
-                                      backgroundColor: 'white',
-                                      color: '#074F06',
-                                      borderColor: '#074F06'
-                                    }}
-                                  >
-                                    <FiEye size={14} />
-                                    View Result
-                                  </button>
 
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      window.open(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/score/download/${test.test_set_id}/${studentId}`, "_blank");
-                                    }}
-                                    className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all border shadow-sm hover:shadow-md hover:bg-gray-50"
-                                    style={{
-                                      backgroundColor: 'white',
-                                      color: '#074F06',
-                                      borderColor: '#074F06'
-                                    }}
-                                    title="Download Performance Report"
-                                  >
-                                    <FiDownload size={14} />
-                                    Download Result
-                                  </button>
+                                    <div className="flex items-center gap-2">
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          navigate(`/review/${test.test_set_id}/${studentId}`);
+                                        }}
+                                        className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all border shadow-sm hover:shadow-md hover:bg-gray-50"
+                                        style={{
+                                          backgroundColor: 'white',
+                                          color: '#074F06',
+                                          borderColor: '#074F06'
+                                        }}
+                                      >
+                                        <FiEye size={14} />
+                                        View Result
+                                      </button>
+
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          window.open(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/score/download/${test.test_set_id}/${studentId}`, "_blank");
+                                        }}
+                                        className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all border shadow-sm hover:shadow-md hover:bg-gray-50"
+                                        style={{
+                                          backgroundColor: 'white',
+                                          color: '#074F06',
+                                          borderColor: '#074F06'
+                                        }}
+                                        title="Download Performance Report"
+                                      >
+                                        <FiDownload size={14} />
+                                        Download
+                                      </button>
+                                    </div>
+                                  </div>
+
+                                  {/* RETEST REQUEST LOGIC */}
+                                  {(() => {
+                                    const scorePercent = (test.score / test.total_questions) * 100;
+                                    const classProgress = classesProgress.find(p => p.class_id === test.class_id);
+                                    const isProgressDone = classProgress && parseFloat(classProgress.overall_completion_percentage) >= 99.9;
+                                    const existingRequest = retestRequests.find(r => r.test_id === test.test_id);
+
+                                    if (scorePercent < 50 && isProgressDone) {
+                                      if (existingRequest) {
+                                        return (
+                                          <div className={`flex items-center gap-2 p-2 rounded-lg border text-xs font-bold ${existingRequest.status === 'Pending' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                            existingRequest.status === 'Approved' ? 'bg-green-50 text-green-700 border-green-200' :
+                                              'bg-gray-50 text-gray-700 border-gray-200'
+                                            }`}>
+                                            <FiRefreshCcw size={14} className={existingRequest.status === 'Pending' ? 'animate-spin-slow' : ''} />
+                                            Retest Request: {existingRequest.status}
+                                            {existingRequest.status === 'Approved' && " - Your instructor has granted a retest."}
+                                          </div>
+                                        );
+                                      }
+
+                                      return (
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleRetestRequest(test);
+                                          }}
+                                          disabled={requestingId === test.id}
+                                          className="flex items-center justify-center gap-2 w-fit px-4 py-2 bg-red-600 text-white text-xs font-bold rounded-lg hover:bg-red-700 transition-all shadow-md active:scale-95 disabled:opacity-50"
+                                        >
+                                          {requestingId === test.id ? (
+                                            <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                          ) : (
+                                            <FiRefreshCcw size={14} />
+                                          )}
+                                          Request Retest (Score &lt; 50%)
+                                        </button>
+                                      );
+                                    }
+                                    return null;
+                                  })()}
                                 </div>
                               )}
                             </div>

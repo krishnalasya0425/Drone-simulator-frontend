@@ -20,6 +20,16 @@ import {
 import { FaBook, FaImage, FaVideo } from 'react-icons/fa';
 import progressAPI from "../../entities/progress";
 import ProgressBar from "../../components/ProgressBar";
+import {
+    ResponsiveContainer,
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    Tooltip,
+    Cell,
+    CartesianGrid
+} from 'recharts';
 
 const StudentDetails = () => {
     const { studentId } = useParams();
@@ -29,6 +39,7 @@ const StudentDetails = () => {
     const [classesProgress, setClassesProgress] = useState([]);
     const [tests, setTests] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [selectedClassId, setSelectedClassId] = useState(null);
 
     useEffect(() => {
         fetchStudentData();
@@ -214,77 +225,182 @@ const StudentDetails = () => {
                     {/* RIGHT COLUMN: Classes & Tests */}
                     <div className="lg:col-span-2 space-y-8">
 
-                        {/* CLASSES SECTION */}
-                        <section>
-                            <div className="flex items-center justify-between mb-4 px-2">
+                        {/* CLASSES SECTION - INTERACTIVE GRAPH */}
+                        <section className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                            <div className="flex items-center justify-between mb-6">
                                 <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                                    <FiBook className="text-[#074F06]" /> Enrolled Classes
+                                    <FiBook className="text-[#074F06]" /> Enrolled Classes Overview
                                 </h3>
                                 <span className="bg-[#074F06] text-white text-xs font-bold px-2 py-1 rounded">
-                                    {classes.length}
+                                    {classes.length} {classes.length === 1 ? 'Class' : 'Classes'}
                                 </span>
                             </div>
 
                             {classes.length === 0 ? (
-                                <div className="bg-white rounded-2xl p-8 text-center border border-dashed border-gray-300">
+                                <div className="p-8 text-center border border-dashed border-gray-300 rounded-xl">
                                     <p className="text-gray-400 font-medium">No classes assigned yet</p>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {classes.map((cls) => {
-                                        const progress = classesProgress.find(p => p.class_id === cls.id);
-                                        return (
-                                            <div key={cls.id} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow group cursor-pointer"
-                                                onClick={() => navigate(`/${cls.id}/docs`)}>
-                                                <div className="flex items-start justify-between mb-2">
+                                <div className="space-y-8">
+                                    {/* The Vertical Column Chart (Bars grow upwards) */}
+                                    <div className="h-[200px] w-full bg-green-50/10 rounded-2xl p-4 border border-green-100 shadow-sm">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart
+                                                data={classes.map(cls => {
+                                                    const progress = classesProgress.find(p => p.class_id === cls.id);
+                                                    return {
+                                                        name: cls.class_name,
+                                                        id: cls.id,
+                                                        progress: parseFloat(progress?.overall_completion_percentage || 0)
+                                                    };
+                                                })}
+                                                margin={{ top: 10, right: 10, left: 10, bottom: 20 }}
+                                                onClick={(state) => {
+                                                    if (state && state.activePayload) {
+                                                        const clickedId = state.activePayload[0].payload.id;
+                                                        setSelectedClassId(clickedId === selectedClassId ? null : clickedId);
+                                                    }
+                                                }}
+                                            >
+                                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                                                <XAxis
+                                                    dataKey="name"
+                                                    axisLine={false}
+                                                    tickLine={false}
+                                                    tick={{ fill: '#475569', fontSize: 10, fontWeight: 600 }}
+                                                    interval={0}
+                                                />
+                                                <YAxis
+                                                    domain={[0, 100]}
+                                                    axisLine={false}
+                                                    tickLine={false}
+                                                    tick={{ fill: '#94a3b8', fontSize: 10 }}
+                                                    tickFormatter={(val) => `${val}%`}
+                                                />
+                                                <Tooltip
+                                                    cursor={false}
+                                                    content={({ active, payload }) => {
+                                                        if (active && payload && payload.length) {
+                                                            return (
+                                                                <div className="bg-white px-3 py-2 shadow-2xl rounded-xl border border-slate-100">
+                                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{payload[0].payload.name}</p>
+                                                                    <p className="text-lg font-black text-[#074F06]">{payload[0].value.toFixed(0)}% Progress</p>
+                                                                </div>
+                                                            );
+                                                        }
+                                                        return null;
+                                                    }}
+                                                />
+                                                <Bar
+                                                    dataKey="progress"
+                                                    radius={[4, 4, 0, 0]}
+                                                    barSize={40}
+                                                    className="cursor-pointer transition-all duration-300"
+                                                >
+                                                    {classes.map((cls, index) => (
+                                                        <Cell
+                                                            key={`cell-${index}`}
+                                                            fill={selectedClassId === cls.id ? '#074F06' : '#BBF7BC'}
+                                                            className="hover:opacity-80 transition-opacity"
+                                                        />
+                                                    ))}
+                                                </Bar>
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </div>
+
+                                    {/* Selection Instructions */}
+                                    {!selectedClassId && (
+                                        <div className="text-center p-4 bg-white rounded-xl border border-slate-100 shadow-sm">
+                                            {/* <p className="text-sm text-slate-600 font-bold flex items-center justify-center gap-2">
+                                                <FiArrowRight className="text-[#074F06] animate-pulse" /> Click on any vertical bar to view LEARNING PROGRESS details
+                                            </p> */}
+                                        </div>
+                                    )}
+
+                                    {/* Learning Progress Container (Appears on click) */}
+                                    {selectedClassId && (
+                                        <div className="animate-in fade-in zoom-in duration-300">
+                                            <div className="bg-white border-2 border-[#074F06] rounded-2xl overflow-hidden shadow-xl">
+                                                <div className="bg-[#074F06] p-4 text-white flex justify-between items-center">
                                                     <div>
-                                                        <h4 className="font-bold text-lg text-gray-800 group-hover:text-[#074F06] transition-colors">{cls.class_name}</h4>
-                                                        {progress && (
-                                                            <p className="text-[10px] font-semibold text-gray-400">
-                                                                {progress.completed_documents}/{progress.total_documents} items completed
-                                                            </p>
-                                                        )}
+                                                        <h4 className="text-lg font-bold">
+                                                            LEARNING PROGRESS: {classes.find(c => c.id === selectedClassId)?.class_name}
+                                                        </h4>
+                                                        <p className="text-[10px] text-green-200 uppercase font-black tracking-widest">In-depth statistical breakdown</p>
                                                     </div>
-                                                    <div className="p-2 bg-green-50 rounded-lg text-[#074F06] group-hover:bg-[#074F06] group-hover:text-white transition-all">
-                                                        <FiArrowRight size={18} />
-                                                    </div>
+                                                    <button
+                                                        onClick={() => setSelectedClassId(null)}
+                                                        className="text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-full transition-all"
+                                                    >
+                                                        ✕
+                                                    </button>
                                                 </div>
 
-                                                {/* Progress Section */}
-                                                {progress && (
-                                                    <div className="mt-4 pt-3 border-t border-gray-50">
-                                                        <div className="flex items-center justify-between mb-1.5">
-                                                            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tight">Learning Progress</span>
-                                                            <span className="text-xs font-bold text-[#074F06]">
-                                                                {parseFloat(progress.overall_completion_percentage || 0).toFixed(0)}%
-                                                            </span>
-                                                        </div>
-                                                        <ProgressBar
-                                                            percentage={parseFloat(progress.overall_completion_percentage || 0)}
-                                                            showLabel={false}
-                                                            height="h-1.5"
-                                                        />
+                                                <div className="p-6 space-y-6">
+                                                    {(() => {
+                                                        const p = classesProgress.find(cp => cp.class_id === selectedClassId);
+                                                        if (!p) return <p className="text-gray-400">No detailed progress found for this class</p>;
 
-                                                        {/* Detailed micro-stats */}
-                                                        <div className="flex items-center gap-3 mt-3 opacity-80">
-                                                            <div className="flex items-center gap-1.5">
-                                                                <FaBook size={10} className="text-red-500" />
-                                                                <span className="text-[10px] font-bold text-gray-600">{Math.round(progress.pdf_completion_percentage)}%</span>
-                                                            </div>
-                                                            <div className="flex items-center gap-1.5">
-                                                                <FaImage size={10} className="text-blue-500" />
-                                                                <span className="text-[10px] font-bold text-gray-600">{Math.round(progress.image_completion_percentage)}%</span>
-                                                            </div>
-                                                            <div className="flex items-center gap-1.5">
-                                                                <FaVideo size={10} className="text-purple-500" />
-                                                                <span className="text-[10px] font-bold text-gray-600">{Math.round(progress.video_completion_percentage)}%</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                )}
+                                                        return (
+                                                            <>
+                                                                <div className="flex items-center justify-between">
+                                                                    <div className="space-y-1">
+                                                                        <p className="text-xs font-bold text-gray-500 uppercase">Overall Completion</p>
+                                                                        <div className="flex items-center gap-3">
+                                                                            <span className="text-4xl font-black text-[#074F06]">
+                                                                                {parseFloat(p.overall_completion_percentage || 0).toFixed(0)}%
+                                                                            </span>
+                                                                            <div className="bg-green-100 text-[#074F06] px-2 py-1 rounded text-xs font-bold">
+                                                                                {p.completed_documents}/{p.total_documents} Items
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <FiAward className="text-[#074F06]" size={48} />
+                                                                </div>
+
+                                                                <ProgressBar
+                                                                    percentage={parseFloat(p.overall_completion_percentage || 0)}
+                                                                    height="h-3"
+                                                                />
+
+                                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                                    <div className="bg-red-50 p-4 rounded-xl border border-red-100">
+                                                                        <div className="flex items-center gap-2 mb-2">
+                                                                            <FaBook className="text-red-500" />
+                                                                            <span className="text-xs font-bold text-gray-600 uppercase">PDF Progress</span>
+                                                                        </div>
+                                                                        <p className="text-2xl font-black text-red-600">{Math.round(p.pdf_completion_percentage)}%</p>
+                                                                    </div>
+                                                                    <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                                                                        <div className="flex items-center gap-2 mb-2">
+                                                                            <FaImage className="text-blue-500" />
+                                                                            <span className="text-xs font-bold text-gray-600 uppercase">Image Progress</span>
+                                                                        </div>
+                                                                        <p className="text-2xl font-black text-blue-600">{Math.round(p.image_completion_percentage)}%</p>
+                                                                    </div>
+                                                                    <div className="bg-purple-50 p-4 rounded-xl border border-purple-100">
+                                                                        <div className="flex items-center gap-2 mb-2">
+                                                                            <FaVideo className="text-purple-500" />
+                                                                            <span className="text-xs font-bold text-gray-600 uppercase">Video Progress</span>
+                                                                        </div>
+                                                                        <p className="text-2xl font-black text-purple-600">{Math.round(p.video_completion_percentage)}%</p>
+                                                                    </div>
+                                                                </div>
+
+                                                                <button
+                                                                    onClick={() => navigate(`/${selectedClassId}/docs`)}
+                                                                    className="w-full flex items-center justify-center gap-2 py-3 bg-[#074F06] text-white rounded-xl font-bold hover:shadow-lg transition-all"
+                                                                >
+                                                                    <FiBook /> View Detailed Course Content <FiArrowRight />
+                                                                </button>
+                                                            </>
+                                                        );
+                                                    })()}
+                                                </div>
                                             </div>
-                                        );
-                                    })}
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </section>

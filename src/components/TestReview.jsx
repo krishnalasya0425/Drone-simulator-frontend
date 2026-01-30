@@ -8,7 +8,7 @@ import {
   FiInfo,
   FiUser,
   FiFileText,
-
+  FiCalendar,
   FiClock,
   FiAward
 } from "react-icons/fi";
@@ -130,7 +130,7 @@ const TestReview = () => {
           </div>
 
           {/* Stats Grid - Compact */}
-          <div className="grid grid-cols-2 md:grid-cols-3 divide-x border-t">
+          <div className="grid grid-cols-2 md:grid-cols-4 divide-x border-t">
             <div className="p-3 flex items-center gap-2">
               <div className="p-1.5 rounded-md" style={{ backgroundColor: '#fffbeb' }}>
                 <FiAward className="text-amber-600" size={16} />
@@ -146,16 +146,33 @@ const TestReview = () => {
               </div>
               <div>
                 <p className="text-[10px] text-gray-500 font-semibold uppercase">Time Taken</p>
-                <p className="text-base font-bold text-gray-800">{testReview.time_taken || "--"} mins</p>
+                <p className="text-base font-bold text-gray-800">
+                  {testReview.exam_type === 'UNTIMED'
+                    ? 'Untimed'
+                    : `${testReview.time_taken || "--"} mins`}
+                </p>
               </div>
             </div>
             <div className="p-3 flex items-center gap-2">
-              <div className="p-1.5 rounded-md" style={{ backgroundColor: '#f3e8ff' }}>
-                <FiTarget className="text-purple-600" size={16} />
+              <div className="p-1.5 rounded-md" style={{ backgroundColor: '#f0fdf4' }}>
+                <FiCalendar className="text-green-600" size={16} />
               </div>
               <div>
-                <p className="text-[10px] text-gray-500 font-semibold uppercase">Pass Mark</p>
-                <p className="text-base font-bold text-gray-800">{testReview.pass_threshold || 5} Score</p>
+                <p className="text-[10px] text-gray-500 font-semibold uppercase">Date Attempted</p>
+                <p className="text-base font-bold text-gray-800">
+                  {testReview.submitted_at ? new Date(testReview.submitted_at).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '--'}
+                </p>
+              </div>
+            </div>
+            <div className="p-3 flex items-center gap-2">
+              <div className="p-1.5 rounded-md" style={{ backgroundColor: passed ? '#D5F2D5' : '#fee2e2' }}>
+                {passed ? <FiCheckCircle className="text-green-600" size={16} /> : <FiXCircle className="text-red-600" size={16} />}
+              </div>
+              <div>
+                <p className="text-[10px] text-gray-500 font-semibold uppercase">Status</p>
+                <p className={`text-base font-bold ${passed ? 'text-green-700' : 'text-red-700'}`}>
+                  {passed ? 'Passed' : 'Failed'}
+                </p>
               </div>
             </div>
 
