@@ -170,7 +170,8 @@ const Docs = () => {
 
     try {
       await api.post(`/classes/${classId}/students`, {
-        studentIds: selectedStudents
+        studentIds: selectedStudents,
+        userRole: role // Pass role for permission check
       });
       alert(`Successfully added ${selectedStudents.length} student(s) to the class!`);
       setSelectedStudents([]);
@@ -178,7 +179,8 @@ const Docs = () => {
       await loadClassStudents();
     } catch (err) {
       console.error("Failed to add students", err);
-      alert("Failed to add students. Please try again.");
+      const errorMsg = err.response?.data?.error || "Failed to add students. Please try again.";
+      alert(errorMsg);
     }
   };
 
@@ -326,7 +328,10 @@ const Docs = () => {
 
     try {
       await api.delete(`/classes/${classId}/students`, {
-        data: { studentIds: studentsToDelete }
+        data: {
+          studentIds: studentsToDelete,
+          userRole: role // Pass role for permission check
+        }
       });
       alert(`Successfully removed ${studentsToDelete.length} student(s) from the class!`);
       setStudentsToDelete([]);
@@ -334,7 +339,8 @@ const Docs = () => {
       await loadClassStudents();
     } catch (err) {
       console.error("Failed to remove students", err);
-      alert("Failed to remove students. Please try again.");
+      const errorMsg = err.response?.data?.error || "Failed to remove students. Please try again.";
+      alert(errorMsg);
     }
   };
 
@@ -562,17 +568,23 @@ const Docs = () => {
 
                   {/* Class Management Group */}
                   <div className="flex items-center p-1 bg-white/40 backdrop-blur-md rounded-xl border border-white/50 shadow-sm">
-                    <button
-                      className="flex items-center gap-2 px-3 py-2 text-white rounded-lg text-xs font-bold transition-all active:scale-95 hover:brightness-110 shadow-sm whitespace-nowrap"
-                      style={{ backgroundColor: '#056005' }}
-                      onClick={handleAddStudentsClick}
-                    >
-                      <FaUserPlus size={12} />
-                      <span className="hidden sm:inline">Add Students</span>
-                    </button>
+                    {/* Add Students button - Admin only */}
+                    {role === "admin" && (
+                      <>
+                        <button
+                          className="flex items-center gap-2 px-3 py-2 text-white rounded-lg text-xs font-bold transition-all active:scale-95 hover:brightness-110 shadow-sm whitespace-nowrap"
+                          style={{ backgroundColor: '#056005' }}
+                          onClick={handleAddStudentsClick}
+                        >
+                          <FaUserPlus size={12} />
+                          <span className="hidden sm:inline">Add Students</span>
+                        </button>
 
-                    <div className="w-px h-4 bg-gray-300 mx-1"></div>
+                        <div className="w-px h-4 bg-gray-300 mx-1"></div>
+                      </>
+                    )}
 
+                    {/* View Students button - Both admin and instructor */}
                     <button
                       className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all active:scale-95 hover:bg-white/60 shadow-sm text-[#074F06] whitespace-nowrap"
                       style={{ backgroundColor: '#D5F2D5' }}
@@ -1007,18 +1019,21 @@ const Docs = () => {
                     <p className="text-gray-600 mb-4">
                       This class doesn't have any students yet.
                     </p>
-                    <button
-                      onClick={() => {
-                        setShowViewStudentsModal(false);
-                        handleAddStudentsClick();
-                      }}
-                      className="px-5 py-2 rounded-lg font-semibold text-white transition-all"
-                      style={{ backgroundColor: '#074F06' }}
-                      onMouseEnter={(e) => e.target.style.backgroundColor = '#053d05'}
-                      onMouseLeave={(e) => e.target.style.backgroundColor = '#074F06'}
-                    >
-                      Add Students
-                    </button>
+                    {/* Add Students button - Admin only */}
+                    {role === "admin" && (
+                      <button
+                        onClick={() => {
+                          setShowViewStudentsModal(false);
+                          handleAddStudentsClick();
+                        }}
+                        className="px-5 py-2 rounded-lg font-semibold text-white transition-all"
+                        style={{ backgroundColor: '#074F06' }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = '#053d05'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = '#074F06'}
+                      >
+                        Add Students
+                      </button>
+                    )}
                   </div>
                 ) : (
                   <>
@@ -1029,7 +1044,8 @@ const Docs = () => {
                           : `Total: ${classStudents.length} student${classStudents.length !== 1 ? 's' : ''}`
                         }
                       </p>
-                      {!deleteMode && (
+                      {/* Delete mode toggle - Admin only */}
+                      {!deleteMode && role === "admin" && (
                         <button
                           onClick={toggleDeleteMode}
                           className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-white transition-all hover:shadow-md"
@@ -1208,7 +1224,7 @@ const Docs = () => {
                     <p className="text-xs text-red-600 font-semibold mt-1">
                       ⚠️ Important: Enter the FOLDER path, not the .exe file path!
                     </p>
-                    {/* <div className="mt-2 p-2 rounded bg-green-50 border border-green-200">
+                    <div className="mt-2 p-2 rounded bg-green-50 border border-green-200">
                       <p className="text-xs text-green-800">
                         <strong>✅ Correct:</strong> <code className="bg-white px-1 rounded">C:\Builds\MyGame</code>
                       </p>
@@ -1217,7 +1233,7 @@ const Docs = () => {
                       <p className="text-xs text-red-800">
                         <strong>❌ Wrong:</strong> <code className="bg-white px-1 rounded">C:\Builds\MyGame\MyGame.exe</code>
                       </p>
-                    </div> */}
+                    </div>
 
                     {/* Required Files Information */}
                     <div className="mt-3 p-3 rounded-lg bg-blue-50 border border-blue-200">

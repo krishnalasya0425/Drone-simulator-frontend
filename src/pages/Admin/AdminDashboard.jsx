@@ -567,23 +567,6 @@ export default function AdminDashboard() {
                       )}
                     </div>
                   </div>
-
-                  <div className="modal-form-group">
-                    <label className="modal-input-label font-bold text-[#074F06]">Add New Assignment</label>
-                    <select
-                      className="modal-input-field bg-[#fdfdfd]"
-                      name="class_id"
-                      value={form.class_id || ""}
-                      onChange={handleChange}
-                    >
-                      <option value="">-- Select Class --</option>
-                      {allClasses.map((cls) => (
-                        <option key={cls.id} value={cls.id}>
-                          {cls.class_name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
                 </div>
               )}
 

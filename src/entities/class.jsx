@@ -33,6 +33,10 @@ export const classAPI = {
     if (role === "Student") {
       url += `/assigned?id=${id}`;
     }
+    else if (id && role) {
+      // Pass both id and role for admin/instructor filtering
+      url += `?id=${id}&role=${role}`;
+    }
     else if (id) {
       url += `?id=${id}`;
     }
@@ -64,11 +68,13 @@ export const classAPI = {
       body: formData,
     });
 
+    const data = await res.json();
+
     if (!res.ok) {
-      throw new Error(`API error: ${res.status}`);
+      throw new Error(data.message || `API error: ${res.status}`);
     }
 
-    return await res.json();
+    return data;
   },
 
   updateClass(classId, className) {

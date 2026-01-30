@@ -38,15 +38,17 @@ const Classes = () => {
           setInstructors(inst);
         }
 
+        // Admin sees all classes or filtered by instructor
         if (selectedInstructorId) {
-          data = await classAPI.getAllClasses(selectedInstructorId);
+          data = await classAPI.getAllClasses(selectedInstructorId, "admin");
         } else {
-          data = await classAPI.getAllClasses();
+          data = await classAPI.getAllClasses(null, "admin");
         }
       } else if (role === "Student") {
         data = await classAPI.getAllClasses(id, "Student");
       } else {
-        data = await classAPI.getAllClasses(id);
+        // Instructor sees only their assigned classes
+        data = await classAPI.getAllClasses(id, "Instructor");
       }
 
       setClasses(data);
@@ -92,15 +94,18 @@ const Classes = () => {
 
   // Admin: Create class with instructor assignment
   const submitAddClass = async () => {
-    if (!adminClassName.trim() || !adminInstructorId) {
-      alert("Please fill all fields");
+    if (!adminClassName.trim()) {
+      alert("Please enter a class name");
       return;
     }
 
     try {
       const formData = new FormData();
       formData.append("class_name", adminClassName);
-      formData.append("instructor_id", adminInstructorId);
+      formData.append("created_by", id); // Admin's ID
+      if (adminInstructorId) {
+        formData.append("instructor_id", adminInstructorId);
+      }
 
       await classAPI.adminAddClass(formData);
 
@@ -113,7 +118,8 @@ const Classes = () => {
       loadClasses();
     } catch (err) {
       console.error(err);
-      alert("Failed to create class");
+      // Show the specific error message from backend
+      alert(err.message || "Failed to create class");
     }
   };
 
@@ -130,7 +136,7 @@ const Classes = () => {
               </h1>
               <p className="text-gray-600">
                 {role === "admin" ? "Manage all classes across instructors" :
-                  role === "Instructor" ? "Manage your assigned classes" :
+                  role === "Instructor" ? "View your assigned classes" :
                     "View your enrolled classes"}
               </p>
             </div>
@@ -150,6 +156,8 @@ const Classes = () => {
             )}
           </div>
 
+          {/* Remove Add Class button for Instructors */}
+          {/* Instructors can no longer create classes */}
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div className="p-4 rounded-xl shadow-md" style={{ backgroundColor: '#D5F2D5' }}>
@@ -328,8 +336,8 @@ const Classes = () => {
                       <FiArrowRight size={18} />
                     </button>
 
-                    {/* Edit/Update Button - Instructor/Admin Only */}
-                    {role !== "Student" && (
+                    {/* Edit/Update Button - Admin Only */}
+                    {role === "admin" && (
                       <>
                         {editMode && editClassId === cls.id ? (
                           <div className="flex gap-2">
@@ -410,7 +418,7 @@ const Classes = () => {
               {role === "admin" && (
                 <div className="mb-6">
                   <label className="block text-sm font-semibold mb-2 text-gray-700">
-                    Assign to Instructor
+                    Assign to Instructor (Optional)
                   </label>
                   <select
                     className="w-full px-4 py-3 border-2 rounded-lg outline-none transition-all bg-white"
@@ -420,13 +428,16 @@ const Classes = () => {
                     onFocus={(e) => e.target.style.boxShadow = '0 0 0 3px rgba(7, 79, 6, 0.1)'}
                     onBlur={(e) => e.target.style.boxShadow = 'none'}
                   >
-                    <option value="">Select Instructor</option>
+                    <option value="">No Instructor (Unassigned)</option>
                     {instructors.map((i) => (
                       <option key={i.id} value={i.id}>
                         {i.name}
                       </option>
                     ))}
                   </select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    You can assign an instructor later if needed
+                  </p>
                 </div>
               )}
 
@@ -444,7 +455,7 @@ const Classes = () => {
                 </button>
                 <button
                   onClick={role === "admin" ? submitAddClass : handleAdd}
-                  disabled={role === "admin" ? (!adminClassName.trim() || !adminInstructorId) : !addClassName.trim()}
+                  disabled={role === "admin" ? !adminClassName.trim() : !addClassName.trim()}
                   className="flex-1 px-4 py-3 text-white rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{ backgroundColor: '#074F06' }}
                   onMouseEnter={(e) => !e.target.disabled && (e.target.style.backgroundColor = '#053d05')}
