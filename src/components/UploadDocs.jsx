@@ -11,7 +11,7 @@ const UploadDocs = ({ classId, uploadDocs, onClose }) => {
 
   // File size limits in bytes
   const FILE_SIZE_LIMITS = {
-    'application/pdf': 10 * 1024 * 1024, // 10 MB
+    'application/pdf': 30 * 1024 * 1024, // 30 MB
     'image': 5 * 1024 * 1024, // 5 MB
     'video': 100 * 1024 * 1024 // 100 MB
   };
@@ -173,16 +173,16 @@ const UploadDocs = ({ classId, uploadDocs, onClose }) => {
         {message && (
           <div
             className={`mx-5 mt-4 p-3 rounded-lg flex items-center gap-2.5 text-sm ${messageType === 'success' ? 'bg-green-50 border border-green-200' :
-                messageType === 'error' ? 'bg-red-50 border border-red-200' :
-                  'bg-blue-50 border border-blue-200'
+              messageType === 'error' ? 'bg-red-50 border border-red-200' :
+                'bg-blue-50 border border-blue-200'
               }`}
           >
             {messageType === 'success' && <FaCheckCircle className="text-green-600 flex-shrink-0" size={16} />}
             {messageType === 'error' && <FaExclamationCircle className="text-red-600 flex-shrink-0" size={16} />}
             {messageType === 'info' && <FaFileAlt className="text-blue-600 flex-shrink-0" size={16} />}
             <p className={`font-medium ${messageType === 'success' ? 'text-green-800' :
-                messageType === 'error' ? 'text-red-800' :
-                  'text-blue-800'
+              messageType === 'error' ? 'text-red-800' :
+                'text-blue-800'
               }`}>
               {message}
             </p>
@@ -250,7 +250,7 @@ const UploadDocs = ({ classId, uploadDocs, onClose }) => {
                   <div className="inline-flex items-center gap-3 px-3 py-1.5 bg-white rounded-md border border-gray-200">
                     <div className="flex items-center gap-1">
                       <span className="text-[10px] font-medium text-gray-500">PDF:</span>
-                      <span className="text-[10px] font-bold text-gray-700">10MB</span>
+                      <span className="text-[10px] font-bold text-gray-700">30MB</span>
                     </div>
                     <div className="w-px h-3 bg-gray-300"></div>
                     <div className="flex items-center gap-1">

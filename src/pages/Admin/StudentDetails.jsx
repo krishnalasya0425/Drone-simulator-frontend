@@ -14,14 +14,19 @@ import {
     FiHash,
     FiMapPin,
     FiShield,
-    FiDownload
+    FiDownload,
+    FiCheckCircle
 } from "react-icons/fi";
+import { FaBook, FaImage, FaVideo } from 'react-icons/fa';
+import progressAPI from "../../entities/progress";
+import ProgressBar from "../../components/ProgressBar";
 
 const StudentDetails = () => {
     const { studentId } = useParams();
     const navigate = useNavigate();
     const [student, setStudent] = useState(null);
     const [classes, setClasses] = useState([]);
+    const [classesProgress, setClassesProgress] = useState([]);
     const [tests, setTests] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -55,11 +60,36 @@ const StudentDetails = () => {
 
             // 2. Fetch classes
             const classesData = await classAPI.getAllClasses(studentId, "Student");
-            setClasses(classesData || []);
+
+            // FILTER FOR INSTRUCTOR: If logged in as Instructor, only show classes assigned to them
+            const currentRole = localStorage.getItem("role");
+            const currentUserId = localStorage.getItem("id");
+            let filteredClasses = classesData || [];
+            if (currentRole === "Instructor" && currentUserId) {
+                filteredClasses = filteredClasses.filter(cls => String(cls.instructor_id) === String(currentUserId));
+            }
+            setClasses(filteredClasses);
 
             // 3. Fetch tests & scores
             const testsData = await testAPI.getAllTests(studentId, "Student");
-            setTests(testsData || []);
+
+            // FILTER FOR INSTRUCTOR: Only show tests from their classes
+            let filteredTests = testsData || [];
+            if (currentRole === "Instructor" && currentUserId) {
+                filteredTests = filteredTests.filter(t => String(t.instructor_id) === String(currentUserId));
+            }
+            setTests(filteredTests);
+
+            // 4. Fetch classes progress
+            const progressRes = await progressAPI.getStudentAllClassesProgress(studentId);
+            if (progressRes.data.success) {
+                let progressData = progressRes.data.data || [];
+                // FILTER PROGRESS: If Instructor, only show progress for classes they own
+                if (currentRole === "Instructor" && currentUserId) {
+                    progressData = progressData.filter(p => filteredClasses.some(cls => cls.id === p.class_id));
+                }
+                setClassesProgress(progressData);
+            }
 
         } catch (err) {
             console.error("Error fetching student details:", err);
@@ -201,20 +231,60 @@ const StudentDetails = () => {
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {classes.map((cls) => (
-                                        <div key={cls.id} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow group cursor-pointer"
-                                            onClick={() => navigate(`/${cls.id}/docs`)}>
-                                            <div className="flex items-start justify-between">
-                                                <div>
-                                                    <h4 className="font-bold text-lg text-gray-800 group-hover:text-[#074F06] transition-colors">{cls.class_name}</h4>
+                                    {classes.map((cls) => {
+                                        const progress = classesProgress.find(p => p.class_id === cls.id);
+                                        return (
+                                            <div key={cls.id} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow group cursor-pointer"
+                                                onClick={() => navigate(`/${cls.id}/docs`)}>
+                                                <div className="flex items-start justify-between mb-2">
+                                                    <div>
+                                                        <h4 className="font-bold text-lg text-gray-800 group-hover:text-[#074F06] transition-colors">{cls.class_name}</h4>
+                                                        {progress && (
+                                                            <p className="text-[10px] font-semibold text-gray-400">
+                                                                {progress.completed_documents}/{progress.total_documents} items completed
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                    <div className="p-2 bg-green-50 rounded-lg text-[#074F06] group-hover:bg-[#074F06] group-hover:text-white transition-all">
+                                                        <FiArrowRight size={18} />
+                                                    </div>
+                                                </div>
 
-                                                </div>
-                                                <div className="p-2 bg-green-50 rounded-lg text-[#074F06]">
-                                                    <FiArrowRight />
-                                                </div>
+                                                {/* Progress Section */}
+                                                {progress && (
+                                                    <div className="mt-4 pt-3 border-t border-gray-50">
+                                                        <div className="flex items-center justify-between mb-1.5">
+                                                            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tight">Learning Progress</span>
+                                                            <span className="text-xs font-bold text-[#074F06]">
+                                                                {parseFloat(progress.overall_completion_percentage || 0).toFixed(0)}%
+                                                            </span>
+                                                        </div>
+                                                        <ProgressBar
+                                                            percentage={parseFloat(progress.overall_completion_percentage || 0)}
+                                                            showLabel={false}
+                                                            height="h-1.5"
+                                                        />
+
+                                                        {/* Detailed micro-stats */}
+                                                        <div className="flex items-center gap-3 mt-3 opacity-80">
+                                                            <div className="flex items-center gap-1.5">
+                                                                <FaBook size={10} className="text-red-500" />
+                                                                <span className="text-[10px] font-bold text-gray-600">{Math.round(progress.pdf_completion_percentage)}%</span>
+                                                            </div>
+                                                            <div className="flex items-center gap-1.5">
+                                                                <FaImage size={10} className="text-blue-500" />
+                                                                <span className="text-[10px] font-bold text-gray-600">{Math.round(progress.image_completion_percentage)}%</span>
+                                                            </div>
+                                                            <div className="flex items-center gap-1.5">
+                                                                <FaVideo size={10} className="text-purple-500" />
+                                                                <span className="text-[10px] font-bold text-gray-600">{Math.round(progress.video_completion_percentage)}%</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             )}
                         </section>

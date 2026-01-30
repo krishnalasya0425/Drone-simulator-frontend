@@ -14,11 +14,14 @@ import {
   FiDownload,
   FiEye,
 } from "react-icons/fi";
-import { FaGraduationCap, FaPencilAlt } from "react-icons/fa";
+import { FaGraduationCap, FaPencilAlt, FaBook, FaImage, FaVideo } from "react-icons/fa";
+import progressAPI from "../entities/progress";
+import ProgressBar from "../components/ProgressBar";
 
 export default function StudentDashboard() {
   const navigate = useNavigate();
   const [classes, setClasses] = useState([]);
+  const [classesProgress, setClassesProgress] = useState([]);
   const [tests, setTests] = useState([]);
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(true);
@@ -35,6 +38,12 @@ export default function StudentDashboard() {
       // Fetch assigned classes for student
       const classesData = await classAPI.getAllClasses(studentId, "Student");
       setClasses(classesData || []);
+
+      // Fetch progress for those classes
+      const progressRes = await progressAPI.getStudentAllClassesProgress(studentId);
+      if (progressRes.data.success) {
+        setClassesProgress(progressRes.data.data);
+      }
 
       // Fetch available tests for student
       const testsData = await testAPI.getAllTests(studentId, "Student");
@@ -141,62 +150,82 @@ export default function StudentDashboard() {
               </div>
             ) : (
               <div className="space-y-4">
-                {classes.map((cls, index) => (
-                  <div
-                    key={cls.id}
-                    className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-200 overflow-hidden border border-gray-200 cursor-pointer group"
-                    onClick={() => handleClassClick(cls.id)}
-                  >
-                    <div className="p-4">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-md"
-                            style={{ backgroundColor: '#074F06' }}
-                          >
-                            {index + 1}
-                          </div>
-                          <div>
-                            <h3 className="text-base font-bold text-gray-800 transition-colors"
-                              style={{
-                                color: 'inherit',
-                              }}
-                              onMouseEnter={(e) => e.target.style.color = '#074F06'}
-                              onMouseLeave={(e) => e.target.style.color = 'inherit'}
-                            >
-                              {cls.class_name}
-                            </h3>
-
-                          </div>
-                        </div>
-                        <FiArrowRight
-                          className="text-gray-400 transition-all"
-                          style={{
-                            transition: 'all 0.2s ease'
-                          }}
-                          onMouseEnter={(e) => {
-                            e.target.style.color = '#074F06';
-                            e.target.style.transform = 'translateX(4px)';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.target.style.color = '#9ca3af';
-                            e.target.style.transform = 'translateX(0)';
-                          }}
-                          size={24}
-                        />
-                      </div>
-
-
-                    </div>
-
+                {classes.map((cls, index) => {
+                  const progress = classesProgress.find(p => p.class_id === cls.id);
+                  return (
                     <div
-                      className="h-1 w-full transition-colors"
-                      style={{ backgroundColor: '#D5F2D5' }}
-                      onMouseEnter={(e) => e.target.style.backgroundColor = '#074F06'}
-                      onMouseLeave={(e) => e.target.style.backgroundColor = '#D5F2D5'}
-                    ></div>
-                  </div>
-                ))}
+                      key={cls.id}
+                      className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 overflow-hidden border border-gray-200 cursor-pointer group"
+                      onClick={() => handleClassClick(cls.id)}
+                    >
+                      <div className="p-4">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            <div
+                              className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-md"
+                              style={{ backgroundColor: '#074F06' }}
+                            >
+                              {index + 1}
+                            </div>
+                            <div>
+                              <h3 className="text-base font-bold text-gray-800 group-hover:text-[#074F06] transition-colors">
+                                {cls.class_name}
+                              </h3>
+                              {progress && (
+                                <p className="text-[10px] font-semibold text-gray-400">
+                                  {progress.completed_documents}/{progress.total_documents} items completed
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <FiArrowRight
+                            className="text-gray-400 group-hover:text-[#074F06] group-hover:translate-x-1 transition-all"
+                            size={20}
+                          />
+                        </div>
+
+                        {/* Minimal Progress Section */}
+                        {progress && (
+                          <div className="mt-4 pt-3 border-t border-gray-50">
+                            <div className="flex items-center justify-between mb-1.5">
+                              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tight">Progress</span>
+                              <span className="text-xs font-bold text-[#074F06]">
+                                {parseFloat(progress.overall_completion_percentage || 0).toFixed(0)}%
+                              </span>
+                            </div>
+                            <ProgressBar
+                              percentage={parseFloat(progress.overall_completion_percentage || 0)}
+                              showLabel={false}
+                              height="h-1.5"
+                            />
+
+                            {/* Detailed micro-stats */}
+                            <div className="flex items-center gap-3 mt-2 opacity-70">
+                              <div className="flex items-center gap-1">
+                                <FaBook size={10} className="text-red-500" />
+                                <span className="text-[9px] font-bold text-gray-600">{Math.round(progress.pdf_completion_percentage)}%</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <FaImage size={10} className="text-blue-500" />
+                                <span className="text-[9px] font-bold text-gray-600">{Math.round(progress.image_completion_percentage)}%</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <FaVideo size={10} className="text-purple-500" />
+                                <span className="text-[9px] font-bold text-gray-600">{Math.round(progress.video_completion_percentage)}%</span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <div
+                        className="h-1 w-full transition-colors"
+                        style={{ backgroundColor: progress?.overall_completion_percentage >= 100 ? '#074F06' : '#D5F2D5' }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = '#074F06'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = progress?.overall_completion_percentage >= 100 ? '#074F06' : '#D5F2D5'}
+                      ></div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

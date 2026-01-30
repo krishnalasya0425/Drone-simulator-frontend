@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import classAPI from "../../entities/class";
 import api from "../../entities/axios";
-import Modal from "../../components/FileModal";
+import DocumentViewerWithProgress from "../../components/DocumentViewerWithProgress";
 import UploadDocs from "../../components/UploadDocs";
 import LaunchingAnimation from "../../components/LaunchingAnimation";
 import {
@@ -861,10 +861,10 @@ const Docs = () => {
 
         {/* Preview Modal */}
         {previewId && (
-          <Modal
-            fileId={previewId}
-            docType={docType}
-            fileData={docs.find(d => d.id === previewId)?.file_data}
+          <DocumentViewerWithProgress
+            doc={docs.find(d => d.id === previewId)}
+            classId={classId}
+            studentId={localStorage.getItem("id")}
             onClose={() => setPreviewId(null)}
           />
         )}
