@@ -8,11 +8,12 @@ import {
   FiFileText,
   FiList,
   FiClock,
-  FiActivity
+  FiActivity,
+  FiLayers
 } from "react-icons/fi";
-import { FaClipboardList, FaFilePdf, FaLayerGroup } from "react-icons/fa";
+import { FaClipboardList, FaFilePdf, FaLayerGroup, FaRandom } from "react-icons/fa";
 
-export default function TestSetUploader() {
+export default function TestMaker() {
   const navigate = useNavigate();
 
   // User Info
@@ -23,8 +24,9 @@ export default function TestSetUploader() {
   const [classes, setClasses] = useState([]);
   const [selectedClassId, setSelectedClassId] = useState("");
   const [title, setTitle] = useState("");
-  const [numberOfSets, setNumberOfSets] = useState(1);
-  const [setFiles, setSetFiles] = useState({});
+  const [numberOfSets, setNumberOfSets] = useState(3);
+  const [questionsPerSet, setQuestionsPerSet] = useState(10);
+  const [questionBankFile, setQuestionBankFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [examConfig, setExamConfig] = useState({
     examType: "UNTIMED",
@@ -45,7 +47,6 @@ export default function TestSetUploader() {
 
   const loadClasses = async () => {
     try {
-      // If admin, might want all classes, but usually instructors create tests
       const data = await classAPI.getAllClasses(userId);
       setClasses(data);
     } catch (err) {
@@ -53,11 +54,8 @@ export default function TestSetUploader() {
     }
   };
 
-  const handleSetFileChange = (index, file) => {
-    setSetFiles(prev => ({
-      ...prev,
-      [index]: file
-    }));
+  const handleQuestionBankChange = (file) => {
+    setQuestionBankFile(file);
   };
 
   const handleSubmit = async () => {
@@ -66,14 +64,18 @@ export default function TestSetUploader() {
       return;
     }
 
-    const filesCount = Object.keys(setFiles).length;
-    if (filesCount < numberOfSets) {
-      alert(`Please upload a PDF file for all ${numberOfSets} sets.`);
+    if (!questionBankFile) {
+      alert("Please upload a Question Bank PDF file.");
       return;
     }
 
     if (examConfig.examType === 'TIMED' && !examConfig.durationMinutes) {
       alert("Please specify duration for TIMED exam.");
+      return;
+    }
+
+    if (numberOfSets < 1 || questionsPerSet < 1) {
+      alert("Number of sets and questions per set must be at least 1.");
       return;
     }
 
@@ -83,10 +85,11 @@ export default function TestSetUploader() {
       const res = await test.addTest(title, userId, selectedClassId);
       const newTestId = res.testId;
 
-      // 2. Upload Sets
+      // 2. Upload Question Bank and Generate Sets
       const formData = new FormData();
+      formData.append('questionBank', questionBankFile);
       formData.append('numberOfSets', numberOfSets);
-      formData.append('questionsPerSet', 0); // Backend calculates from PDF
+      formData.append('questionsPerSet', questionsPerSet);
       formData.append('examType', examConfig.examType);
       formData.append('passThreshold', examConfig.passThreshold);
       formData.append('classId', selectedClassId);
@@ -95,19 +98,14 @@ export default function TestSetUploader() {
       if (examConfig.startTime) formData.append('startTime', examConfig.startTime);
       if (examConfig.endTime) formData.append('endTime', examConfig.endTime);
 
-      for (let i = 0; i < numberOfSets; i++) {
-        formData.append('pdfs', setFiles[i]);
-      }
+      const result = await test.generateSetsFromQuestionBank(newTestId, formData);
 
-      await test.generateSetsFromPdf(newTestId, formData);
-
-      alert("✅ Success! Test and Sets created successfully!");
-      navigate(`/${selectedClassId}/docs`); // Redirect to class docs or tests
+      alert(`✅ Success! Created ${result.numberOfSets} sets with ${result.questionsPerSet} questions each from a bank of ${result.totalQuestions} questions!`);
+      navigate(`/${selectedClassId}/docs`);
 
     } catch (error) {
-      console.error("Error creating test sets:", error);
+      console.error("Error creating test sets from question bank:", error);
 
-      // Check if error is related to PDF format/parsing
       const errorMsg = error.message || "Unknown error";
       if (errorMsg.includes("No questions found") ||
         errorMsg.includes("Failed to parse PDF") ||
@@ -131,15 +129,51 @@ export default function TestSetUploader() {
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-3 rounded-lg" style={{ backgroundColor: '#074F06' }}>
-              <FaClipboardList className="text-white" size={28} />
+              <FaRandom className="text-white" size={28} />
             </div>
             <div>
               <h1 className="text-3xl font-bold" style={{ color: '#074F06' }}>
-                Test Set Uploader
+                Test Maker - Question Bank
               </h1>
-              {/* <p className="text-gray-600">
-                Create multi-set exams by uploading specific PDF question files for each set.
-              </p> */}
+              <p className="text-gray-600">
+                Upload one PDF with all questions. We'll randomly distribute them across multiple test sets.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* How It Works */}
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl shadow-md p-6 mb-6 border-2 border-blue-200">
+          <div className="flex items-start gap-3 mb-3">
+            <div className="p-2 rounded-lg bg-blue-600">
+              <FiLayers className="text-white" size={24} />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-blue-900">How It Works</h2>
+              <p className="text-sm text-blue-800 mt-1">Simple 3-step process to create randomized test sets</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            <div className="bg-white rounded-lg p-4 border-2 border-blue-200">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">1</div>
+                <h3 className="font-bold text-blue-900">Upload Question Bank</h3>
+              </div>
+              <p className="text-sm text-gray-700">One PDF with all your questions (e.g., 50 questions)</p>
+            </div>
+            <div className="bg-white rounded-lg p-4 border-2 border-blue-200">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">2</div>
+                <h3 className="font-bold text-blue-900">Configure Sets</h3>
+              </div>
+              <p className="text-sm text-gray-700">Specify how many sets and questions per set (e.g., 5 sets × 10 questions)</p>
+            </div>
+            <div className="bg-white rounded-lg p-4 border-2 border-blue-200">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">3</div>
+                <h3 className="font-bold text-blue-900">Random Distribution</h3>
+              </div>
+              <p className="text-sm text-gray-700">Questions randomly distributed to sets, sets randomly assigned to students</p>
             </div>
           </div>
         </div>
@@ -256,51 +290,84 @@ export default function TestSetUploader() {
 
             <hr className="border-gray-100" />
 
-            {/* 2. Set Configuration */}
-            <div>
-              <label className="flex items-center gap-2 font-semibold text-sm mb-3" style={{ color: '#074F06' }}>
-                <FaLayerGroup /> Number of Sets
+            {/* 2. Question Bank Upload */}
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-xl border-2 border-purple-200">
+              <label className="flex items-center gap-2 font-semibold text-lg mb-3 text-purple-900">
+                <FaFilePdf size={24} /> Upload Question Bank PDF *
               </label>
-              <div className="flex items-center gap-4">
+              <p className="text-sm text-purple-800 mb-4">
+                Upload a single PDF containing all your questions. The system will randomly select questions for each set.
+              </p>
+              <div className="bg-white p-4 rounded-lg border-2 border-purple-300">
                 <input
-                  type="number"
-                  min="1"
-                  max="10"
-                  className="w-24 p-3 border-2 rounded-lg font-bold text-lg text-center focus:border-green-600"
-                  value={numberOfSets}
-                  onChange={e => {
-                    const val = parseInt(e.target.value);
-                    if (val > 0 && val <= 10) setNumberOfSets(val);
-                  }}
+                  type="file"
+                  accept=".pdf"
+                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-6 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-100 file:text-purple-700 hover:file:bg-purple-200 cursor-pointer"
+                  onChange={(e) => handleQuestionBankChange(e.target.files[0])}
                 />
-                <span className="text-gray-500 text-sm">
-                  Define how many variations (Set A, B, C...) you want to create.
-                </span>
+                {questionBankFile && (
+                  <div className="mt-3 flex items-center gap-2 text-green-700">
+                    <FiCheckCircle size={20} />
+                    <span className="font-semibold">{questionBankFile.name}</span>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* 3. PDF Uploads */}
-            <div className="space-y-3 bg-gray-50 p-4 rounded-xl border border-gray-200">
-              <h3 className="font-semibold text-sm text-gray-700 mb-2">Upload Question PDF for each Set</h3>
-              {Array.from({ length: numberOfSets }).map((_, idx) => (
-                <div key={idx} className="flex items-center gap-4 bg-white p-3 rounded-lg border shadow-sm">
-                  <div className="w-20 font-bold text-green-800 flex items-center gap-2">
-                    <div className="bg-green-100 p-1.5 rounded text-green-700">
-                      {String.fromCharCode(65 + idx)}
-                    </div>
-                    Set {String.fromCharCode(65 + idx)}
-                  </div>
-                  <div className="flex-1">
-                    <input
-                      type="file"
-                      accept=".pdf"
-                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 cursor-pointer"
-                      onChange={(e) => handleSetFileChange(idx, e.target.files[0])}
-                    />
-                  </div>
-                  {setFiles[idx] && <FiCheckCircle className="text-green-500" size={20} />}
+            <hr className="border-gray-100" />
+
+            {/* 3. Set Configuration */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="flex items-center gap-2 font-semibold text-sm mb-3" style={{ color: '#074F06' }}>
+                  <FaLayerGroup /> Number of Sets *
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="26"
+                  className="w-full p-3 border-2 rounded-lg font-bold text-lg focus:border-green-600"
+                  value={numberOfSets}
+                  onChange={e => {
+                    const val = parseInt(e.target.value);
+                    if (val > 0 && val <= 26) setNumberOfSets(val);
+                  }}
+                />
+                <p className="text-xs text-gray-500 mt-1">How many different test variations to create (Set A, B, C...)</p>
+              </div>
+
+              <div>
+                <label className="flex items-center gap-2 font-semibold text-sm mb-3" style={{ color: '#074F06' }}>
+                  <FiList /> Questions Per Set *
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  className="w-full p-3 border-2 rounded-lg font-bold text-lg focus:border-green-600"
+                  value={questionsPerSet}
+                  onChange={e => {
+                    const val = parseInt(e.target.value);
+                    if (val > 0) setQuestionsPerSet(val);
+                  }}
+                />
+                <p className="text-xs text-gray-500 mt-1">How many questions each student will receive</p>
+              </div>
+            </div>
+
+            {/* Info Box */}
+            <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <FiActivity className="text-blue-600 mt-1" size={20} />
+                <div className="text-sm text-blue-900">
+                  <p className="font-semibold mb-1">📊 Configuration Summary:</p>
+                  <ul className="space-y-1">
+                    <li>• You will create <span className="font-bold">{numberOfSets} different test sets</span></li>
+                    <li>• Each set will have <span className="font-bold">{questionsPerSet} questions</span></li>
+                    <li>• Questions will be <span className="font-bold">randomly selected</span> from your question bank</li>
+                    <li>• Sets will be <span className="font-bold">randomly assigned</span> to students</li>
+                  </ul>
                 </div>
-              ))}
+              </div>
             </div>
 
             <hr className="border-gray-100" />
@@ -309,7 +376,7 @@ export default function TestSetUploader() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="flex items-center gap-2 font-semibold text-sm mb-2" style={{ color: '#074F06' }}>
-                   Exam Type
+                  Exam Type
                 </label>
                 <select
                   className="w-full p-3 border-2 rounded-lg bg-white focus:border-green-600"
@@ -318,7 +385,7 @@ export default function TestSetUploader() {
                 >
                   <option value="UNTIMED">Untimed (Practice)</option>
                   <option value="TIMED">Timed (Duration)</option>
-                  
+
                 </select>
               </div>
               <div>
@@ -391,12 +458,12 @@ export default function TestSetUploader() {
               {uploading ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Creating Test Sets...
+                  Creating Test Sets from Question Bank...
                 </>
               ) : (
                 <>
                   <FiUpload size={24} />
-                  Create Test & Upload Sets
+                  Create Test Sets from Question Bank
                 </>
               )}
             </button>

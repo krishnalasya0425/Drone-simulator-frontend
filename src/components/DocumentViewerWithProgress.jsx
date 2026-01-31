@@ -115,44 +115,6 @@ const DocumentViewerWithProgress = ({ doc, classId, studentId, onClose }) => {
                                 if (totalPages === 1) setTotalPages(20); // Default or placeholder
                             }}
                         />
-
-                        {/* PDF Controls Overlay */}
-                        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur rounded-2xl shadow-2xl px-6 py-3 flex items-center gap-6 border border-white/20">
-                            <button
-                                onClick={goToPreviousPage}
-                                disabled={currentPage === 1}
-                                className="p-2.5 rounded-xl hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-90 text-[#074F06]"
-                            >
-                                <FaChevronLeft size={18} />
-                            </button>
-
-                            <div className="flex items-center gap-3">
-                                <div className="relative">
-                                    <input
-                                        type="number"
-                                        value={currentPage}
-                                        onChange={(e) => handlePageChange(e.target.value)}
-                                        className="w-16 px-2 py-1.5 bg-gray-50 border-2 border-gray-200 rounded-lg text-center font-bold text-[#074F06] focus:border-[#074F06] outline-none transition-colors"
-                                        min="1"
-                                    />
-                                </div>
-                                <span className="text-gray-400 font-bold">/</span>
-                                <input
-                                    type="number"
-                                    value={totalPages}
-                                    onChange={(e) => setTotalPages(parseInt(e.target.value) || 1)}
-                                    className="w-16 px-2 py-1.5 bg-transparent border-b-2 border-transparent text-center font-bold text-gray-400 focus:border-gray-300 outline-none transition-colors"
-                                    title="Set total pages"
-                                />
-                            </div>
-
-                            <button
-                                onClick={goToNextPage}
-                                className="p-2.5 rounded-xl hover:bg-gray-100 transition-all active:scale-90 text-[#074F06]"
-                            >
-                                <FaChevronRight size={18} />
-                            </button>
-                        </div>
                     </div>
                 )}
 

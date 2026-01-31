@@ -162,6 +162,33 @@ const testAPI = {
             throw error;
         }
     },
+
+    /**
+     * Generate test sets from a single question bank PDF
+     * Questions are randomly distributed across sets
+     */
+    async generateSetsFromQuestionBank(testId, formData) {
+        try {
+            const API_ROOT = API_BASE_URL.replace('/tests', '');
+            const url = `${API_ROOT}/test-sets/generate-from-question-bank/${testId}`;
+
+            console.log('Uploading question bank to:', url);
+
+            const res = await fetch(url, {
+                method: "POST",
+                body: formData
+            });
+
+            if (!res.ok) {
+                const errData = await res.json();
+                throw new Error(errData.message || 'Failed to create sets from question bank');
+            }
+            return await res.json();
+        } catch (error) {
+            console.error('Error generating sets from question bank:', error);
+            throw error;
+        }
+    },
 };
 
 export default testAPI;

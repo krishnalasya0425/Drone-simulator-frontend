@@ -103,19 +103,6 @@ const TestManagement = () => {
                     "View and take your assigned tests"}
               </p>
             </div>
-
-            {role === "Instructor" && (
-              <button
-                onClick={() => setOpen(true)}
-                className="flex items-center gap-2 px-6 py-3 text-white rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
-                style={{ backgroundColor: '#074F06' }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = '#053d05'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = '#074F06'}
-              >
-                <FiPlus size={20} />
-                Generate New Test
-              </button>
-            )}
           </div>
 
           {/* Stats Cards */}

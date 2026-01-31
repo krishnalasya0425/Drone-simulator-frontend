@@ -151,9 +151,18 @@ export default function AdminDashboard() {
 
   const fetchUsers = async () => {
     try {
-      const role = filter;
-      const otpRes = await api.get(`/otp/admin-dashboard?role=${role}`);
-      role === "student"
+      const userRole = filter;
+
+      // Build query params
+      let queryParams = `role=${userRole}`;
+
+      // If instructor is fetching students, pass instructorId to filter by their classes
+      if (role === 'Instructor' && userRole === 'student') {
+        queryParams += `&instructorId=${instructorId}`;
+      }
+
+      const otpRes = await api.get(`/otp/admin-dashboard?${queryParams}`);
+      userRole === "student"
         ? setStudents(otpRes.data)
         : setInstructors(otpRes.data);
     } catch (err) {
@@ -376,7 +385,23 @@ export default function AdminDashboard() {
                 )}
 
                 <button
-                  onClick={() => api.delete(`/users/${u.id}`).then(fetchUsers)}
+                  onClick={async () => {
+                    if (window.confirm(`Are you sure you want to delete ${u.name}?`)) {
+                      try {
+                        await api.delete(`/users/${u.id}`);
+                        alert('User deleted successfully');
+                        fetchUsers();
+                      } catch (error) {
+                        if (error.response?.data?.hasClasses) {
+                          alert(`Cannot delete instructor!\n\n${error.response.data.message}\n\nPlease delete or reassign their classes first.`);
+                        } else if (error.response?.data?.message) {
+                          alert(`Error: ${error.response.data.message}`);
+                        } else {
+                          alert('Failed to delete user. Please try again.');
+                        }
+                      }
+                    }
+                  }}
                   className="text-red-600 hover:text-red-800"
                 >
                   <FaTrash size={18} />
@@ -541,7 +566,7 @@ export default function AdminDashboard() {
                 <th className="p-3">Class</th>
                 <th className="p-3">Original Test</th>
                 <th className="p-3">Previous Score</th>
-                <th className="p-3">Attempted At</th>
+                <th className="p-3">Retest Score</th>
                 <th className="p-3">Requested At</th>
                 <th className="p-3">Status</th>
                 <th className="p-3 text-center">Actions</th>
@@ -563,17 +588,28 @@ export default function AdminDashboard() {
                     <td className="p-3 text-red-600 font-bold">
                       {req.score} / {req.total_questions} ({Math.round((req.score / req.total_questions) * 100)}%)
                     </td>
-                    <td className="p-3 text-xs">
-                      {req.attempted_at ? new Date(req.attempted_at).toLocaleDateString() : 'N/A'}
-                    </td>
-                    <td className="p-3 text-xs">{new Date(req.created_at).toLocaleDateString()}</td>
                     <td className="p-3">
-                      <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${req.status === 'Pending' ? 'bg-blue-100 text-blue-700' :
-                        req.status === 'Approved' ? 'bg-green-100 text-green-700' :
-                          req.status === 'Denied' ? 'bg-red-100 text-red-700' :
-                            'bg-gray-100 text-gray-700'
+                      {req.retest_score !== null && req.retest_score !== undefined ? (
+                        <span className={`font-bold ${req.retest_score >= req.score ? 'text-green-600' : 'text-orange-600'}`}>
+                          {req.retest_score} / {req.total_questions} ({Math.round((req.retest_score / req.total_questions) * 100)}%)
+                        </span>
+                      ) : (
+                        <span className="text-gray-500 italic">Not taken yet</span>
+                      )}
+                    </td>
+                    <td className="p-3 text-xs">{new Date(req.created_at).toLocaleString('en-US', {
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit'
+                    })}</td>
+                    <td className="p-3">
+                      <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${req.retest_score !== null && req.retest_score !== undefined ? 'bg-purple-100 text-purple-700' :
+                        req.status === 'Pending' ? 'bg-blue-100 text-blue-700' :
+                          req.status === 'Approved' ? 'bg-green-100 text-green-700' :
+                            req.status === 'Denied' ? 'bg-red-100 text-red-700' :
+                              'bg-gray-100 text-gray-700'
                         }`}>
-                        {req.status}
+                        {req.retest_score !== null && req.retest_score !== undefined ? 'COMPLETED' : req.status}
                       </span>
                     </td>
                     <td className="p-3">
@@ -619,7 +655,6 @@ export default function AdminDashboard() {
                 <th className="p-3">Class</th>
                 <th className="p-3">Original Test</th>
                 <th className="p-3">Original Score</th>
-                <th className="p-3">Attempted At</th>
                 <th className="p-3">Retest</th>
                 <th className="p-3">Retest Score</th>
                 <th className="p-3">Retest Submitted</th>
@@ -628,7 +663,7 @@ export default function AdminDashboard() {
             <tbody>
               {retestHistory.length === 0 ? (
                 <tr>
-                  <td colSpan="8" className="p-10 text-center text-gray-500 bg-white">
+                  <td colSpan="7" className="p-10 text-center text-gray-500 bg-white">
                     {loadingHistory ? "Loading..." : "No retest history found."}
                   </td>
                 </tr>
@@ -640,9 +675,6 @@ export default function AdminDashboard() {
                     <td className="p-3">{record.original_test_title}</td>
                     <td className="p-3 text-red-600 font-bold">
                       {record.score} / {record.total_questions} ({Math.round((record.score / record.total_questions) * 100)}%)
-                    </td>
-                    <td className="p-3 text-xs">
-                      {record.attempted_at ? new Date(record.attempted_at).toLocaleDateString() : 'N/A'}
                     </td>
                     <td className="p-3">{record.retest_title || 'Not taken yet'}</td>
                     <td className="p-3">
