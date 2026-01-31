@@ -8,11 +8,11 @@ export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const [armyId, setArmyId] = useState("");
+  const [armyNo, setArmyNo] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  
+
   const [modal, setModal] = useState({
     isOpen: false,
     title: "",
@@ -26,7 +26,7 @@ export default function Login() {
     e.preventDefault();
 
     try {
-      const user = await login(armyId, password);
+      const user = await login(armyNo, password);
 
       if (user.role === "admin") navigate("/dashboard");
       else if (user.role === "Instructor") navigate("/dashboard");
@@ -37,7 +37,7 @@ export default function Login() {
       let errorMessage = "Login failed";
       let errorTitle = "Error";
 
-      
+
       if (err.response?.data?.message) {
         errorMessage = err.response.data.message;
       } else if (err.response?.data?.error) {
@@ -46,11 +46,11 @@ export default function Login() {
         errorMessage = err.message;
       }
 
-      
+
       if (errorMessage.includes("Incorrect Password") || errorMessage.includes("password")) {
         errorTitle = "Invalid Password";
-      } else if (errorMessage.includes("Invalid Army ID") || errorMessage.includes("Army ID")) {
-        errorTitle = "Invalid Army ID";
+      } else if (errorMessage.includes("Invalid Army No") || errorMessage.includes("Army No")) {
+        errorTitle = "Invalid Army No";
       } else if (errorMessage.includes("Pending") || errorMessage.includes("Denied") || errorMessage.includes("Not Approved")) {
         errorTitle = "Account Status";
       } else if (errorMessage.includes("Missing Credentials")) {
@@ -95,9 +95,9 @@ export default function Login() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="text"
-            placeholder="Army ID"
-            value={armyId}
-            onChange={(e) => setArmyId(e.target.value)}
+            placeholder="Army No"
+            value={armyNo}
+            onChange={(e) => setArmyNo(e.target.value)}
             required
             className="w-full px-4 py-2 border rounded-lg outline-none"
             style={{ transition: 'box-shadow 0.2s' }}

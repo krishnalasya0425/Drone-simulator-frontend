@@ -435,10 +435,12 @@ export default function StudentDashboard() {
                                   {(() => {
                                     const scorePercent = (test.score / test.total_questions) * 100;
                                     const classProgress = classesProgress.find(p => p.class_id === test.class_id);
-                                    const isProgressDone = classProgress && parseFloat(classProgress.overall_completion_percentage) >= 99.9;
+                                    const progressPercentage = parseFloat(classProgress?.overall_completion_percentage || 0);
+                                    const isProgressDone = progressPercentage >= 99.9;
                                     const existingRequest = retestRequests.find(r => r.test_id === test.test_id);
 
-                                    if (scorePercent < 50 && isProgressDone) {
+                                    // Show retest button for all scores < 50%
+                                    if (scorePercent < 50) {
                                       if (existingRequest) {
                                         return (
                                           <div className={`flex items-center gap-2 p-2 rounded-lg border text-xs font-bold ${existingRequest.status === 'Pending' ? 'bg-blue-50 text-blue-700 border-blue-200' :
@@ -452,22 +454,43 @@ export default function StudentDashboard() {
                                         );
                                       }
 
+                                      // Always show button, but disable if progress < 100%
                                       return (
-                                        <button
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleRetestRequest(test);
-                                          }}
-                                          disabled={requestingId === test.id}
-                                          className="flex items-center justify-center gap-2 w-fit px-4 py-2 bg-red-600 text-white text-xs font-bold rounded-lg hover:bg-red-700 transition-all shadow-md active:scale-95 disabled:opacity-50"
-                                        >
-                                          {requestingId === test.id ? (
-                                            <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                          ) : (
-                                            <FiRefreshCcw size={14} />
+                                        <div className="relative group">
+                                          <button
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              if (isProgressDone) {
+                                                handleRetestRequest(test);
+                                              }
+                                            }}
+                                            disabled={!isProgressDone || requestingId === test.id}
+                                            className={`flex items-center justify-center gap-2 w-fit px-4 py-2 text-xs font-bold rounded-lg transition-all shadow-md ${isProgressDone
+                                                ? 'bg-red-600 text-white hover:bg-red-700 active:scale-95'
+                                                : 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                                              } disabled:opacity-70`}
+                                            title={!isProgressDone ? `Complete class progress to request retest (${progressPercentage.toFixed(0)}% done)` : ''}
+                                          >
+                                            {requestingId === test.id ? (
+                                              <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                            ) : (
+                                              <FiRefreshCcw size={14} />
+                                            )}
+                                            Request Retest (Score &lt; 50%)
+                                          </button>
+
+                                          {/* Tooltip on hover when disabled */}
+                                          {!isProgressDone && (
+                                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                                              Complete 100% class progress first
+                                              <br />
+                                              <span className="font-bold">Current: {progressPercentage.toFixed(0)}%</span>
+                                              <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+                                                <div className="border-4 border-transparent border-t-gray-800"></div>
+                                              </div>
+                                            </div>
                                           )}
-                                          Request Retest (Score &lt; 50%)
-                                        </button>
+                                        </div>
                                       );
                                     }
                                     return null;

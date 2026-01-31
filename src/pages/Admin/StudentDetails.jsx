@@ -58,8 +58,8 @@ const StudentDetails = () => {
             }
 
             // If specific fetch is missing detailed fields, try fetching from the dashboard collection 
-            // which we know has the full details (army_id, batch_no, regiment)
-            if (!userData || !userData.army_id) {
+            // which we know has the full details (army_no, course_no, unit)
+            if (!userData || !userData.army_no) {
                 const allStudentsRes = await api.get(`/otp/admin-dashboard?role=student`);
                 const foundStudent = (allStudentsRes.data || []).find(s => String(s.id) === String(studentId));
                 if (foundStudent) {
@@ -175,7 +175,8 @@ const StudentDetails = () => {
                             </div>
                             <div className="pt-14 pb-8 px-8">
                                 <h2 className="text-2xl font-bold text-gray-900">{student.name}</h2>
-                                <p className="text-gray-500 font-medium">Army ID: {student.army_id || student.armyId || "N/A"}</p>
+                                <p className="text-xl font-semibold text-[#074F06] mb-1">{student.rank || "Unknown Rank"}</p>
+                                <p className="text-gray-500 font-medium">Army No: {student.army_no || student.armyNo || "N/A"}</p>
 
                                 <div className="mt-8 space-y-4">
                                     <div className="flex items-center gap-3 text-gray-600">
@@ -183,8 +184,8 @@ const StudentDetails = () => {
                                             <FiShield size={18} />
                                         </div>
                                         <div>
-                                            <p className="text-[10px] uppercase font-bold text-gray-400">Regiment</p>
-                                            <p className="font-semibold">{student.regiment || "N/A"}</p>
+                                            <p className="text-[10px] uppercase font-bold text-gray-400">Unit</p>
+                                            <p className="font-semibold">{student.unit || "N/A"}</p>
                                         </div>
                                     </div>
 
@@ -193,11 +194,10 @@ const StudentDetails = () => {
                                             <FiHash size={18} />
                                         </div>
                                         <div>
-                                            <p className="text-[10px] uppercase font-bold text-gray-400">Batch Number</p>
-                                            <p className="font-semibold">{student.batch_no || student.batchNo || student.batch || "N/A"}</p>
+                                            <p className="text-[10px] uppercase font-bold text-gray-400">Course Number</p>
+                                            <p className="font-semibold">{student.course_no || student.courseNo || "N/A"}</p>
                                         </div>
                                     </div>
-
                                 </div>
                             </div>
                         </div>
@@ -312,9 +312,9 @@ const StudentDetails = () => {
                                     {/* Selection Instructions */}
                                     {!selectedClassId && (
                                         <div className="text-center p-4 bg-white rounded-xl border border-slate-100 shadow-sm">
-                                            {/* <p className="text-sm text-slate-600 font-bold flex items-center justify-center gap-2">
+                                            <p className="text-sm text-slate-600 font-bold flex items-center justify-center gap-2">
                                                 <FiArrowRight className="text-[#074F06] animate-pulse" /> Click on any vertical bar to view LEARNING PROGRESS details
-                                            </p> */}
+                                            </p>
                                         </div>
                                     )}
 

@@ -9,10 +9,11 @@ export default function Register() {
   const navigate = useNavigate();
   const [form, setForm] = useState({
     name: "",
-    regiment: "",
-    batch_no: "",
-    army_id: "",
-    role: "student",
+    rank: "",
+    unit: "",
+    course_no: "",
+    army_no: "",
+    role: "",
     password: "",
   });
 
@@ -74,11 +75,11 @@ export default function Register() {
         errorTitle = "Missing Information";
       } else if (errorMessage.includes("Invalid Name")) {
         errorTitle = "Invalid Name";
-      } else if (errorMessage.includes("Invalid Army ID")) {
-        errorTitle = "Invalid Army ID";
+      } else if (errorMessage.includes("Invalid Army No")) {
+        errorTitle = "Invalid Army No";
       }
 
-      
+
 
       setModal({
         isOpen: true,
@@ -124,57 +125,110 @@ export default function Register() {
         >
           <input
             name="name"
-            placeholder="Full Name"
+            placeholder="Full Name *"
             onChange={handleChange}
+            value={form.name}
             className="col-span-2 w-full px-4 py-2 border rounded-lg outline-none"
-            style={{ transition: 'box-shadow 0.2s' }}
-            onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px #074F06'}
-            onBlur={(e) => e.target.style.boxShadow = ''}
-            required
-          />
-
-          <input
-            name="regiment"
-            placeholder="Regiment"
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-lg outline-none"
-            style={{ transition: 'box-shadow 0.2s' }}
-            onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px #074F06'}
-            onBlur={(e) => e.target.style.boxShadow = ''}
-            required
-          />
-
-          <input
-            name="batch_no"
-            placeholder="Batch No"
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-lg outline-none"
-            style={{ transition: 'box-shadow 0.2s' }}
-            onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px #074F06'}
-            onBlur={(e) => e.target.style.boxShadow = ''}
-            required
-          />
-
-          <input
-            name="army_id"
-            placeholder="Army ID"
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-lg outline-none"
-            style={{ transition: 'box-shadow 0.2s' }}
+            style={{
+              transition: 'box-shadow 0.2s',
+              borderColor: form.name ? '#d1d5db' : '#ef4444',
+              borderWidth: '2px'
+            }}
             onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px #074F06'}
             onBlur={(e) => e.target.style.boxShadow = ''}
             required
           />
 
           <select
-            name="role"
+            name="rank"
             onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-lg outline-none bg-white"
-            style={{ transition: 'box-shadow 0.2s' }}
+            value={form.rank}
+            className="col-span-2 w-full px-4 py-2 border rounded-lg outline-none bg-white"
+            style={{
+              transition: 'box-shadow 0.2s',
+              borderColor: form.rank ? '#d1d5db' : '#ef4444',
+              borderWidth: '2px'
+            }}
             onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px #074F06'}
             onBlur={(e) => e.target.style.boxShadow = ''}
             required
           >
+            <option value="">Select Rank *</option>
+            <option value="Sepoy (Sep)">Sepoy (Sep)</option>
+            <option value="Rifleman (RFN)">Rifleman (RFN)</option>
+            <option value="Lance Naik (L/Nk)">Lance Naik (L/Nk)</option>
+            <option value="Naik (Nk)">Naik (Nk)</option>
+            <option value="Havildar (Hav)">Havildar (Hav)</option>
+            <option value="Naib Subedar (Nb Sub)">Naib Subedar (Nb Sub)</option>
+            <option value="Subedar (Sub)">Subedar (Sub)</option>
+            <option value="Subedar Major (Sub Maj)">Subedar Major (Sub Maj)</option>
+            <option value="Lieutenant (Lt)">Lieutenant (Lt)</option>
+            <option value="Captain (Capt)">Captain (Capt)</option>
+            <option value="Major (Maj)">Major (Maj)</option>
+            <option value="Lieutenant Colonel (Lt Col)">Lieutenant Colonel (Lt Col)</option>
+            <option value="Colonel (Col)">Colonel (Col)</option>
+            <option value="Others">Others</option>
+          </select>
+
+          <input
+            name="unit"
+            placeholder="Unit *"
+            onChange={handleChange}
+            value={form.unit}
+            className="w-full px-4 py-2 border rounded-lg outline-none"
+            style={{
+              transition: 'box-shadow 0.2s',
+              borderColor: form.unit ? '#d1d5db' : '#ef4444',
+              borderWidth: '2px'
+            }}
+            onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px #074F06'}
+            onBlur={(e) => e.target.style.boxShadow = ''}
+            required
+          />
+
+          <input
+            name="course_no"
+            placeholder="Course No"
+            onChange={handleChange}
+            className="w-full px-4 py-2 border rounded-lg outline-none"
+            style={{ transition: 'box-shadow 0.2s' }}
+            onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px #074F06'}
+            onBlur={(e) => e.target.style.boxShadow = ''}
+          />
+
+          <input
+            name="army_no"
+            placeholder="Army No *"
+            onChange={handleChange}
+            value={form.army_no}
+            className="w-full px-4 py-2 border rounded-lg outline-none"
+            style={{
+              transition: 'box-shadow 0.2s',
+              borderColor: form.army_no ? '#d1d5db' : '#ef4444',
+              borderWidth: '2px'
+            }}
+            onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px #074F06'}
+            onBlur={(e) => e.target.style.boxShadow = ''}
+            pattern="[a-zA-Z0-9]+"
+            title="Army No must be alphanumeric (letters and numbers only)"
+            required
+          />
+
+          <select
+            name="role"
+            onChange={handleChange}
+            value={form.role}
+            className="w-full px-4 py-2 border rounded-lg outline-none bg-white"
+            style={{
+              transition: 'box-shadow 0.2s',
+              borderColor: form.role ? '#d1d5db' : '#ef4444',
+              borderWidth: '2px'
+            }}
+            onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px #074F06'}
+            onBlur={(e) => e.target.style.boxShadow = ''}
+            required
+          >
+            <option value="">Select Role *</option>
             <option value="student">Student</option>
             <option value="instructor">Instructor</option>
           </select>
@@ -183,10 +237,16 @@ export default function Register() {
             <input
               type={showPassword ? "text" : "password"}
               name="password"
-              placeholder="Password"
+              placeholder="Password *"
               onChange={handleChange}
+              value={form.password}
+              minLength="6"
               className="w-full px-4 py-2 border rounded-lg outline-none pr-10"
-              style={{ transition: 'box-shadow 0.2s' }}
+              style={{
+                transition: 'box-shadow 0.2s',
+                borderColor: (form.password && form.password.length >= 6) ? '#d1d5db' : '#ef4444',
+                borderWidth: '2px'
+              }}
               onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px #074F06'}
               onBlur={(e) => e.target.style.boxShadow = ''}
               required
@@ -199,6 +259,7 @@ export default function Register() {
               {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
             </button>
           </div>
+          <p className="col-span-2 text-xs text-gray-500 -mt-2">Password must be at least 6 characters</p>
 
           <button
             type="submit"

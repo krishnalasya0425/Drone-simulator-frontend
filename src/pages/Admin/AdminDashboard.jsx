@@ -20,6 +20,23 @@ import {
 } from "react-icons/fa";
 import { FiX } from "react-icons/fi";
 
+const RANK_OPTIONS = [
+  "Sepoy (Sep)",
+  "Rifleman (RFN)",
+  "Lance Naik (L/Nk)",
+  "Naik (Nk)",
+  "Havildar (Hav)",
+  "Naib Subedar (Nb Sub)",
+  "Subedar (Sub)",
+  "Subedar Major (Sub Maj)",
+  "Lieutenant (Lt)",
+  "Captain (Capt)",
+  "Major (Maj)",
+  "Lieutenant Colonel (Lt Col)",
+  "Colonel (Col)",
+  "Others"
+];
+
 const DASHBOARD_STYLES = `
   .professional-modal-overlay {
     background: rgba(0, 0, 0, 0.45);
@@ -107,9 +124,10 @@ export default function AdminDashboard() {
   const [editingUser, setEditingUser] = useState(null);
   const [form, setForm] = useState({
     name: "",
-    regiment: "",
-    batch_no: "",
-    army_id: "",
+    rank: "",
+    unit: "",
+    course_no: "",
+    army_no: "",
     role: "student",
     password: "",
     status: "",
@@ -220,9 +238,9 @@ export default function AdminDashboard() {
     window.location.href = "/login";
   };
 
-  const generateOtp = async (armyId) => {
+  const generateOtp = async (armyNo) => {
     try {
-      await api.post("/otp/request", { armyId });
+      await api.post("/otp/request", { armyNo });
       alert("OTP generated!");
       fetchUsers();
     } catch (err) {
@@ -255,9 +273,10 @@ export default function AdminDashboard() {
     setEditingUser(null);
     setForm({
       name: "",
-      regiment: "",
-      batch_no: "",
-      army_id: "",
+      rank: "",
+      unit: "",
+      course_no: "",
+      army_no: "",
       role: filter,
       status: "",
       class_id: "",
@@ -286,9 +305,10 @@ export default function AdminDashboard() {
         <thead className="text-white" style={{ backgroundColor: '#074F06' }}>
           <tr>
             <th className="p-3">Name</th>
-            <th className="p-3">Army ID</th>
-            <th className="p-3">Batch</th>
-            <th className="p-3">Regiment</th>
+            <th className="p-3">Rank</th>
+            <th className="p-3">Army No</th>
+            <th className="p-3">Course No</th>
+            <th className="p-3">Unit</th>
             <th className="p-3">Status</th>
             <th className="p-3">OTP</th>
             <th className="p-3 text-center">Actions</th>
@@ -296,7 +316,7 @@ export default function AdminDashboard() {
         </thead>
 
         <tbody>
-          {users.map((u) => (
+          {users.filter(u => u.id !== 0).map((u) => (
             <tr key={u.id} className="border-b" style={{ backgroundColor: '#D5F2D5' }}
               onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#C0E8C0'}
               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#D5F2D5'}>
@@ -312,9 +332,10 @@ export default function AdminDashboard() {
                   u.name
                 )}
               </td>
-              <td className="p-3">{u.army_id}</td>
-              <td className="p-3">{u.batch_no}</td>
-              <td className="p-3">{u.regiment}</td>
+              <td className="p-3">{u.rank || "-"}</td>
+              <td className="p-3">{u.army_no}</td>
+              <td className="p-3">{u.course_no}</td>
+              <td className="p-3">{u.unit}</td>
               <td className="p-3 font-semibold">
                 {u.status || "Pending"}
               </td>
@@ -356,7 +377,7 @@ export default function AdminDashboard() {
                 </button>
 
                 <button
-                  onClick={() => generateOtp(u.army_id)}
+                  onClick={() => generateOtp(u.army_no)}
                   className="text-yellow-600 hover:text-yellow-800"
                 >
                   <FaKey size={18} />
@@ -421,9 +442,9 @@ export default function AdminDashboard() {
     const query = searchQuery.toLowerCase();
     return (
       user.name?.toLowerCase().includes(query) ||
-      user.army_id?.toLowerCase().includes(query) ||
-      user.batch_no?.toLowerCase().includes(query) ||
-      user.regiment?.toLowerCase().includes(query)
+      user.army_no?.toLowerCase().includes(query) ||
+      user.course_no?.toLowerCase().includes(query) ||
+      user.unit?.toLowerCase().includes(query)
     );
   });
 
@@ -522,7 +543,7 @@ export default function AdminDashboard() {
           </div>
           <input
             type="text"
-            placeholder={`Search ${filter === "student" ? "students" : "instructors"} by name, Army ID, batch, or regiment...`}
+            placeholder={`Search ${filter === "student" ? "students" : "instructors"} by name, Army No, Course No, or Unit...`}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg outline-none transition-all duration-200 bg-white shadow-sm"
@@ -737,12 +758,26 @@ export default function AdminDashboard() {
                   />
                 </div>
                 <div className="modal-form-group">
-                  <label className="modal-input-label">Army ID</label>
+                  <label className="modal-input-label">Rank</label>
+                  <select
+                    className="modal-input-field"
+                    name="rank"
+                    value={form.rank}
+                    onChange={handleChange}
+                  >
+                    <option value="">Select Rank</option>
+                    {RANK_OPTIONS.map((rank) => (
+                      <option key={rank} value={rank}>{rank}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="modal-form-group col-span-2">
+                  <label className="modal-input-label">Army No</label>
                   <input
                     className="modal-input-field"
-                    name="army_id"
-                    placeholder="ID Number"
-                    value={form.army_id}
+                    name="army_no"
+                    placeholder="Army No"
+                    value={form.army_no}
                     onChange={handleChange}
                   />
                 </div>
@@ -751,22 +786,22 @@ export default function AdminDashboard() {
               {/* Units Section */}
               <div className="grid grid-cols-2 gap-2.5">
                 <div className="modal-form-group">
-                  <label className="modal-input-label">Regiment</label>
+                  <label className="modal-input-label">Unit</label>
                   <input
                     className="modal-input-field"
-                    name="regiment"
+                    name="unit"
                     placeholder="Assigned unit"
-                    value={form.regiment}
+                    value={form.unit}
                     onChange={handleChange}
                   />
                 </div>
                 <div className="modal-form-group">
-                  <label className="modal-input-label">Batch Number</label>
+                  <label className="modal-input-label">Course Number</label>
                   <input
                     className="modal-input-field"
-                    name="batch_no"
-                    placeholder="Batch"
-                    value={form.batch_no}
+                    name="course_no"
+                    placeholder="Course No"
+                    value={form.course_no}
                     onChange={handleChange}
                   />
                 </div>
@@ -835,7 +870,7 @@ export default function AdminDashboard() {
           <div className="p-6 rounded-lg shadow-lg w-[400px]" style={{ backgroundColor: '#D5F2D5' }}>
             <h3 className="text-xl font-bold mb-4">Approve Student & Assign to Class</h3>
             <p className="mb-4 text-gray-600">
-              Student: <strong>{approvingStudent.name}</strong> ({approvingStudent.army_id})
+              Student: <strong>{approvingStudent.name}</strong> ({approvingStudent.army_no})
             </p>
 
             {instructorClasses.length === 0 ? (

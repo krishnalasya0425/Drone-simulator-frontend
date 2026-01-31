@@ -141,6 +141,23 @@ export const classAPI = {
     return await res.json();
   },
 
+  // Get students in a class
+  async getStudentsInClass(classId) {
+    const token = localStorage.getItem("token");
+    const headers = {};
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/classes/${classId}/students`, { headers });
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch students");
+    }
+
+    return await res.json();
+  },
+
 
 };
 

@@ -94,6 +94,36 @@ const GenerateTest = () => {
     }
   };
 
+  // New state for student count
+  const [studentCount, setStudentCount] = useState(0);
+  const [loadingStudentCount, setLoadingStudentCount] = useState(false);
+
+  // Load student count when class is selected
+  useEffect(() => {
+    if (selectedClassId && !studentId) {
+      loadStudentCount(selectedClassId);
+    }
+  }, [selectedClassId]);
+
+  const loadStudentCount = async (classId) => {
+    try {
+      setLoadingStudentCount(true);
+      const students = await classAPI.getStudentsInClass(classId);
+      const count = Array.isArray(students) ? students.length : 0;
+      setStudentCount(count);
+
+      // Adjust numberOfSets if it exceeds student count
+      if (numberOfSets > count && count > 0) {
+        setNumberOfSets(count);
+      }
+    } catch (err) {
+      console.error("Failed to load student count", err);
+      setStudentCount(0);
+    } finally {
+      setLoadingStudentCount(false);
+    }
+  };
+
   const handleQuestionBankChange = (file) => {
     setQuestionBankFile(file);
   };
@@ -137,6 +167,15 @@ const GenerateTest = () => {
       setMessageType("error");
       return;
     }
+
+    // Validate number of sets against student count (only for regular tests, not retests)
+    if (!studentId && studentCount > 0 && numberOfSets > studentCount) {
+      setMessage(`❌ Cannot create ${numberOfSets} test sets! You can only create up to ${studentCount} sets because there are only ${studentCount} student${studentCount !== 1 ? 's' : ''} in this class. Each student must receive a unique test set.`);
+      setMessageType("error");
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
     if (examConfig.examType === 'TIMED' && !examConfig.durationMinutes) {
       setMessage("❌ Please specify duration for TIMED exam");
       setMessageType("error");
@@ -431,15 +470,43 @@ const GenerateTest = () => {
                 <input
                   type="number"
                   min="1"
-                  max="26"
-                  className="w-full p-3 border-2 rounded-lg font-bold text-lg focus:border-green-600"
+                  max={studentCount > 0 ? studentCount : 26}
+                  className={`w-full p-3 border-2 rounded-lg font-bold text-lg focus:border-green-600 ${studentCount > 0 && numberOfSets > studentCount ? 'border-red-500 bg-red-50' : ''
+                    }`}
                   value={numberOfSets}
                   onChange={e => {
-                    const val = parseInt(e.target.value);
-                    if (val > 0 && val <= 26) setNumberOfSets(val);
+                    const val = parseInt(e.target.value) || 0;
+                    const maxSets = studentCount > 0 ? studentCount : 26;
+
+                    if (val > maxSets && studentCount > 0) {
+                      // Show warning but allow the value temporarily to trigger validation
+                      setNumberOfSets(val);
+                      setMessage(`⚠️ Warning: You can only create up to ${studentCount} test sets for ${studentCount} student${studentCount !== 1 ? 's' : ''}!`);
+                      setMessageType("error");
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    } else if (val > 0) {
+                      setNumberOfSets(val);
+                      if (message.includes('Warning: You can only create')) {
+                        setMessage('');
+                      }
+                    }
                   }}
+                  onBlur={() => {
+                    // On blur, enforce the limit
+                    const maxSets = studentCount > 0 ? studentCount : 26;
+                    if (numberOfSets > maxSets && studentCount > 0) {
+                      setNumberOfSets(maxSets);
+                    }
+                  }}
+                  disabled={loadingStudentCount}
                 />
-                <p className="text-xs text-gray-500 mt-1">How many different test variations to create (Set A, B, C...)</p>
+                <p className={`text-xs mt-1 font-semibold ${studentCount > 0 && numberOfSets > studentCount ? 'text-red-600' : 'text-gray-500'}`}>
+                  {studentCount > 0
+                    ? numberOfSets > studentCount
+                      ? `⚠️ Exceeds limit! Maximum ${studentCount} sets allowed`
+                      : `Maximum ${studentCount} sets (based on ${studentCount} student${studentCount !== 1 ? 's' : ''} in class)`
+                    : 'How many different test variations to create (Set A, B, C...)'}
+                </p>
               </div>
             )}
 

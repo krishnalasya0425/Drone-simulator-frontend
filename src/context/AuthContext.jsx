@@ -17,33 +17,36 @@ export function AuthProvider({ children }) {
     const savedUser = {
       id: localStorage.getItem("id"),
       role: localStorage.getItem("role"),
-      batchNo: localStorage.getItem("batchNo"),
+      courseNo: localStorage.getItem("courseNo"),
       name: localStorage.getItem("name"),
-      token: token
+      token: token,
+      armyNo: localStorage.getItem("armyNo")
     };
 
     setUser(savedUser);
     setLoading(false); // ← FINISH LOADING
   }, []);
 
-  const login = async (armyId, password) => {
-    const res = await api.post("/auth/login", { armyId, password });
+  const login = async (armyNo, password) => {
+    const res = await api.post("/auth/login", { armyNo, password });
 
     const userData = {
       id: res.data.id,
       role: res.data.role,
-      batchNo: res.data.batchNo,
+      courseNo: res.data.courseNo,
       name: res.data.name,
       token: res.data.token,
+      armyNo: res.data.armyNo,
     };
 
     setUser(userData);
 
     localStorage.setItem("token", res.data.token);
     localStorage.setItem("role", res.data.role);
-    localStorage.setItem("batchNo", res.data.batchNo);
+    localStorage.setItem("courseNo", res.data.courseNo);
     localStorage.setItem("name", res.data.name);
     localStorage.setItem("id", res.data.id);
+    localStorage.setItem("armyNo", res.data.armyNo);
 
     return userData;
   };

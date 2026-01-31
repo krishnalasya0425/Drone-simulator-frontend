@@ -948,9 +948,9 @@ const Docs = () => {
                               )}
                             </div>
                             <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
-                              <span>Army ID: {student.army_id}</span>
-                              <span>Batch: {student.batch_no}</span>
-                              <span>Regiment: {student.regiment}</span>
+                              <span>Army No: {student.army_no}</span>
+                              <span>Course No: {student.course_no || '-'}</span>
+                              <span>Unit: {student.unit || '-'}</span>
                             </div>
                           </div>
                         </label>
@@ -1081,9 +1081,10 @@ const Docs = () => {
                             )}
                             <th className="px-4 py-3 text-left">#</th>
                             <th className="px-4 py-3 text-left">Name</th>
-                            <th className="px-4 py-3 text-left">Army ID</th>
-                            <th className="px-4 py-3 text-left">Batch</th>
-                            <th className="px-4 py-3 text-left">Regiment</th>
+                            <th className="px-4 py-3 text-left">Rank</th>
+                            <th className="px-4 py-3 text-left">Army No</th>
+                            <th className="px-4 py-3 text-left">Course No</th>
+                            <th className="px-4 py-3 text-left">Unit</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -1113,13 +1114,16 @@ const Docs = () => {
                                 {student.name}
                               </td>
                               <td className="px-4 py-3 text-gray-600">
-                                {student.army_id}
+                                {student.rank || "-"}
                               </td>
                               <td className="px-4 py-3 text-gray-600">
-                                {student.batch_no}
+                                {student.army_no}
                               </td>
                               <td className="px-4 py-3 text-gray-600">
-                                {student.regiment}
+                                {student.course_no}
+                              </td>
+                              <td className="px-4 py-3 text-gray-600">
+                                {student.unit}
                               </td>
                             </tr>
                           ))}

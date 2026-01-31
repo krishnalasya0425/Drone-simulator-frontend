@@ -415,7 +415,7 @@ const ClassWiseScore = () => {
                 <tr style={{ backgroundColor: '#074F06' }}>
                   <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-white w-12 text-center">#</th>
                   <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-white">Student Information</th>
-                  <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-white text-center">Batch / Regiment</th>
+                  <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-white text-center">Course / Unit</th>
                   <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-white text-center">Performance</th>
                   <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-white text-right pr-4">Actions</th>
                 </tr>
@@ -458,14 +458,14 @@ const ClassWiseScore = () => {
                             </div>
                             <div>
                               <p className="text-sm font-bold text-gray-800">{student.name}</p>
-                              <p className="text-[10px] text-gray-500 mt-0.5">{student.army_id}</p>
+                              <p className="text-[10px] text-gray-500 mt-0.5">{student.army_no}</p>
                             </div>
                           </div>
                         </td>
                         <td className="px-4 py-3 text-center">
                           <div className="inline-block px-2.5 py-1 rounded-md" style={{ backgroundColor: '#D5F2D5' }}>
-                            <p className="text-xs font-semibold text-gray-800">{student.batch_no}</p>
-                            <p className="text-[10px] text-gray-600 mt-0.5">{student.regiment}</p>
+                            <p className="text-xs font-semibold text-gray-800">{student.course_no}</p>
+                            <p className="text-[10px] text-gray-600 mt-0.5">{student.unit}</p>
                           </div>
                         </td>
                         <td className="px-4 py-3 text-center">
