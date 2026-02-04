@@ -35,7 +35,9 @@ const Classes = () => {
       if (role === "admin") {
         if (instructors.length === 0) {
           const inst = await Users.getByRole("Instructor");
-          setInstructors(inst);
+          // Filter out System Admin
+          const filteredInst = inst.filter(i => i.name !== "System Admin");
+          setInstructors(filteredInst);
         }
 
         // Admin sees all classes or filtered by instructor

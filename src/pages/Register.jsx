@@ -18,6 +18,18 @@ export default function Register() {
   });
 
   const [showPassword, setShowPassword] = useState(false);
+  const [isOtherRank, setIsOtherRank] = useState(false);
+
+  const handleRankChange = (e) => {
+    const value = e.target.value;
+    if (value === "Others") {
+      setIsOtherRank(true);
+      setForm({ ...form, rank: "" });
+    } else {
+      setIsOtherRank(false);
+      setForm({ ...form, rank: value });
+    }
+  };
 
   // Modal State
   const [modal, setModal] = useState({
@@ -139,14 +151,18 @@ export default function Register() {
             required
           />
 
+
+
+         
+
           <select
             name="rank"
-            onChange={handleChange}
-            value={form.rank}
+            onChange={handleRankChange}
+            value={isOtherRank ? "Others" : form.rank}
             className="col-span-2 w-full px-4 py-2 border rounded-lg outline-none bg-white"
             style={{
               transition: 'box-shadow 0.2s',
-              borderColor: form.rank ? '#d1d5db' : '#ef4444',
+              borderColor: (isOtherRank ? form.rank : form.rank) ? '#d1d5db' : '#ef4444',
               borderWidth: '2px'
             }}
             onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px #074F06'}
@@ -169,6 +185,24 @@ export default function Register() {
             <option value="Colonel (Col)">Colonel (Col)</option>
             <option value="Others">Others</option>
           </select>
+
+          {isOtherRank && (
+            <input
+              name="rank"
+              placeholder="Enter Rank *"
+              onChange={handleChange}
+              value={form.rank}
+              className="col-span-2 w-full px-4 py-2 border rounded-lg outline-none"
+              style={{
+                transition: 'box-shadow 0.2s',
+                borderColor: form.rank ? '#d1d5db' : '#ef4444',
+                borderWidth: '2px'
+              }}
+              onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px #074F06'}
+              onBlur={(e) => e.target.style.boxShadow = ''}
+              required
+            />
+          )}
 
           <input
             name="unit"
