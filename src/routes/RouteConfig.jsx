@@ -22,7 +22,7 @@ const routesConfig = [
   { path: '/classes', element: <Classes />, roles: ['admin', 'Instructor', 'Student'], label: 'Classes' },
   { path: '/:classId/docs', element: <Docs />, roles: ['admin', 'Instructor', 'Student'] },
   { path: '/:classId/generatetest', element: <GenerateTest />, roles: ['admin', 'Instructor'] },
-  { path: '/test-maker', element: <TestMaker />, roles: ['admin', 'Instructor'], label: 'Test Maker' },
+  { path: '/test-maker', element: <TestMaker />, roles: ['Instructor'], label: 'Test Maker' },
   { path: '/:testId/questions', element: <Test />, roles: ['Student'] },
   { path: '/:testId/review', element: <ClassWiseScore />, roles: ['admin', 'Instructor', 'Student'] },
   { path: '/scores', element: <Scoremodal />, roles: ['admin', 'Instructor', 'Student'], label: 'Tests' },

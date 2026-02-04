@@ -54,7 +54,7 @@ const Docs = () => {
   const [showBuildModal, setShowBuildModal] = useState(false);
   const [buildPath, setBuildPath] = useState("");
   const [buildName, setBuildName] = useState("");
-  const [existingBuilds, setExistingBuilds] = useState({ practice: null, exercise: null });
+  const [existingBuilds, setExistingBuilds] = useState({ practice: null });
   const [loadingBuilds, setLoadingBuilds] = useState(false);
   const [showDeleteBuildModal, setShowDeleteBuildModal] = useState(false);
   const [buildToDelete, setBuildToDelete] = useState(null);
@@ -101,31 +101,7 @@ const Docs = () => {
     }
   };
 
-  // Launch Exercise Build (Class-specific)
-  const launchExercise = async () => {
-    const instructorId = localStorage.getItem("id");
 
-    setLaunchMode("exercise");
-    setShowLaunchModal(true);
-
-    try {
-      const url = `http://localhost:5000/unity/exercise/${classId}/${instructorId}`;
-
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      const data = await response.json();
-      console.log("Exercise build launched:", data.message);
-    } catch (err) {
-      console.error(err);
-      setShowLaunchModal(false);
-      alert("Failed to launch Exercise build");
-    }
-  };
 
 
   const loadAvailableStudents = async () => {
@@ -354,14 +330,13 @@ const Docs = () => {
       const builds = response.data.builds || [];
 
       const buildsObj = {
-        practice: builds.find(b => b.build_type === 'practice') || null,
-        exercise: builds.find(b => b.build_type === 'exercise') || null
+        practice: builds.find(b => b.build_type === 'practice') || null
       };
 
       setExistingBuilds(buildsObj);
     } catch (err) {
       console.error('Failed to load Unity builds:', err);
-      setExistingBuilds({ practice: null, exercise: null });
+      setExistingBuilds({ practice: null });
     } finally {
       setLoadingBuilds(false);
     }
