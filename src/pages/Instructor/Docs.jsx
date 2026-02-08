@@ -1097,6 +1097,7 @@ const Docs = () => {
                             <th className="px-4 py-3 text-left">Army No</th>
                             <th className="px-4 py-3 text-left">Course No</th>
                             <th className="px-4 py-3 text-left">Unit</th>
+                            <th className="px-4 py-3 text-center">Progress</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -1136,6 +1137,17 @@ const Docs = () => {
                               </td>
                               <td className="px-4 py-3 text-gray-600">
                                 {student.unit}
+                              </td>
+                              <td className="px-4 py-3 text-center">
+                                <button
+                                  onClick={() => window.location.href = `/${classId}/${student.id}/progress`}
+                                  className="px-3 py-1.5 rounded-lg text-white text-xs font-bold hover:shadow-md transition-all"
+                                  style={{ backgroundColor: '#074F06' }}
+                                  onMouseEnter={(e) => e.target.style.backgroundColor = '#053d05'}
+                                  onMouseLeave={(e) => e.target.style.backgroundColor = '#074F06'}
+                                >
+                                  View Progress
+                                </button>
                               </td>
                             </tr>
                           ))}
