@@ -25,7 +25,7 @@ const TestReview = () => {
     try {
       setLoading(true);
       const data = await scoreAPI.getTestReview(student_id, test_set_id);
-      console.log("Test Review Data:", data);
+     
       setTestReview(data);
     } catch (error) {
       console.error("Error fetching test review:", error);

@@ -56,7 +56,6 @@ const SyllabusPage = () => {
 
   }, [classId]);
 
-  console.log("Syllabus Data:", syllabus);
 
   // ============ SYLLABUS CRUD ============
   const handleAddSyllabus = async () => {
@@ -202,7 +201,7 @@ const SyllabusPage = () => {
     );
   };
 
-  console.log("dcos", docs)
+
 
   const Docs = ({ docs }) => {
     const [preview, setPreview] = useState(null); // Stores selected doc for overlay

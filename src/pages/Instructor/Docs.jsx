@@ -85,9 +85,9 @@ const Docs = () => {
 
   useEffect(() => {
     loadDocs();
+    loadUnityBuilds(); // Load Unity builds for all users (students need this to enable Practice button)
     if (role !== "Student") {
       loadClassStudents();
-      loadUnityBuilds();
     }
   }, [classId, uploadDoc]);
 
@@ -282,6 +282,9 @@ const Docs = () => {
     setStudentsToDelete([]);
   };
 
+  const studentId = localStorage.getItem('id');
+  console.log(studentId)
+
   const toggleStudentForDeletion = (studentId) => {
     setStudentsToDelete(prev =>
       prev.includes(studentId)
@@ -341,6 +344,8 @@ const Docs = () => {
       setLoadingBuilds(false);
     }
   };
+
+
 
   // Add/Update Unity build
   const handleSaveBuild = async () => {
@@ -444,10 +449,14 @@ const Docs = () => {
     }
   };
 
+
+
   // Actual backend trigger for VR launch (updated to use new route)
   const handleActualLaunch = async () => {
     try {
-      const url = `http://localhost:5000/unity/practice/${classId}`;
+      // const url = `http://localhost:5000/unity/practice/${classId}`;
+      const url = `http://localhost:5000/unity/practice/${classId}?studentId=${studentId}`;
+
       const response = await fetch(url, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
@@ -459,7 +468,7 @@ const Docs = () => {
         throw new Error(data.message || 'Failed to launch VR build');
       }
 
-      console.log('VR build triggered after confirmation');
+
     } catch (err) {
       console.error('Failed to trigger VR build:', err);
       alert(err.message || 'Failed to launch VR build. Please ensure a practice build is configured.');
@@ -516,7 +525,7 @@ const Docs = () => {
                 <>
                   {/* Management Tools Group */}
                   <div className="flex items-center p-1 bg-white/40 backdrop-blur-md rounded-xl border border-white/50 shadow-sm">
-                    {role === "Instructor" && (
+                    {/* {role === "Instructor" && (
                       <>
                         <button
                           className="flex items-center gap-2 px-3 py-2 text-white rounded-lg text-xs font-bold transition-all active:scale-95 hover:brightness-110 shadow-sm whitespace-nowrap"
@@ -529,7 +538,18 @@ const Docs = () => {
 
                         <div className="w-px h-4 bg-gray-300 mx-1"></div>
                       </>
-                    )}
+                    )} */}
+
+                    <button
+                      onClick={() => navigate(`/${classId}/subtopics`)}
+                      className="flex items-center gap-2 px-3 py-2 text-white rounded-lg text-xs font-bold transition-all active:scale-95 hover:brightness-110 shadow-sm whitespace-nowrap mr-2"
+                      style={{ backgroundColor: '#056005' }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = '#053d05'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = '#074F06'}
+                    >
+                      <span>Subtopics</span>
+
+                    </button>
 
                     <button
                       className="flex items-center gap-2 px-3 py-2 text-white rounded-lg text-xs font-bold transition-all active:scale-95 hover:brightness-110 shadow-sm whitespace-nowrap"
@@ -571,6 +591,23 @@ const Docs = () => {
                   </div>
                 </>
               )}
+
+              {role === "Student" && (
+                <>
+                  <div className="flex items-center p-1 bg-white/40 backdrop-blur-md rounded-xl border border-white/50 shadow-sm">
+                    <button
+                      onClick={() => navigate(`/${classId}/${studentId}/progress`)}
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg text-white text-xs font-bold transition-all active:scale-95 hover:brightness-110 shadow-sm whitespace-nowrap"
+                      style={{ backgroundColor: '#056005' }}
+                    >
+                      <FaVrCardboard size={12} />
+                      <span className="hidden sm:inline">Progress</span>
+                    </button>
+                  </div>
+                </>
+              )}
+
+
 
               {/* VR Build Management Group - Separate row on mobile, inline on desktop */}
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto">
@@ -1146,6 +1183,9 @@ const Docs = () => {
           </div>
         )}
 
+
+
+
         {/* Add/Update Build Modal */}
         {showBuildModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -1272,6 +1312,8 @@ const Docs = () => {
             </div>
           </div>
         )}
+
+
 
         {/* Validation Error Modal */}
         {showValidationErrorModal && (

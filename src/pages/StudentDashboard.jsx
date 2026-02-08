@@ -220,39 +220,6 @@ export default function StudentDashboard() {
                             size={20}
                           />
                         </div>
-
-                        {/* Minimal Progress Section */}
-                        {progress && (
-                          <div className="mt-4 pt-3 border-t border-gray-50">
-                            <div className="flex items-center justify-between mb-1.5">
-                              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tight">Progress</span>
-                              <span className="text-xs font-bold text-[#074F06]">
-                                {parseFloat(progress.overall_completion_percentage || 0).toFixed(0)}%
-                              </span>
-                            </div>
-                            <ProgressBar
-                              percentage={parseFloat(progress.overall_completion_percentage || 0)}
-                              showLabel={false}
-                              height="h-1.5"
-                            />
-
-                            {/* Detailed micro-stats */}
-                            <div className="flex items-center gap-3 mt-2 opacity-70">
-                              <div className="flex items-center gap-1">
-                                <FaBook size={10} className="text-red-500" />
-                                <span className="text-[9px] font-bold text-gray-600">{Math.round(progress.pdf_completion_percentage)}%</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <FaImage size={10} className="text-blue-500" />
-                                <span className="text-[9px] font-bold text-gray-600">{Math.round(progress.image_completion_percentage)}%</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <FaVideo size={10} className="text-purple-500" />
-                                <span className="text-[9px] font-bold text-gray-600">{Math.round(progress.video_completion_percentage)}%</span>
-                              </div>
-                            </div>
-                          </div>
-                        )}
                       </div>
                       <div
                         className="h-1 w-full transition-colors"
@@ -466,8 +433,8 @@ export default function StudentDashboard() {
                                             }}
                                             disabled={!isProgressDone || requestingId === test.id}
                                             className={`flex items-center justify-center gap-2 w-fit px-4 py-2 text-xs font-bold rounded-lg transition-all shadow-md ${isProgressDone
-                                                ? 'bg-red-600 text-white hover:bg-red-700 active:scale-95'
-                                                : 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                                              ? 'bg-red-600 text-white hover:bg-red-700 active:scale-95'
+                                              : 'bg-gray-400 text-gray-200 cursor-not-allowed'
                                               } disabled:opacity-70`}
                                             title={!isProgressDone ? `Complete class progress to request retest (${progressPercentage.toFixed(0)}% done)` : ''}
                                           >

@@ -55,7 +55,7 @@ export default function Register() {
 
     try {
       const response = await api.post("/auth/register", form);
-      console.log('Registration success:', response.data);
+   
 
       setModal({
         isOpen: true,

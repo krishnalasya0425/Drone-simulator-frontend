@@ -30,6 +30,7 @@ import {
     Cell,
     CartesianGrid
 } from 'recharts';
+import SubtopicsPageProgress from "../../components/SubtopicsPageProgress";
 
 const StudentDetails = () => {
     const { studentId } = useParams();
@@ -313,7 +314,7 @@ const StudentDetails = () => {
                                     {!selectedClassId && (
                                         <div className="text-center p-4 bg-white rounded-xl border border-slate-100 shadow-sm">
                                             <p className="text-sm text-slate-600 font-bold flex items-center justify-center gap-2">
-                                                <FiArrowRight className="text-[#074F06] animate-pulse" /> Click on any vertical bar to view LEARNING PROGRESS details
+                                                <FiArrowRight className="text-[#074F06] animate-pulse" /> Classes
                                             </p>
                                         </div>
                                     )}
@@ -404,6 +405,41 @@ const StudentDetails = () => {
                                 </div>
                             )}
                         </section>
+
+                        {/* DETAILED LEARNING PROGRESS SECTION - Always visible for all classes */}
+                        {classes.length > 0 && (
+                            <section className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                                        <FiBook className="text-[#074F06]" /> Detailed Learning Progress
+                                    </h3>
+                                    <span className="bg-[#074F06] text-white text-xs font-bold px-2 py-1 rounded">
+                                        {classes.length} {classes.length === 1 ? 'Class' : 'Classes'}
+                                    </span>
+                                </div>
+
+                                {/* Show progress for all enrolled classes */}
+                                <div className="space-y-6">
+                                    {classes.map((cls, index) => (
+                                        <div key={cls.id} className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 border-2 border-green-100">
+                                            <div className="mb-4 flex items-center justify-between">
+                                                <h4 className="text-lg font-bold text-[#074F06] flex items-center gap-2">
+                                                    <span className="bg-[#074F06] text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">
+                                                        {index + 1}
+                                                    </span>
+                                                    {cls.class_name}
+                                                </h4>
+                                            </div>
+                                            <SubtopicsPageProgress
+                                                classId={cls.id}
+                                                studentId={studentId}
+                                                embedded={true}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
 
                         {/* TESTS SECTION */}
                         <section>

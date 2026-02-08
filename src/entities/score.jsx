@@ -102,7 +102,7 @@ const scoreAPI = {
             }
 
             const url = `${API_URL}/test-set/${test_set_id}/results`;
-            console.log("Fetching test set results from:", url);
+           
 
             const response = await fetch(url, {
                 headers: {

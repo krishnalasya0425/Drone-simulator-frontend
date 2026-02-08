@@ -205,10 +205,7 @@ const TestQuestions = () => {
   };
 
   const handleExamTiming = (exam, startTime) => {
-    console.log('=== EXAM TIMING DEBUG ===');
-    console.log('Raw exam object:', exam);
-    console.log('Exam type:', exam.exam_type);
-    console.log('Duration minutes from API:', exam.duration_minutes);
+
 
     if (exam.exam_type === "UNTIMED") {
       console.log('Test is UNTIMED, no timer set');
@@ -424,7 +421,7 @@ const TestQuestions = () => {
       }
 
       // Results will be shown because score is now set
-      console.log('Submission successful, score set to:', result);
+     
     } catch (error) {
       console.error('Error submitting test:', error);
       alert('Failed to submit test. Please try again.');

@@ -7,7 +7,7 @@ import { useAuth } from "../context/AuthContext";
 export default function MainLayout() {
 
   const role = localStorage.getItem("role")
-  console.log(role)
+
   const location = useLocation();
 
   // Store last visited page

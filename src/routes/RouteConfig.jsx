@@ -12,6 +12,8 @@ import Scoremodal from "../components/Scoremodal";
 import ClassWiseScore from "../components/ClassWiseScore";
 import TestReview from "../components/TestReview";
 import StudentDetails from "../pages/Admin/StudentDetails";
+import Subtopics from "../components/Subtopics";
+import SubtopicsPage from "../components/SubtopicsPageProgress";
 
 const routesConfig = [
   { path: '/forgotpassword', element: <ForgotPassword /> },
@@ -21,6 +23,10 @@ const routesConfig = [
   { path: '/student/:studentId', element: <StudentDetails />, roles: ['admin', 'Instructor'] },
   { path: '/classes', element: <Classes />, roles: ['admin', 'Instructor', 'Student'], label: 'Classes' },
   { path: '/:classId/docs', element: <Docs />, roles: ['admin', 'Instructor', 'Student'] },
+   { path: '/:classId/:studentId/progress', element: <SubtopicsPage />, roles: ['admin', 'Instructor', 'Student'] },
+  { 
+  path: '/:classId/subtopics',element: <Subtopics />, roles: ['admin', 'Instructor']},
+
   { path: '/:classId/generatetest', element: <GenerateTest />, roles: ['admin', 'Instructor'] },
   { path: '/test-maker', element: <TestMaker />, roles: ['Instructor'], label: 'Test Maker' },
   { path: '/:testId/questions', element: <Test />, roles: ['Student'] },

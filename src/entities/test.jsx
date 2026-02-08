@@ -62,7 +62,7 @@ const testAPI = {
 
     // Create a new test
     async addTest(title, ID, classId, individualStudentId = null, requestId = null) {
-        console.log('Creating test:', { title, ID, classId, individualStudentId, requestId });
+       
         try {
             const response = await fetch(`${API_BASE_URL}`, {
                 method: "POST",
@@ -143,7 +143,7 @@ const testAPI = {
             const API_ROOT = API_BASE_URL.replace('/tests', '');
             const url = `${API_ROOT}/test-sets/generate-from-pdf/${testId}`;
 
-            console.log('Uploading sets to:', url);
+          
 
             const res = await fetch(url, {
                 method: "POST",
@@ -172,7 +172,7 @@ const testAPI = {
             const API_ROOT = API_BASE_URL.replace('/tests', '');
             const url = `${API_ROOT}/test-sets/generate-from-question-bank/${testId}`;
 
-            console.log('Uploading question bank to:', url);
+        
 
             const res = await fetch(url, {
                 method: "POST",
