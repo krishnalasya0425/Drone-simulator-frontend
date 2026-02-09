@@ -629,19 +629,23 @@ const Docs = () => {
                 {/* Build Management Buttons - Only for Instructors */}
                 {role === "Instructor" && (
                   <div className="flex items-center gap-2">
-                    <div className="flex items-center p-1 bg-white/40 backdrop-blur-md rounded-xl border border-white/50 shadow-sm">
-                      <button
-                        className="flex items-center gap-2 px-3 py-2 rounded-lg text-white text-xs font-bold transition-all active:scale-95 hover:brightness-110 shadow-sm whitespace-nowrap"
-                        style={{ backgroundColor: '#8B5CF6' }}
-                        onClick={() => setShowBuildModal(true)}
-                        title="Manage Practice Build"
-                      >
-                        <FaUpload size={12} />
-                        <span className="hidden sm:inline">{existingBuilds.practice ? 'Update' : 'Add'} Build</span>
-                        <span className="sm:hidden">{existingBuilds.practice ? 'Update' : 'Add'}</span>
-                      </button>
-                    </div>
+                    {/* Only show Add Build button when no build exists */}
+                    {!existingBuilds.practice && (
+                      <div className="flex items-center p-1 bg-white/40 backdrop-blur-md rounded-xl border border-white/50 shadow-sm">
+                        <button
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg text-white text-xs font-bold transition-all active:scale-95 hover:brightness-110 shadow-sm whitespace-nowrap"
+                          style={{ backgroundColor: '#8B5CF6' }}
+                          onClick={() => setShowBuildModal(true)}
+                          title="Add Practice Build"
+                        >
+                          <FaUpload size={12} />
+                          <span className="hidden sm:inline">Add Build</span>
+                          <span className="sm:hidden">Add</span>
+                        </button>
+                      </div>
+                    )}
 
+                    {/* Show Remove button when build exists */}
                     {existingBuilds.practice && (
                       <div className="flex items-center p-1 bg-white/40 backdrop-blur-md rounded-xl border border-white/50 shadow-sm">
                         <button
