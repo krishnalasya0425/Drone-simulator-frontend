@@ -22,7 +22,12 @@ const Classes = () => {
 
   // Admin-specific states for class creation
   const [adminClassName, setAdminClassName] = useState("");
-  const [adminInstructorId, setAdminInstructorId] = useState("");
+  const [adminInstructorIds, setAdminInstructorIds] = useState([]);
+
+  // State for managing instructors modal
+  const [showManageInstructorsModal, setShowManageInstructorsModal] = useState(false);
+  const [selectedClassForInstructors, setSelectedClassForInstructors] = useState(null);
+  const [classInstructors, setClassInstructors] = useState([]);
 
   useEffect(() => {
     loadClasses();
@@ -105,8 +110,8 @@ const Classes = () => {
       const formData = new FormData();
       formData.append("class_name", adminClassName);
       formData.append("created_by", id); // Admin's ID
-      if (adminInstructorId) {
-        formData.append("instructor_id", adminInstructorId);
+      if (adminInstructorIds.length > 0) {
+        formData.append("instructor_ids", JSON.stringify(adminInstructorIds));
       }
 
       await classAPI.adminAddClass(formData);
@@ -115,13 +120,67 @@ const Classes = () => {
 
       setShowAddModal(false);
       setAdminClassName("");
-      setAdminInstructorId("");
+      setAdminInstructorIds([]);
 
       loadClasses();
     } catch (err) {
       console.error(err);
       // Show the specific error message from backend
       alert(err.message || "Failed to create class");
+    }
+  };
+
+  // Toggle instructor selection
+  const toggleInstructorSelection = (instructorId) => {
+    setAdminInstructorIds(prev => {
+      if (prev.includes(instructorId)) {
+        return prev.filter(id => id !== instructorId);
+      } else {
+        return [...prev, instructorId];
+      }
+    });
+  };
+
+  // Open manage instructors modal
+  const openManageInstructorsModal = async (classItem) => {
+    setSelectedClassForInstructors(classItem);
+    try {
+      const instructors = await classAPI.getInstructorsInClass(classItem.id);
+      setClassInstructors(instructors.map(i => i.id));
+      setShowManageInstructorsModal(true);
+    } catch (err) {
+      console.error("Failed to fetch instructors:", err);
+      alert("Failed to load instructors");
+    }
+  };
+
+  // Toggle instructor in existing class
+  const toggleClassInstructor = (instructorId) => {
+    setClassInstructors(prev => {
+      if (prev.includes(instructorId)) {
+        return prev.filter(id => id !== instructorId);
+      } else {
+        return [...prev, instructorId];
+      }
+    });
+  };
+
+  // Save instructors for existing class
+  const saveClassInstructors = async () => {
+    try {
+      await classAPI.updateClassInstructors(
+        selectedClassForInstructors.id,
+        classInstructors,
+        role
+      );
+      alert("Instructors updated successfully");
+      setShowManageInstructorsModal(false);
+      setSelectedClassForInstructors(null);
+      setClassInstructors([]);
+      loadClasses();
+    } catch (err) {
+      console.error("Failed to update instructors:", err);
+      alert("Failed to update instructors");
     }
   };
 
@@ -320,7 +379,35 @@ const Classes = () => {
                     </div>
                   </div>
 
-
+                  {/* Instructor Info - Admin Only */}
+                  {role === "admin" && (
+                    <div className="mt-3 pt-3 border-t" style={{ borderColor: 'rgba(7, 79, 6, 0.2)' }}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <p className="text-xs text-gray-600 mb-1">Instructors</p>
+                          <p className="text-sm font-semibold" style={{ color: '#074F06' }}>
+                            {cls.instructor_names || 'No instructors assigned'}
+                          </p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openManageInstructorsModal(cls);
+                          }}
+                          className="px-3 py-1 text-xs rounded-lg transition-all"
+                          style={{
+                            backgroundColor: '#074F06',
+                            color: 'white'
+                          }}
+                          onMouseEnter={(e) => e.target.style.backgroundColor = '#053d05'}
+                          onMouseLeave={(e) => e.target.style.backgroundColor = '#074F06'}
+                          title="Manage Instructors"
+                        >
+                          Manage
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Card Actions */}
@@ -420,25 +507,34 @@ const Classes = () => {
               {role === "admin" && (
                 <div className="mb-6">
                   <label className="block text-sm font-semibold mb-2 text-gray-700">
-                    Assign to Instructor (Optional)
+                    Assign Instructors (Optional)
                   </label>
-                  <select
-                    className="w-full px-4 py-3 border-2 rounded-lg outline-none transition-all bg-white"
-                    style={{ borderColor: '#074F06', color: '#074F06' }}
-                    value={adminInstructorId}
-                    onChange={(e) => setAdminInstructorId(e.target.value)}
-                    onFocus={(e) => e.target.style.boxShadow = '0 0 0 3px rgba(7, 79, 6, 0.1)'}
-                    onBlur={(e) => e.target.style.boxShadow = 'none'}
-                  >
-                    <option value="">No Instructor (Unassigned)</option>
-                    {instructors.map((i) => (
-                      <option key={i.id} value={i.id}>
-                        {i.name}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="border-2 rounded-lg p-3 max-h-48 overflow-y-auto" style={{ borderColor: '#074F06' }}>
+                    {instructors.length === 0 ? (
+                      <p className="text-sm text-gray-500">No instructors available</p>
+                    ) : (
+                      instructors.map((instructor) => (
+                        <div key={instructor.id} className="flex items-center mb-2">
+                          <input
+                            type="checkbox"
+                            id={`instructor-${instructor.id}`}
+                            checked={adminInstructorIds.includes(instructor.id)}
+                            onChange={() => toggleInstructorSelection(instructor.id)}
+                            className="mr-2 w-4 h-4 cursor-pointer"
+                            style={{ accentColor: '#074F06' }}
+                          />
+                          <label
+                            htmlFor={`instructor-${instructor.id}`}
+                            className="text-sm cursor-pointer flex-1"
+                          >
+                            {instructor.name}
+                          </label>
+                        </div>
+                      ))
+                    )}
+                  </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    You can assign an instructor later if needed
+                    Select one or more instructors for this class
                   </p>
                 </div>
               )}
@@ -449,7 +545,7 @@ const Classes = () => {
                     setShowAddModal(false);
                     setAddClassName("");
                     setAdminClassName("");
-                    setAdminInstructorId("");
+                    setAdminInstructorIds([]);
                   }}
                   className="flex-1 px-4 py-3 bg-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-400 transition-all"
                 >
@@ -464,6 +560,78 @@ const Classes = () => {
                   onMouseLeave={(e) => !e.target.disabled && (e.target.style.backgroundColor = '#074F06')}
                 >
                   {role === "admin" ? "Add Class" : "Create Class"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Manage Instructors Modal */}
+      {showManageInstructorsModal && selectedClassForInstructors && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="rounded-xl shadow-2xl w-full max-w-md animate-fadeIn" style={{ backgroundColor: '#D5F2D5' }}>
+            <div className="p-6">
+              <h3 className="text-2xl font-bold mb-4" style={{ color: '#074F06' }}>
+                Manage Instructors
+              </h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Class: <span className="font-semibold">{selectedClassForInstructors.class_name}</span>
+              </p>
+
+              {/* Instructors List */}
+              <div className="mb-6">
+                <label className="block text-sm font-semibold mb-2 text-gray-700">
+                  Select Instructors
+                </label>
+                <div className="border-2 rounded-lg p-3 max-h-64 overflow-y-auto" style={{ borderColor: '#074F06' }}>
+                  {instructors.length === 0 ? (
+                    <p className="text-sm text-gray-500">No instructors available</p>
+                  ) : (
+                    instructors.map((instructor) => (
+                      <div key={instructor.id} className="flex items-center mb-2">
+                        <input
+                          type="checkbox"
+                          id={`class-instructor-${instructor.id}`}
+                          checked={classInstructors.includes(instructor.id)}
+                          onChange={() => toggleClassInstructor(instructor.id)}
+                          className="mr-2 w-4 h-4 cursor-pointer"
+                          style={{ accentColor: '#074F06' }}
+                        />
+                        <label
+                          htmlFor={`class-instructor-${instructor.id}`}
+                          className="text-sm cursor-pointer flex-1"
+                        >
+                          {instructor.name}
+                        </label>
+                      </div>
+                    ))
+                  )}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  {classInstructors.length} instructor(s) selected
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowManageInstructorsModal(false);
+                    setSelectedClassForInstructors(null);
+                    setClassInstructors([]);
+                  }}
+                  className="flex-1 px-4 py-3 bg-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-400 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={saveClassInstructors}
+                  className="flex-1 px-4 py-3 text-white rounded-lg font-semibold transition-all"
+                  style={{ backgroundColor: '#074F06' }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = '#053d05'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = '#074F06'}
+                >
+                  Save Changes
                 </button>
               </div>
             </div>

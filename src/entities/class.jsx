@@ -158,6 +158,64 @@ export const classAPI = {
     return await res.json();
   },
 
+  // Get instructors in a class
+  async getInstructorsInClass(classId) {
+    const token = localStorage.getItem("token");
+    const headers = {};
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/classes/${classId}/instructors`, { headers });
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch instructors");
+    }
+
+    return await res.json();
+  },
+
+  // Add instructors to a class
+  async addInstructorsToClass(classId, instructorIds, userRole) {
+    return apiRequest(
+      `${API_BASE_URL}/${classId}/instructors`,
+      "POST",
+      { instructorIds, userRole }
+    );
+  },
+
+  // Remove instructors from a class
+  async removeInstructorsFromClass(classId, instructorIds, userRole) {
+    const token = localStorage.getItem("token");
+    const headers = {
+      "Content-Type": "application/json"
+    };
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    const res = await fetch(`${API_BASE_URL}/${classId}/instructors`, {
+      method: "DELETE",
+      headers,
+      body: JSON.stringify({ instructorIds, userRole })
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to remove instructors");
+    }
+
+    return await res.json();
+  },
+
+  // Update instructors for a class
+  async updateClassInstructors(classId, instructorIds, userRole) {
+    return apiRequest(
+      `${API_BASE_URL}/${classId}/instructors`,
+      "PUT",
+      { instructorIds, userRole }
+    );
+  },
+
 
 };
 

@@ -543,7 +543,7 @@ export default function AdminDashboard() {
           </div>
           <input
             type="text"
-            placeholder={`Search ${filter === "student" ? "students" : "instructors"} by name, Army No, Course No, or Unit...`}
+            placeholder={`Search ${filter === "student" ? "students" : "instructors"} by Name, Army No, Course No, or Unit...`}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg outline-none transition-all duration-200 bg-white shadow-sm"
