@@ -2,159 +2,148 @@ import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import InfoModal from "../components/InfoModal";
-import { FiEye, FiEyeOff } from "react-icons/fi";
+import { FiEye, FiEyeOff, FiUser, FiLock, FiArrowRight } from "react-icons/fi";
 
-export default function Login() {
-  const { login } = useAuth();
-  const navigate = useNavigate();
+const Login = () => {
+    const [armyNo, setArmyNo] = useState("");
+    const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [modal, setModal] = useState({ isOpen: false, title: "", message: "", type: "info" });
 
-  const [armyNo, setArmyNo] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+    const { login } = useAuth();
+    const navigate = useNavigate();
 
+    const closeModal = () => {
+        setModal(prev => ({ ...prev, isOpen: false }));
+    };
 
-  const [modal, setModal] = useState({
-    isOpen: false,
-    title: "",
-    message: "",
-    type: "info" // success, error, info
-  });
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
 
-  const closeModal = () => setModal(prev => ({ ...prev, isOpen: false }));
+        try {
+            const userData = await login(armyNo, password);
+            const redirectPath = userData.role === "Student" ? "/student-dashboard" : "/dashboard";
+            navigate(redirectPath);
+        } catch (err) {
+            setModal({
+                isOpen: true,
+                title: "Authentication Failed",
+                message: err.message || "Login failed. Please check your credentials.",
+                type: "error"
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+    return (
+        <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden font-sans" style={{ background: '#070C10' }}>
+            <InfoModal isOpen={modal.isOpen} onClose={closeModal} title={modal.title} message={modal.message} type={modal.type} />
 
-    try {
-      const user = await login(armyNo, password);
+            {/* 1. Background with Vignette */}
+            <div
+                className="absolute inset-0 bg-cover bg-center"
+                style={{ backgroundImage: 'url(https://i.pinimg.com/736x/85/44/31/854431126752c3fa6cf32166965a1637.jpg)', opacity: '0.35', filter: 'grayscale(0.3)' }}
+            ></div>
+            <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at center, transparent 20%, rgba(7, 12, 16, 0.95) 100%)' }}></div>
 
-      if (user.role === "admin") navigate("/dashboard");
-      else if (user.role === "Instructor") navigate("/dashboard");
-      else navigate("/student-dashboard");
-    } catch (err) {
-      console.error('Login error:', err);
+            {/* 2. HUD Grid */}
+            <div className="absolute inset-0 pointer-events-none opacity-20">
+                <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(95, 149, 152, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(95, 149, 152, 0.1) 1px, transparent 1px)', backgroundSize: '50px 50px' }}></div>
+            </div>
 
-      let errorMessage = "Login failed";
-      let errorTitle = "Error";
+            {/* 3. Container */}
+            <div className="relative z-10 w-full max-w-4xl rounded-2xl overflow-hidden shadow-2xl flex max-h-[90vh]" style={{ background: 'rgba(10, 25, 35, 0.4)', backdropFilter: 'blur(25px)', border: '1px solid rgba(95, 149, 152, 0.15)' }}>
 
+                {/* Decorative accents */}
+                <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-[#5F9598]/30 rounded-tr-2xl"></div>
+                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-[#5F9598]/30 rounded-bl-2xl"></div>
 
-      if (err.response?.data?.message) {
-        errorMessage = err.response.data.message;
-      } else if (err.response?.data?.error) {
-        errorMessage = err.response.data.error;
-      } else if (err.message) {
-        errorMessage = err.message;
-      }
+                <div className="hidden md:block md:w-[40%] relative overflow-hidden border-r border-white/5">
+                    <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: 'url(https://i.pinimg.com/736x/85/44/31/854431126752c3fa6cf32166965a1637.jpg)' }}></div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#0a1923]/80"></div>
+                </div>
 
+                <div className="w-full md:w-[60%] p-8 md:p-10 flex flex-col justify-center overflow-y-auto">
+                    <div className="mb-8">
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="w-1.5 h-6 bg-[#5F9598]"></div>
+                            <h1 className="text-2xl font-black text-[#E6F1F5] uppercase tracking-tighter">Mission Control</h1>
+                        </div>
+                        <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-[#5F9598]/60 pl-4">SECURE ACCESS GATEWAY</p>
+                    </div>
 
-      if (errorMessage.includes("Incorrect Password") || errorMessage.includes("password")) {
-        errorTitle = "Invalid Password";
-      } else if (errorMessage.includes("Invalid Army No") || errorMessage.includes("Army No")) {
-        errorTitle = "Invalid Army No";
-      } else if (errorMessage.includes("Pending") || errorMessage.includes("Denied") || errorMessage.includes("Not Approved")) {
-        errorTitle = "Account Status";
-      } else if (errorMessage.includes("Missing Credentials")) {
-        errorTitle = "Missing Information";
-      }
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <div>
+                            <label className="text-[9px] font-sans text-white/50 uppercase tracking-widest block mb-1.5">Authentication ID</label>
+                            <input
+                                type="text"
+                                placeholder="ARMY NUMBER"
+                                value={armyNo}
+                                onChange={(e) => setArmyNo(e.target.value)}
+                                required
+                                className="w-full bg-[#0a1923]/40 border border-white/10 rounded-lg px-4 py-2.5 text-xs text-white placeholder:text-white/10 focus:outline-none focus:border-[#5F9598]/50 focus:bg-[#0a1923]/60 transition-all font-sans"
+                            />
+                        </div>
 
-      setModal({
-        isOpen: true,
-        title: errorTitle,
-        message: errorMessage,
-        type: "error"
-      });
-    }
-  };
+                        <div className="relative">
+                            <label className="text-[9px] font-sans text-white/50 uppercase tracking-widest block mb-1.5">Access Key</label>
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                placeholder="••••••••"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                                className="w-full bg-[#0a1923]/40 border border-white/10 rounded-lg px-4 py-2.5 text-xs text-white placeholder:text-white/10 focus:outline-none focus:border-[#5F9598]/50 font-sans"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-9 text-white/20 hover:text-[#5F9598]"
+                            >
+                                {showPassword ? <FiEyeOff size={12} /> : <FiEye size={12} />}
+                            </button>
+                        </div>
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-green-100 p-4">
-      <InfoModal
-        isOpen={modal.isOpen}
-        onClose={closeModal}
-        title={modal.title}
-        message={modal.message}
-        type={modal.type}
-      />
+                        <div className="flex justify-end">
+                            <button
+                                type="button"
+                                onClick={() => navigate("/forgotpassword")}
+                                className="text-[9px] font-sans text-white/30 hover:text-[#5F9598] transition-colors italic"
+                            >
+                // Forgotten Credentials?
+                            </button>
+                        </div>
 
-      <div className="bg-white rounded-xl shadow-xl p-8 w-full max-w-md">
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full py-4 bg-[#5F9598] text-[#070C10] font-black text-xs uppercase tracking-[0.2em] rounded-lg hover:bg-[#1D546D] hover:shadow-[0_0_25px_rgba(95,149,152,0.4)] transition-all flex items-center justify-center gap-3 mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {loading ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-[#070C10]/30 border-t-[#070C10] rounded-full animate-spin"></div>
+                                    <span>Authenticating...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <span>Initialize System</span>
+                                    <FiArrowRight size={16} />
+                                </>
+                            )}
+                        </button>
+                    </form>
 
-        {/* Logo */}
-        <div className="flex items-center justify-center mb-4">
-          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2">
-            <circle cx="20" cy="20" r="20" fill="#074F06" />
-            <path d="M20 10C16.134 10 13 13.134 13 17C13 22.25 20 30 20 30C20 30 27 22.25 27 17C27 13.134 23.866 10 20 10ZM20 19.5C18.619 19.5 17.5 18.381 17.5 17C17.5 15.619 18.619 14.5 20 14.5C21.381 14.5 22.5 15.619 22.5 17C22.5 18.381 21.381 19.5 20 19.5Z" fill="white" />
-          </svg>
-          <h1 className="text-xl font-bold" style={{ color: '#074F06' }}>VR-MaRS</h1>
+                    <div className="mt-8 pt-6 border-t border-white/5 text-center">
+                        <span className="text-[9px] font-sans text-white/20 uppercase mr-3">// No Clearance Yet?</span>
+                        <a href="/register" className="text-[10px] font-sans text-[#5F9598] hover:text-[#F3F4F4] transition-colors uppercase font-bold underline decoration-[#5F9598]/30 underline-offset-4">Request Access</a>
+                    </div>
+                </div>
+            </div>
         </div>
+    );
+};
 
-        <h2 className="text-2xl font-semibold text-center mb-6 text-gray-800">
-          Login to your account
-        </h2>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="text"
-            placeholder="Army No"
-            value={armyNo}
-            onChange={(e) => setArmyNo(e.target.value)}
-            required
-            className="w-full px-4 py-2 border rounded-lg outline-none"
-            style={{ transition: 'box-shadow 0.2s' }}
-            onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px #074F06'}
-            onBlur={(e) => e.target.style.boxShadow = ''}
-          />
-
-          <div className="relative">
-            <input
-              type={showPassword ? "text" : "password"}
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full px-4 py-2 border rounded-lg outline-none pr-10"
-              style={{ transition: 'box-shadow 0.2s' }}
-              onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px #074F06'}
-              onBlur={(e) => e.target.style.boxShadow = ''}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
-            >
-              {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
-            </button>
-          </div>
-
-          <button
-            type="submit"
-            className="w-full py-2 text-white rounded-lg font-semibold transition"
-            style={{ backgroundColor: '#074F06' }}
-            onMouseEnter={(e) => e.target.style.backgroundColor = '#053d05'}
-            onMouseLeave={(e) => e.target.style.backgroundColor = '#074F06'}
-          >
-            Login
-          </button>
-        </form>
-
-        {/* Links */}
-        <div className="text-center text-sm text-gray-600 mt-6">
-          <p>
-            Forgot Password?{" "}
-            <a href="/forgotpassword" className="hover:underline" style={{ color: '#074F06' }}>
-              Click here
-            </a>
-          </p>
-
-          <p className="mt-1">
-            Don't have an account?{" "}
-            <a href="/register" className="hover:underline" style={{ color: '#074F06' }}>
-              Register here
-            </a>
-          </p>
-        </div>
-
-      </div>
-    </div>
-  );
-}
+export default Login;

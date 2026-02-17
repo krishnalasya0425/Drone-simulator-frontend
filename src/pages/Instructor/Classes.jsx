@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { classAPI } from "../../entities/class";
 import { useNavigate } from "react-router-dom";
-import { FiEdit, FiTrash2, FiArrowRight, FiPlus, FiUsers, FiBook, FiFilter } from "react-icons/fi";
+import { FiEdit, FiTrash2, FiArrowRight, FiPlus, FiUsers, FiBook, FiFilter, FiCheck, FiX, FiLayers, FiActivity, FiTarget, FiBox } from "react-icons/fi";
+import { FaRobot, FaMicrochip } from "react-icons/fa";
 import Users from "../../entities/users";
 
 const Classes = () => {
@@ -185,208 +186,151 @@ const Classes = () => {
   };
 
   return (
-    <div className="min-h-screen p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-[#061E29] p-8 font-sans text-white overflow-x-hidden relative">
+      <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-[#00C2C7]/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+      <div className="fixed bottom-0 left-0 w-[500px] h-[500px] bg-[#00C2C7]/5 blur-[120px] rounded-full translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
 
+      <div className="max-w-7xl mx-auto relative z-10">
         {/* Header Section */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
+        <div className="bg-[#0a2533]/60 backdrop-blur-xl rounded-[2.5rem] shadow-2xl p-10 mb-8 border border-[#00C2C7]/20 flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+            <FaRobot size={120} />
+          </div>
+
+          <div className="flex items-center gap-8 relative z-10">
+            <div className="w-20 h-20 rounded-3xl flex items-center justify-center text-[#061E29] text-3xl shadow-[0_0_30px_rgba(0,194,199,0.4)] bg-gradient-to-br from-[#00C2C7] to-[#0099a3] border border-[#00C2C7]/30">
+              <FiLayers />
+            </div>
             <div>
-              <h1 className="text-4xl font-bold mb-2" style={{ color: '#074F06' }}>
-                Class Management
+              <h1 className="text-4xl font-black text-white tracking-tighter uppercase italic">
+                Course Registry
               </h1>
-              <p className="text-gray-600">
-                {role === "admin" ? "Manage all classes across instructors" :
-                  role === "Instructor" ? "View your assigned classes" :
-                    "View your enrolled classes"}
-              </p>
-            </div>
-
-            {/* Add Class Button - Instructor and Admin */}
-            {role === "admin" && (
-              <button
-                onClick={() => setShowAddModal(true)}
-                className="flex items-center gap-2 px-6 py-3 text-white rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
-                style={{ backgroundColor: '#074F06' }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = '#053d05'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = '#074F06'}
-              >
-                <FiPlus size={20} />
-                Add New Class
-              </button>
-            )}
-          </div>
-
-          {/* Remove Add Class button for Instructors */}
-          {/* Instructors can no longer create classes */}
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="p-4 rounded-xl shadow-md" style={{ backgroundColor: '#D5F2D5' }}>
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-lg" style={{ backgroundColor: '#074F06' }}>
-                  <FiBook className="text-white" size={24} />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Total Classes</p>
-                  <p className="text-2xl font-bold" style={{ color: '#074F06' }}>{classes.length}</p>
-                </div>
+              <div className="flex items-center gap-3 mt-2">
+                <span className="h-0.5 w-12 bg-[#00C2C7]"></span>
+                <p className="text-[#00C2C7] font-black text-xs uppercase tracking-[0.4em]">Operational Matrix v2.0</p>
               </div>
             </div>
-
-            {role === "admin" && (
-              <div className="p-4 rounded-xl shadow-md" style={{ backgroundColor: '#D5F2D5' }}>
-                <div className="flex items-center gap-3">
-                  <div className="p-3 rounded-lg" style={{ backgroundColor: '#074F06' }}>
-                    <FiUsers className="text-white" size={24} />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Instructors</p>
-                    <p className="text-2xl font-bold" style={{ color: '#074F06' }}>{instructors.length}</p>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
 
-          {/* Filter Section - Admin Only */}
           {role === "admin" && (
-            <div
-              className="p-6 rounded-xl shadow-lg border"
-              style={{
-                backgroundColor: 'rgba(213, 242, 213, 0.8)',
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)',
-                borderColor: 'rgba(7, 79, 6, 0.2)',
-                boxShadow: '0 8px 24px rgba(7, 79, 6, 0.15)'
-              }}
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="bg-[#00C2C7] text-[#061E29] px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-[0_0_20px_rgba(0,194,199,0.3)] hover:shadow-[0_0_35px_rgba(0,194,199,0.5)] hover:scale-105 active:scale-95 transition-all flex items-center gap-3 relative z-10 group"
             >
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg" style={{ backgroundColor: '#074F06' }}>
-                    <FiFilter className="text-white" size={18} />
-                  </div>
-                  <div>
-                    <label className="font-bold text-base" style={{ color: '#074F06' }}>
-                      Filter by Instructor
-                    </label>
-                    <p className="text-xs text-gray-600 mt-0.5">
-                      View classes by specific instructor
-                    </p>
-                  </div>
-                </div>
+              <FiPlus className="stroke-[3]" />
+              Initialize New Course
+            </button>
+          )}
+        </div>
 
-                <div className="flex-1 md:max-w-sm">
-                  <select
-                    className="w-full px-4 py-3 border-2 rounded-lg outline-none transition-all bg-white font-medium shadow-sm"
-                    style={{
-                      borderColor: '#074F06',
-                      color: '#074F06'
-                    }}
-                    value={selectedInstructorId}
-                    onChange={(e) => setSelectedInstructorId(e.target.value)}
-                    onFocus={(e) => {
-                      e.target.style.boxShadow = '0 0 0 3px rgba(7, 79, 6, 0.1)';
-                      e.target.style.borderColor = '#053d05';
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.boxShadow = 'none';
-                      e.target.style.borderColor = '#074F06';
-                    }}
-                  >
-                    <option value="" style={{ backgroundColor: 'white', color: '#074F06' }}>
-                      All Instructors ({instructors.length})
-                    </option>
-                    {instructors.map((i) => (
-                      <option key={i.id} value={i.id} style={{ backgroundColor: 'white', color: '#074F06' }}>
-                        {i.name}
-                      </option>
-                    ))}
-                  </select>
-                  <style>{`
-                    select option:checked {
-                      background-color: #074F06 !important;
-                      color: white !important;
-                    }
-                    select:focus option:checked {
-                      background-color: #074F06 !important;
-                      color: white !important;
-                    }
-                  `}</style>
-                </div>
+        {/* HUD Statistics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-[#0a2533]/40 backdrop-blur-xl border border-white/5 p-6 rounded-[2rem] flex items-center gap-6 group hover:border-[#00C2C7]/20 transition-all">
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-[#00C2C7] border border-[#00C2C7]/30 bg-[#00C2C7]/10 shadow-[0_0_15px_rgba(0,194,199,0.1)]">
+              <FiBook size={24} />
+            </div>
+            <div>
+              <p className="text-[10px] text-[#00C2C7] font-black uppercase tracking-[0.2em] opacity-60">Total Active Courses</p>
+              <h3 className="text-3xl font-black text-white tracking-tighter mt-0.5">{classes.length}</h3>
+            </div>
+          </div>
+
+          {role === "admin" && (
+            <div className="bg-[#0a2533]/40 backdrop-blur-xl border border-white/5 p-6 rounded-[2rem] flex items-center gap-6 group hover:border-[#00C2C7]/20 transition-all">
+              <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-[#00C2C7] border border-[#00C2C7]/30 bg-[#00C2C7]/10 shadow-[0_0_15px_rgba(0,194,199,0.1)]">
+                <FiUsers size={24} />
+              </div>
+              <div>
+                <p className="text-[10px] text-[#00C2C7] font-black uppercase tracking-[0.2em] opacity-60">Operational Instructors</p>
+                <h3 className="text-3xl font-black text-white tracking-tighter mt-0.5">{instructors.length}</h3>
               </div>
             </div>
           )}
         </div>
 
+        {/* Filter Section - Admin Only */}
+        {role === "admin" && (
+          <div className="bg-[#0a2533]/40 backdrop-blur-xl border border-white/5 p-8 rounded-[2.5rem] mb-8">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center text-[#00C2C7] bg-[#00C2C7]/10 border border-[#00C2C7]/20">
+                  <FiFilter />
+                </div>
+                <div>
+                  <h2 className="text-sm font-black text-white uppercase tracking-widest italic">Filter Matrix</h2>
+                  <p className="text-[10px] text-[#00C2C7] font-black uppercase tracking-widest opacity-60">Selection by operational lead</p>
+                </div>
+              </div>
+
+              <div className="relative group">
+                <select
+                  className="bg-[#061E29] border-2 border-white/5 text-white/80 font-black text-xs uppercase tracking-widest px-6 py-4 rounded-2xl outline-none focus:border-[#00C2C7]/50 appearance-none min-w-[300px] transition-all cursor-pointer"
+                  value={selectedInstructorId}
+                  onChange={(e) => setSelectedInstructorId(e.target.value)}
+                >
+                  <option value="">All Personnel ({instructors.length})</option>
+                  {instructors.map((i) => (
+                    <option key={i.id} value={i.id}>{i.name}</option>
+                  ))}
+                </select>
+                <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-[#00C2C7]/40 group-hover:text-[#00C2C7] transition-colors">
+                  <FiArrowRight />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Classes Grid */}
         {classes.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="inline-block p-6 rounded-full mb-4" style={{ backgroundColor: '#D5F2D5' }}>
-              <FiBook size={48} style={{ color: '#074F06' }} />
+          <div className="bg-[#0a2533]/40 backdrop-blur-xl border border-white/5 rounded-[3rem] p-24 text-center">
+            <div className="w-24 h-24 rounded-3xl bg-[#00C2C7]/10 border border-[#00C2C7]/20 flex items-center justify-center text-[#00C2C7] mx-auto mb-8 shadow-[0_0_30px_rgba(0,194,199,0.1)]">
+              <FiBook size={48} />
             </div>
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">No Classes Found</h3>
-            <p className="text-gray-500">
-              {role === "Instructor" ? "No classes assigned to you yet" : "No classes available yet"}
-            </p>
+            <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter">No Active Protocols</h3>
+            <p className="text-[#00C2C7]/40 text-xs font-black uppercase tracking-[0.3em] mt-4">Registry currently awaiting course initialization</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {classes.map((cls, idx) => (
               <div
                 key={cls.id}
-                className="group rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border"
-                style={{
-                  backgroundColor: 'rgba(213, 242, 213, 0.7)',
-                  backdropFilter: 'blur(10px)',
-                  WebkitBackdropFilter: 'blur(10px)',
-                  borderColor: 'rgba(7, 79, 6, 0.2)',
-                  boxShadow: '0 8px 32px 0 rgba(7, 79, 6, 0.1)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = '#074F06';
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.backgroundColor = 'rgba(213, 242, 213, 0.9)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(7, 79, 6, 0.2)';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.backgroundColor = 'rgba(213, 242, 213, 0.7)';
-                }}
+                className="group relative bg-[#0a2533]/40 backdrop-blur-xl rounded-[2.5rem] border border-white/5 p-8 transition-all duration-500 hover:border-[#00C2C7]/30 hover:shadow-[0_0_40px_rgba(0,194,199,0.1)] overflow-hidden"
               >
-                {/* Card Header */}
-                <div className="p-6 pb-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-lg"
-                        style={{ backgroundColor: '#074F06' }}>
-                        {idx + 1}
-                      </div>
-                      <div className="flex-1">
-                        {editMode && editClassId === cls.id ? (
+                <div className="absolute top-0 right-0 p-8 opacity-0 group-hover:opacity-10 transition-opacity">
+                  <FiActivity size={80} className="text-[#00C2C7]" />
+                </div>
+
+                <div className="relative z-10 h-full flex flex-col">
+                  <div className="flex items-center gap-5 mb-8">
+                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-[#061E29] bg-gradient-to-br from-[#00C2C7] to-[#0099a3] font-black text-xl shadow-[0_0_15px_rgba(0,194,199,0.2)]">
+                      {idx + 1}
+                    </div>
+                    <div className="flex-1">
+                      {editMode && editClassId === cls.id ? (
+                        <div className="flex gap-2">
                           <input
                             value={editClassName}
                             onChange={(e) => setEditClassName(e.target.value)}
-                            className="w-full px-3 py-2 border-2 rounded-lg outline-none"
-                            style={{ borderColor: '#074F06' }}
+                            className="bg-[#061E29] border-2 border-[#00C2C7] text-white px-3 py-2 rounded-xl outline-none w-full"
                             autoFocus
                           />
-                        ) : (
-                          <h3 className="text-xl font-bold text-gray-800 group-hover:text-opacity-90 transition-colors">
-                            {cls.class_name}
-                          </h3>
-                        )}
-                      </div>
+                        </div>
+                      ) : (
+                        <h3 className="text-xl font-black text-white uppercase tracking-tighter italic">
+                          {cls.class_name}
+                        </h3>
+                      )}
                     </div>
                   </div>
 
-                  {/* Instructor Info - Admin Only */}
                   {role === "admin" && (
-                    <div className="mt-3 pt-3 border-t" style={{ borderColor: 'rgba(7, 79, 6, 0.2)' }}>
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <p className="text-xs text-gray-600 mb-1">Instructors</p>
-                          <p className="text-sm font-semibold" style={{ color: '#074F06' }}>
-                            {cls.instructor_names || 'No instructors assigned'}
+                    <div className="mb-8 p-4 bg-[#061E29]/50 rounded-2xl border border-white/5">
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="min-w-0">
+                          <p className="text-[9px] text-[#00C2C7]/40 font-black uppercase tracking-widest mb-1">Operational Personnel</p>
+                          <p className="text-xs font-bold text-white/80 truncate">
+                            {cls.instructor_names || 'PENDING ASSIGNMENT'}
                           </p>
                         </div>
                         <button
@@ -394,79 +338,37 @@ const Classes = () => {
                             e.stopPropagation();
                             openManageInstructorsModal(cls);
                           }}
-                          className="px-3 py-1 text-xs rounded-lg transition-all"
-                          style={{
-                            backgroundColor: '#074F06',
-                            color: 'white'
-                          }}
-                          onMouseEnter={(e) => e.target.style.backgroundColor = '#053d05'}
-                          onMouseLeave={(e) => e.target.style.backgroundColor = '#074F06'}
-                          title="Manage Instructors"
+                          className="w-10 h-10 rounded-xl bg-[#00C2C7]/10 flex items-center justify-center text-[#00C2C7] border border-[#00C2C7]/20 hover:bg-[#00C2C7] hover:text-[#061E29] transition-all group/btn"
                         >
-                          Manage
+                          <FiUsers />
                         </button>
                       </div>
                     </div>
                   )}
-                </div>
 
-                {/* Card Actions */}
-                <div className="px-6 pb-6">
-                  <div className="flex items-center gap-2">
-                    {/* View/Open Button */}
+                  <div className="mt-auto flex items-center gap-3">
                     <button
                       onClick={() => navigate(`/${cls.id}/docs`)}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-white rounded-lg font-medium transition-all transform hover:scale-105"
-                      style={{ backgroundColor: '#074F06' }}
-                      onMouseEnter={(e) => e.target.style.backgroundColor = '#053d05'}
-                      onMouseLeave={(e) => e.target.style.backgroundColor = '#074F06'}
+                      className="flex-1 bg-[#061E29] text-[#00C2C7] px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest border border-white/5 hover:border-[#00C2C7]/30 hover:bg-[#00C2C7]/5 transition-all flex items-center justify-center gap-2 group/access"
                     >
-                      <span>Open Class</span>
-                      <FiArrowRight size={18} />
+                      Initialize Content
+                      <FiArrowRight className="group-hover/access:translate-x-1 transition-transform" />
                     </button>
 
-                    {/* Edit/Update Button - Admin Only */}
                     {role === "admin" && (
-                      <>
+                      <div className="flex gap-2">
                         {editMode && editClassId === cls.id ? (
-                          <div className="flex gap-2">
-                            <button
-                              onClick={handleUpdate}
-                              className="p-3 rounded-lg text-white transition-all"
-                              style={{ backgroundColor: '#074F06' }}
-                              title="Save"
-                            >
-                              <FiPlus size={18} className="rotate-45" />
-                            </button>
-                            <button
-                              onClick={cancelEdit}
-                              className="p-3 bg-gray-400 rounded-lg text-white transition-all hover:bg-gray-500"
-                              title="Cancel"
-                            >
-                              ✕
-                            </button>
-                          </div>
+                          <>
+                            <button onClick={handleUpdate} className="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-500 to-green-600 text-white flex items-center justify-center shadow-lg"><FiCheck /></button>
+                            <button onClick={cancelEdit} className="w-12 h-12 rounded-2xl bg-white/5 text-white/40 flex items-center justify-center hover:bg-white/10"><FiX /></button>
+                          </>
                         ) : (
                           <>
-                            <button
-                              onClick={() => handleEdit(cls.id, cls.class_name)}
-                              className="p-3 rounded-lg transition-all hover:bg-white"
-                              style={{ color: '#074F06' }}
-                              title="Edit"
-                            >
-                              <FiEdit size={18} />
-                            </button>
-
-                            <button
-                              onClick={() => handleDelete(cls.id)}
-                              className="p-3 text-red-600 rounded-lg transition-all hover:bg-white"
-                              title="Delete"
-                            >
-                              <FiTrash2 size={18} />
-                            </button>
+                            <button onClick={() => handleEdit(cls.id, cls.class_name)} className="w-12 h-12 rounded-2xl bg-white/5 text-white/40 flex items-center justify-center hover:bg-[#00C2C7]/10 hover:text-[#00C2C7] transition-all"><FiEdit /></button>
+                            <button onClick={() => handleDelete(cls.id)} className="w-12 h-12 rounded-2xl bg-white/5 text-white/40 flex items-center justify-center hover:bg-red-500/10 hover:text-red-500 transition-all"><FiTrash2 /></button>
                           </>
                         )}
-                      </>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -476,91 +378,71 @@ const Classes = () => {
         )}
       </div>
 
-      {/* Add Class Modal - Different for Admin vs Instructor */}
+      {/* MODALS - Styled with the same theme */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="rounded-xl shadow-2xl w-full max-w-md animate-fadeIn" style={{ backgroundColor: '#D5F2D5' }}>
-            <div className="p-6">
-              <h3 className="text-2xl font-bold mb-4" style={{ color: '#074F06' }}>
-                {role === "admin" ? "Add New Class" : "Create New Class"}
-              </h3>
-
-              {/* Class Name Input */}
-              <div className="mb-4">
-                <label className="block text-sm font-semibold mb-2 text-gray-700">
-                  Class Name
-                </label>
-                <input
-                  type="text"
-                  value={role === "admin" ? adminClassName : addClassName}
-                  onChange={(e) => role === "admin" ? setAdminClassName(e.target.value) : setAddClassName(e.target.value)}
-                  placeholder="Enter class name..."
-                  className="w-full px-4 py-3 border-2 rounded-lg outline-none transition-all"
-                  style={{ borderColor: '#074F06' }}
-                  onFocus={(e) => e.target.style.boxShadow = '0 0 0 3px rgba(7, 79, 6, 0.1)'}
-                  onBlur={(e) => e.target.style.boxShadow = 'none'}
-                  autoFocus
-                />
+        <div className="fixed inset-0 bg-[#061E29]/80 backdrop-blur-md flex items-center justify-center z-[100] p-6">
+          <div className="bg-[#0a2533] rounded-[3rem] border border-[#00C2C7]/30 shadow-[0_0_100px_rgba(0,0,0,0.5)] w-full max-w-xl overflow-hidden relative">
+            <div className="p-12">
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-[#00C2C7] text-[#061E29]">
+                  <FiPlus className="stroke-[3]" />
+                </div>
+                <h3 className="text-3xl font-black text-white uppercase italic tracking-tighter">Protocol Creation</h3>
               </div>
 
-              {/* Instructor Selection - Admin Only */}
-              {role === "admin" && (
-                <div className="mb-6">
-                  <label className="block text-sm font-semibold mb-2 text-gray-700">
-                    Assign Instructors (Optional)
-                  </label>
-                  <div className="border-2 rounded-lg p-3 max-h-48 overflow-y-auto" style={{ borderColor: '#074F06' }}>
-                    {instructors.length === 0 ? (
-                      <p className="text-sm text-gray-500">No instructors available</p>
-                    ) : (
-                      instructors.map((instructor) => (
-                        <div key={instructor.id} className="flex items-center mb-2">
-                          <input
-                            type="checkbox"
-                            id={`instructor-${instructor.id}`}
-                            checked={adminInstructorIds.includes(instructor.id)}
-                            onChange={() => toggleInstructorSelection(instructor.id)}
-                            className="mr-2 w-4 h-4 cursor-pointer"
-                            style={{ accentColor: '#074F06' }}
-                          />
-                          <label
-                            htmlFor={`instructor-${instructor.id}`}
-                            className="text-sm cursor-pointer flex-1"
-                          >
-                            {instructor.name}
-                          </label>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Select one or more instructors for this class
-                  </p>
+              <div className="space-y-8">
+                <div>
+                  <label className="text-[10px] font-black text-[#00C2C7] uppercase tracking-[0.3em] block mb-3">Unit Designation</label>
+                  <input
+                    type="text"
+                    value={role === "admin" ? adminClassName : addClassName}
+                    onChange={(e) => role === "admin" ? setAdminClassName(e.target.value) : setAddClassName(e.target.value)}
+                    placeholder="Enter unique course tag..."
+                    className="w-full bg-[#061E29] border-2 border-white/5 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-[#00C2C7]/50 transition-all"
+                  />
                 </div>
-              )}
 
-              <div className="flex gap-3">
-                <button
-                  onClick={() => {
-                    setShowAddModal(false);
-                    setAddClassName("");
-                    setAdminClassName("");
-                    setAdminInstructorIds([]);
-                  }}
-                  className="flex-1 px-4 py-3 bg-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-400 transition-all"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={role === "admin" ? submitAddClass : handleAdd}
-                  disabled={role === "admin" ? !adminClassName.trim() : !addClassName.trim()}
-                  className="flex-1 px-4 py-3 text-white rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ backgroundColor: '#074F06' }}
-                  onMouseEnter={(e) => !e.target.disabled && (e.target.style.backgroundColor = '#053d05')}
-                  onMouseLeave={(e) => !e.target.disabled && (e.target.style.backgroundColor = '#074F06')}
-                >
-                  {role === "admin" ? "Add Class" : "Create Class"}
-                </button>
+                {role === "admin" && (
+                  <div>
+                    <label className="text-[10px] font-black text-[#00C2C7] uppercase tracking-[0.3em] block mb-3">Assign Personnel</label>
+                    <div className="bg-[#061E29] border-2 border-white/5 rounded-2xl p-4 max-h-48 overflow-y-auto custom-scrollbar">
+                      {instructors.map((instructor) => (
+                        <div
+                          key={instructor.id}
+                          className={`flex items-center gap-4 p-3 rounded-xl transition-all cursor-pointer mb-2 ${adminInstructorIds.includes(instructor.id) ? 'bg-[#00C2C7]/10 border border-[#00C2C7]/20 shadow-[0_0_15px_rgba(0,194,199,0.05)]' : 'border border-transparent hover:bg-white/5'}`}
+                          onClick={() => toggleInstructorSelection(instructor.id)}
+                        >
+                          <div className={`w-5 h-5 rounded-md border-2 transition-all flex items-center justify-center ${adminInstructorIds.includes(instructor.id) ? 'bg-[#00C2C7] border-[#00C2C7]' : 'border-white/10 bg-[#0a2533]'}`}>
+                            {adminInstructorIds.includes(instructor.id) && <FiCheck className="text-[#061E29] stroke-[4]" size={12} />}
+                          </div>
+                          <span className={`text-sm font-black uppercase tracking-widest ${adminInstructorIds.includes(instructor.id) ? 'text-white' : 'text-white/40'}`}>
+                            {instructor.name}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex gap-4 pt-4">
+                  <button
+                    onClick={() => {
+                      setShowAddModal(false);
+                      setAddClassName("");
+                      setAdminClassName("");
+                      setAdminInstructorIds([]);
+                    }}
+                    className="flex-1 bg-white/5 text-white/40 px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-white/10 transition-all border border-transparent"
+                  >
+                    Abort
+                  </button>
+                  <button
+                    onClick={role === "admin" ? submitAddClass : handleAdd}
+                    className="flex-[2] bg-[#00C2C7] text-[#061E29] px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-[0_0_20px_rgba(0,194,199,0.2)] hover:shadow-[0_0_35px_rgba(0,194,199,0.4)] transition-all"
+                  >
+                    Deploy Protocol
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -569,75 +451,84 @@ const Classes = () => {
 
       {/* Manage Instructors Modal */}
       {showManageInstructorsModal && selectedClassForInstructors && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="rounded-xl shadow-2xl w-full max-w-md animate-fadeIn" style={{ backgroundColor: '#D5F2D5' }}>
-            <div className="p-6">
-              <h3 className="text-2xl font-bold mb-4" style={{ color: '#074F06' }}>
-                Manage Instructors
-              </h3>
-              <p className="text-sm text-gray-600 mb-4">
-                Class: <span className="font-semibold">{selectedClassForInstructors.class_name}</span>
-              </p>
-
-              {/* Instructors List */}
-              <div className="mb-6">
-                <label className="block text-sm font-semibold mb-2 text-gray-700">
-                  Select Instructors
-                </label>
-                <div className="border-2 rounded-lg p-3 max-h-64 overflow-y-auto" style={{ borderColor: '#074F06' }}>
-                  {instructors.length === 0 ? (
-                    <p className="text-sm text-gray-500">No instructors available</p>
-                  ) : (
-                    instructors.map((instructor) => (
-                      <div key={instructor.id} className="flex items-center mb-2">
-                        <input
-                          type="checkbox"
-                          id={`class-instructor-${instructor.id}`}
-                          checked={classInstructors.includes(instructor.id)}
-                          onChange={() => toggleClassInstructor(instructor.id)}
-                          className="mr-2 w-4 h-4 cursor-pointer"
-                          style={{ accentColor: '#074F06' }}
-                        />
-                        <label
-                          htmlFor={`class-instructor-${instructor.id}`}
-                          className="text-sm cursor-pointer flex-1"
-                        >
-                          {instructor.name}
-                        </label>
-                      </div>
-                    ))
-                  )}
+        <div className="fixed inset-0 bg-[#061E29]/80 backdrop-blur-md flex items-center justify-center z-[100] p-6">
+          <div className="bg-[#0a2533] rounded-[3rem] border border-[#00C2C7]/30 shadow-[0_0_100px_rgba(0,0,0,0.5)] w-full max-w-xl overflow-hidden relative">
+            <div className="p-12">
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-[#00C2C7] text-[#061E29]">
+                  <FiUsers className="stroke-[3]" />
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  {classInstructors.length} instructor(s) selected
-                </p>
+                <div>
+                  <h3 className="text-3xl font-black text-white uppercase italic tracking-tighter">Personnel Assignment</h3>
+                  <p className="text-[10px] text-[#00C2C7] font-black uppercase tracking-widest opacity-60 mt-1">Class: {selectedClassForInstructors.class_name}</p>
+                </div>
               </div>
 
-              <div className="flex gap-3">
-                <button
-                  onClick={() => {
-                    setShowManageInstructorsModal(false);
-                    setSelectedClassForInstructors(null);
-                    setClassInstructors([]);
-                  }}
-                  className="flex-1 px-4 py-3 bg-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-400 transition-all"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={saveClassInstructors}
-                  className="flex-1 px-4 py-3 text-white rounded-lg font-semibold transition-all"
-                  style={{ backgroundColor: '#074F06' }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = '#053d05'}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = '#074F06'}
-                >
-                  Save Changes
-                </button>
+              <div className="space-y-8">
+                <div className="bg-[#061E29] border-2 border-white/5 rounded-2xl p-4 max-h-64 overflow-y-auto custom-scrollbar">
+                  {instructors.map((instructor) => (
+                    <div
+                      key={instructor.id}
+                      className={`flex items-center gap-4 p-3 rounded-xl transition-all cursor-pointer mb-2 ${classInstructors.includes(instructor.id) ? 'bg-[#00C2C7]/10 border border-[#00C2C7]/20 shadow-[0_0_15px_rgba(0,194,199,0.05)]' : 'border border-transparent hover:bg-white/5'}`}
+                      onClick={() => toggleClassInstructor(instructor.id)}
+                    >
+                      <div className={`w-5 h-5 rounded-md border-2 transition-all flex items-center justify-center ${classInstructors.includes(instructor.id) ? 'bg-[#00C2C7] border-[#00C2C7]' : 'border-white/10 bg-[#0a2533]'}`}>
+                        {classInstructors.includes(instructor.id) && <FiCheck className="text-[#061E29] stroke-[4]" size={12} />}
+                      </div>
+                      <span className={`text-sm font-black uppercase tracking-widest ${classInstructors.includes(instructor.id) ? 'text-white' : 'text-white/40'}`}>
+                        {instructor.name}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex gap-4 pt-4">
+                  <button
+                    onClick={() => {
+                      setShowManageInstructorsModal(false);
+                      setSelectedClassForInstructors(null);
+                      setClassInstructors([]);
+                    }}
+                    className="flex-1 bg-white/5 text-white/40 px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-white/10 transition-all"
+                  >
+                    Abort Changes
+                  </button>
+                  <button
+                    onClick={saveClassInstructors}
+                    className="flex-[2] bg-[#00C2C7] text-[#061E29] px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-[0_0_20px_rgba(0,194,199,0.2)] hover:shadow-[0_0_35px_rgba(0,194,199,0.4)] transition-all"
+                  >
+                    Commit Personnel Update
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
       )}
+
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(0, 194, 199, 0.2);
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(0, 194, 199, 0.4);
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+      `}</style>
     </div>
   );
 };

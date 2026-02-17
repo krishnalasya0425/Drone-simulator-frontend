@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+body {
+  background-color: #061E29;
+  color: #F3F4F4;
+  margin: 0;
+  padding: 0;
+}
+
 .input {
   @apply w-full border rounded px-3 py-2 bg-gray-50 focus:ring-2 focus:ring-blue-300 outline-none;
 }
@@ -36,6 +43,18 @@
 
 .animate-spin-slow {
   animation: spin-slow 3s linear infinite;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 @keyframes scale-in {

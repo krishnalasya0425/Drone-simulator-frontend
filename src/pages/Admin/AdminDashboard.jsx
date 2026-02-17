@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import api from "../../entities/axios";
 import { classAPI } from "../../entities/class";
@@ -9,7 +8,6 @@ import {
   FaUserGraduate,
   FaChalkboardTeacher,
   FaPlus,
-  FaSignOutAlt,
   FaEdit,
   FaTrash,
   FaCheck,
@@ -18,7 +16,7 @@ import {
   FaSync,
   FaFileSignature
 } from "react-icons/fa";
-import { FiX } from "react-icons/fi";
+import { FiX, FiActivity, FiUsers, FiClipboard, FiTarget, FiArrowRight } from "react-icons/fi";
 
 const RANK_OPTIONS = [
   "Sepoy (Sep)",
@@ -36,84 +34,6 @@ const RANK_OPTIONS = [
   "Colonel (Col)",
   "Others"
 ];
-
-const DASHBOARD_STYLES = `
-  .professional-modal-overlay {
-    background: rgba(0, 0, 0, 0.45);
-    backdrop-filter: blur(4px);
-    transition: all 0.3s ease;
-  }
-  .professional-modal-content {
-    background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1);
-    border: 1px solid #f3f4f6;
-    max-width: 320px;
-    width: 100%;
-    overflow: hidden;
-  }
-  .modal-header {
-    background: #f9fafb;
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid #f3f4f6;
-  }
-  .modal-form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-  .modal-input-label {
-    font-size: 0.65rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    color: #4b5563;
-    letter-spacing: 0.05em;
-  }
-  .modal-input-field {
-    font-size: 0.8rem;
-    padding: 0.5rem 0.75rem;
-    border: 1.5px solid #e5e7eb;
-    border-radius: 6px;
-    background: #ffffff;
-    transition: all 0.2s ease;
-    width: 100%;
-  }
-  .modal-input-field:focus {
-    border-color: #074F06;
-    box-shadow: 0 0 0 3px rgba(7, 79, 6, 0.08);
-    outline: none;
-  }
-  .assignment-badge {
-    background: #ecfdf5;
-    color: #065f46;
-    font-size: 0.65rem;
-    font-weight: 700;
-    padding: 0.2rem 0.6rem;
-    border-radius: 9999px;
-    border: 1px solid #d1fae5;
-  }
-  .btn-primary-modal {
-    background: #074F06;
-    color: white;
-    font-size: 0.75rem;
-    font-weight: 600;
-    padding: 0.6rem 1.25rem;
-    border-radius: 6px;
-    transition: all 0.2s ease;
-  }
-  .btn-primary-modal:hover {
-    background: #053d05;
-    transform: translateY(-1px);
-  }
-  .btn-secondary-modal {
-    background: #f3f4f6;
-    color: #374151;
-    font-size: 0.75rem;
-    font-weight: 600;
-    padding: 0.6rem 1.25rem;
-    border-radius: 6px;
-  }
-`;
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -142,12 +62,16 @@ export default function AdminDashboard() {
   const [loadingRetests, setLoadingRetests] = useState(false);
   const [retestHistory, setRetestHistory] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
+  const [loading, setLoading] = useState(true);
 
   const role = localStorage.getItem("role");
   const instructorId = localStorage.getItem("id");
+  const userName = localStorage.getItem("name");
 
   useEffect(() => {
     if (!localStorage.getItem("token")) window.location.href = "/login";
+    setTimeout(() => setLoading(false), 800);
   }, []);
 
   useEffect(() => {
@@ -160,7 +84,6 @@ export default function AdminDashboard() {
     }
   }, [filter]);
 
-  // Fetch instructor's classes when role is Instructor
   useEffect(() => {
     if (role === "Instructor" && instructorId) {
       fetchInstructorClasses();
@@ -170,19 +93,12 @@ export default function AdminDashboard() {
   const fetchUsers = async () => {
     try {
       const userRole = filter;
-
-      // Build query params
       let queryParams = `role=${userRole}`;
-
-      // If instructor is fetching students, pass instructorId to filter by their classes
       if (role === 'Instructor' && userRole === 'student') {
         queryParams += `&instructorId=${instructorId}`;
       }
-
       const otpRes = await api.get(`/otp/admin-dashboard?${queryParams}`);
-      userRole === "student"
-        ? setStudents(otpRes.data)
-        : setInstructors(otpRes.data);
+      userRole === "student" ? setStudents(otpRes.data) : setInstructors(otpRes.data);
     } catch (err) {
       console.error(err);
     }
@@ -231,13 +147,6 @@ export default function AdminDashboard() {
     }
   };
 
-
-
-  const logout = () => {
-    localStorage.clear();
-    window.location.href = "/login";
-  };
-
   const generateOtp = async (armyNo) => {
     try {
       await api.post("/otp/request", { armyNo });
@@ -253,8 +162,6 @@ export default function AdminDashboard() {
   const startEdit = async (u) => {
     setEditingUser(u);
     setForm({ ...u, class_id: u.class_id || "" });
-
-    // Fetch all classes if editing a student
     if (u.role === "student" || filter === "student") {
       try {
         const classes = role === "Instructor"
@@ -265,7 +172,6 @@ export default function AdminDashboard() {
         console.error("Error fetching classes:", err);
       }
     }
-
     setShowModal(true);
   };
 
@@ -291,7 +197,6 @@ export default function AdminDashboard() {
       editingUser
         ? await api.put(`/users/${editingUser.id}`, form)
         : await api.post("/users/register", form);
-
       cancelEdit();
       fetchUsers();
     } catch {
@@ -299,145 +204,7 @@ export default function AdminDashboard() {
     }
   };
 
-  const renderTable = (users) => (
-    <div className="overflow-x-auto mt-4 shadow-md rounded-lg border border-gray-200">
-      <table className="w-full text-left">
-        <thead className="text-white" style={{ backgroundColor: '#074F06' }}>
-          <tr>
-            <th className="p-3">Name</th>
-            <th className="p-3">Rank</th>
-            <th className="p-3">Army No</th>
-            <th className="p-3">Course No</th>
-            <th className="p-3">Unit</th>
-            <th className="p-3">Status</th>
-            <th className="p-3">OTP</th>
-            <th className="p-3 text-center">Actions</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {users.filter(u => u.id !== 0).map((u) => (
-            <tr key={u.id} className="border-b" style={{ backgroundColor: '#D5F2D5' }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#C0E8C0'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#D5F2D5'}>
-              <td className="p-3">
-                {u.role === "student" || filter === "student" ? (
-                  <button
-                    onClick={() => navigate(`/student/${u.id}`)}
-                    className="hover:underline font-bold text-left hover:text-[#074F06] transition-colors"
-                  >
-                    {u.name}
-                  </button>
-                ) : (
-                  u.name
-                )}
-              </td>
-              <td className="p-3">{u.rank || "-"}</td>
-              <td className="p-3">{u.army_no}</td>
-              <td className="p-3">{u.course_no}</td>
-              <td className="p-3">{u.unit}</td>
-              <td className="p-3 font-semibold">
-                {u.status || "Pending"}
-              </td>
-
-              <td className="p-3 font-semibold text-center">
-                {(() => {
-                  if (!u.otp) return "-";
-
-                  // Check if OTP is older than 24 hours
-                  const timestamp = u.otp_at || u.otp_generated_at || u.updated_at || u.createdAt;
-                  if (timestamp) {
-                    const generatedAt = new Date(timestamp).getTime();
-                    const now = new Date().getTime();
-                    const diffHrs = (now - generatedAt) / (1000 * 60 * 60);
-
-                    // If more than 24 hours have passed, it must disappear
-                    if (diffHrs > 24) return "-";
-                  }
-
-                  // If we don't have a timestamp but it's marked as invalid, 
-                  // we hide it to be safe, assuming it's expired.
-                  if (!timestamp && u.otpValid === false) return "-";
-
-                  return (
-                    <span style={{ color: u.otpValid ? "green" : "red" }}>
-                      {u.otp}
-                    </span>
-                  );
-                })()}
-              </td>
-
-              <td className="p-3 flex gap-2 justify-center">
-                <button
-                  onClick={() => startEdit(u)}
-                  className="hover:text-green-800"
-                  style={{ color: '#074F06' }}
-                >
-                  <FaEdit size={18} />
-                </button>
-
-                <button
-                  onClick={() => generateOtp(u.army_no)}
-                  className="text-yellow-600 hover:text-yellow-800"
-                >
-                  <FaKey size={18} />
-                </button>
-
-                {u.status !== "Approved" && (
-                  <button
-                    onClick={async () => {
-                      // If instructor, show class selection modal
-                      if (role === "Instructor") {
-                        // Refresh classes list before showing modal
-                        await fetchInstructorClasses();
-                        setApprovingStudent(u);
-                        setSelectedClassId("");
-                      } else {
-                        // Admin can approve without class assignment
-                        api
-                          .put(`/users/${u.id}/status`, { status: "Approved" })
-                          .then(fetchUsers);
-                      }
-                    }}
-                    className="text-green-600 hover:text-green-800"
-                  >
-                    <FaCheck size={18} />
-                  </button>
-                )}
-
-                <button
-                  onClick={async () => {
-                    if (window.confirm(`Are you sure you want to delete ${u.name}?`)) {
-                      try {
-                        await api.delete(`/users/${u.id}`);
-                        alert('User deleted successfully');
-                        fetchUsers();
-                      } catch (error) {
-                        if (error.response?.data?.hasClasses) {
-                          alert(`Cannot delete instructor!\n\n${error.response.data.message}\n\nPlease delete or reassign their classes first.`);
-                        } else if (error.response?.data?.message) {
-                          alert(`Error: ${error.response.data.message}`);
-                        } else {
-                          alert('Failed to delete user. Please try again.');
-                        }
-                      }
-                    }
-                  }}
-                  className="text-red-600 hover:text-red-800"
-                >
-                  <FaTrash size={18} />
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-
   const users = filter === "student" ? students : instructors;
-
-  // Filter users based on search query
   const filteredUsers = users.filter((user) => {
     const query = searchQuery.toLowerCase();
     return (
@@ -448,319 +215,535 @@ export default function AdminDashboard() {
     );
   });
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-[#061E29]">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#1D546D]/20 via-transparent to-[#5F9598]/20" />
+        <div className="relative z-10 glass-container p-12 text-center">
+          <div className="loading-spinner mx-auto mb-6"></div>
+          <p className="text-[#F3F4F4] text-xl font-semibold">Loading Dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const backgroundImage = role === "Instructor"
+    ? 'url(https://i.pinimg.com/1200x/74/12/24/74122495fce0ecc59121da5641d16280.jpg)'
+    : 'url(https://i.pinimg.com/1200x/39/a3/35/39a3359710ee24c66c8ef1a82c47ae46.jpg)';
+
   return (
-    <div className="p-6">
-      <style>{DASHBOARD_STYLES}</style> {/* Inject styles */}
-
-      {/* HEADER */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold" style={{ color: '#074F06' }}>
-          {role === "Instructor" ? "Instructor Dashboard" : "Admin Dashboard"}
-        </h1>
-
-
-      </div>
-
-      {/* FILTER BUTTONS */}
-      <div className="flex gap-4 mb-4">
-        <button
-          className={`px-5 py-2 rounded-lg shadow flex items-center gap-2 ${filter === "student"
-            ? "text-white"
-            : "bg-gray-200 text-gray-700"
-            }`}
-          style={filter === "student" ? { backgroundColor: '#074F06' } : {}}
-          onClick={() => {
-            setFilter("student");
-            setSearchQuery(""); // Clear search when switching tabs
+    <div className="min-h-screen relative overflow-hidden bg-[#061E29]">
+      {/* Live Animated Background */}
+      <div className="fixed inset-0">
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage,
+            opacity: 0.25,
           }}
-        >
-          <FaUserGraduate />
-          Students
-        </button>
-
-        {role === "admin" && (
-          <button
-            className={`px-5 py-2 rounded-lg shadow flex items-center gap-2 ${filter === "instructor"
-              ? "text-white"
-              : "bg-gray-200 text-gray-700"
-              }`}
-            style={filter === "instructor" ? { backgroundColor: '#074F06' } : {}}
-            onClick={() => {
-              setFilter("instructor");
-              setSearchQuery(""); // Clear search when switching tabs
-            }}
-          >
-            <FaChalkboardTeacher />
-            Instructors
-          </button>
-        )}
-
-        {role === "admin" && (
-          <button
-            className={`px-5 py-2 rounded-lg shadow flex items-center gap-2 ${filter === "history"
-              ? "text-white"
-              : "bg-gray-200 text-gray-700"
-              }`}
-            style={filter === "history" ? { backgroundColor: '#074F06' } : {}}
-            onClick={() => {
-              setFilter("history");
-              setSearchQuery("");
-            }}
-          >
-            <FaFileSignature />
-            Retest History
-          </button>
-        )}
-
-        {role === "Instructor" && (
-          <button
-            className={`px-5 py-2 rounded-lg shadow flex items-center gap-2 ${filter === "retest"
-              ? "text-white"
-              : "bg-gray-200 text-gray-700"
-              }`}
-            style={filter === "retest" ? { backgroundColor: '#074F06' } : {}}
-            onClick={() => {
-              setFilter("retest");
-              setSearchQuery("");
-            }}
-          >
-            <FaSync className={loadingRetests ? "animate-spin" : ""} />
-            Retest Requests
-            {retestRequests.filter(r => r.status === 'Pending').length > 0 && (
-              <span className="bg-red-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full ml-1 font-bold">
-                {retestRequests.filter(r => r.status === 'Pending').length}
-              </span>
-            )}
-          </button>
-        )}
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#1D546D]/10 via-transparent to-[#5F9598]/10 animate-gradient-slow" />
+        <div className="floating-orb orb-1"></div>
+        <div className="floating-orb orb-2"></div>
+        <div className="floating-orb orb-3"></div>
       </div>
 
-      {/* SEARCH BAR */}
-      <div className="mb-6">
-        <div className="relative max-w-md">
-          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <FaSearch className="text-gray-400" size={18} />
-          </div>
-          <input
-            type="text"
-            placeholder={`Search ${filter === "student" ? "students" : "instructors"} by Name, Army No, Course No, or Unit...`}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg outline-none transition-all duration-200 bg-white shadow-sm"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery("")}
-              className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
-              aria-label="Clear search"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
+      {/* Main Content */}
+      <div className="relative z-10 min-h-screen">
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          {/* Tab Navigation (Commented Out) */}
+          {/* Overview Tab - Hero Landing */}
+          {activeTab === "overview" && (
+            <div className="animate-fade-in">
+              <div className="relative min-h-[70vh] flex items-center justify-center">
+                <div className="absolute inset-0 overflow-hidden rounded-3xl">
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#1D546D]/20 via-[#5F9598]/10 to-[#1D546D]/20 animate-gradient-slow"></div>
+                  <div className="floating-shape shape-1"></div>
+                  <div className="floating-shape shape-2"></div>
+                  <div className="floating-shape shape-3"></div>
+                  <div className="floating-shape shape-4"></div>
+                </div>
+
+                <div className="relative z-10 text-center max-w-4xl mx-auto px-6">
+                  <div className="mb-8">
+                    {/* <div className="inline-block px-6 py-2 bg-[#5F9598]/20 backdrop-blur-sm border border-[#5F9598]/30 rounded-full mb-6">
+                      <span className="text-[#5F9598] text-sm font-bold uppercase tracking-wider">
+                        {role === "Instructor" ? "Instructor Portal" : "Admin Portal"}
+                      </span>
+                    </div> */}
+                    <h1 className="text-5xl md:text-6xl font-black mb-6 leading-tight">
+                      <span className="text-gradient">Welcome Back,</span>
+                      <br />
+                      <span className="text-[#F3F4F4]">{userName}</span>
+                    </h1>
+                    <p className="text-xl text-[#5F9598] font-medium max-w-2xl mx-auto leading-relaxed">
+                      {role === "Instructor"
+                        ? "Manage your students, review progress, and approve retest requests from your centralized command center."
+                        : "Full system control at your fingertips. Manage users, oversee operations, and maintain platform excellence."}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap gap-4 justify-center">
+                    <button
+                      onClick={() => { setActiveTab("manage"); setFilter("student"); }}
+                      className="hero-action-card group"
+                    >
+                      <div className="hero-card-icon">
+                        <FaUserGraduate size={28} />
+                      </div>
+                      <div className="text-left">
+                        <h3 className="text-lg font-bold text-[#F3F4F4] mb-1">Manage Students</h3>
+                        <p className="text-sm text-[#5F9598]">View and edit student accounts</p>
+                      </div>
+                      <FiArrowRight className="ml-auto text-[#5F9598] group-hover:translate-x-1 transition-transform" size={20} />
+                    </button>
+
+                    {role === "admin" && (
+                      <button
+                        onClick={() => { setActiveTab("manage"); setFilter("instructor"); }}
+                        className="hero-action-card group"
+                      >
+                        <div className="hero-card-icon">
+                          <FaChalkboardTeacher size={28} />
+                        </div>
+                        <div className="text-left">
+                          <h3 className="text-lg font-bold text-[#F3F4F4] mb-1">Manage Instructors</h3>
+                          <p className="text-sm text-[#5F9598]">Oversee instructor accounts</p>
+                        </div>
+                        <FiArrowRight className="ml-auto text-[#5F9598] group-hover:translate-x-1 transition-transform" size={20} />
+                      </button>
+                    )}
+
+                    {role === "Instructor" && (
+                      <button
+                        onClick={() => { setActiveTab("retests"); setFilter("retest"); }}
+                        className="hero-action-card group"
+                      >
+                        <div className="hero-card-icon">
+                          <FaSync size={28} />
+                        </div>
+                        <div className="text-left">
+                          <h3 className="text-lg font-bold text-[#F3F4F4] mb-1">Retest Requests</h3>
+                          <p className="text-sm text-[#5F9598]">Review and approve retests</p>
+                        </div>
+                        {retestRequests.filter(r => r.status === 'Pending').length > 0 && (
+                          <span className="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold">
+                            {retestRequests.filter(r => r.status === 'Pending').length}
+                          </span>
+                        )}
+                        <FiArrowRight className="ml-2 text-[#5F9598] group-hover:translate-x-1 transition-transform" size={20} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Manage Users Tab */}
+          {activeTab === "manage" && (
+            <div className="animate-fade-in">
+              <div className="content-card">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center gap-4">
+                    <button
+                      onClick={() => setActiveTab("overview")}
+                      className="p-3 hover:bg-[#5F9598]/20 rounded-xl transition-colors text-[#5F9598] hover:text-[#F3F4F4]"
+                      title="Back to Home"
+                    >
+                      <FiArrowRight size={24} className="rotate-180" />
+                    </button>
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#1D546D] to-[#5F9598] flex items-center justify-center shadow-lg">
+                      <FiUsers className="text-[#F3F4F4]" size={28} />
+                    </div>
+                    <div>
+                      <h2 className="text-1.5xl font-black text-[#F3F4F4]">User Management</h2>
+                      <p className="text-sm text-[#5F9598] font-medium mt-1">
+                        {filteredUsers.length} {filter === "student" ? "students" : "instructors"} found
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Search Bar */}
+                  <div className="relative max-w-sm w-full ml-auto">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <FaSearch className="text-[#5F9598]" size={16} />
+                    </div>
+                    <input
+                      type="text"
+                      placeholder={`Search ${filter === "student" ? "students" : "instructors"}...`}
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2 bg-[#1D546D]/20 border border-[#5F9598]/30 rounded-lg text-sm text-[#F3F4F4] placeholder:text-[#5F9598]/50 focus:outline-none focus:border-[#5F9598] transition-all"
+                    />
+                  </div>
+                </div>
+
+                {/* Filter Buttons */}
+                {role === "admin" && (
+                  <div className="flex gap-4 mb-6">
+                    <button
+                      className={`px-5 py-3 rounded-xl font-bold flex items-center gap-2 transition-all ${filter === "student"
+                        ? "bg-gradient-to-r from-[#1D546D] to-[#5F9598] text-[#F3F4F4] shadow-lg"
+                        : "bg-[#1D546D]/20 text-[#5F9598] hover:bg-[#1D546D]/30"
+                        }`}
+                      onClick={() => { setFilter("student"); setSearchQuery(""); }}
+                    >
+                      <FaUserGraduate />
+                      Students
+                    </button>
+
+                    <button
+                      className={`px-5 py-3 rounded-xl font-bold flex items-center gap-2 transition-all ${filter === "instructor"
+                        ? "bg-gradient-to-r from-[#1D546D] to-[#5F9598] text-[#F3F4F4] shadow-lg"
+                        : "bg-[#1D546D]/20 text-[#5F9598] hover:bg-[#1D546D]/30"
+                        }`}
+                      onClick={() => { setFilter("instructor"); setSearchQuery(""); }}
+                    >
+                      <FaChalkboardTeacher />
+                      Instructors
+                    </button>
+
+                    <button
+                      className={`px-5 py-3 rounded-xl font-bold flex items-center gap-2 transition-all ${filter === "history"
+                        ? "bg-gradient-to-r from-[#1D546D] to-[#5F9598] text-[#F3F4F4] shadow-lg"
+                        : "bg-[#1D546D]/20 text-[#5F9598] hover:bg-[#1D546D]/30"
+                        }`}
+                      onClick={() => { setFilter("history"); setSearchQuery(""); }}
+                    >
+                      <FaFileSignature />
+                      Retest History
+                    </button>
+                  </div>
+                )}
+
+
+
+                {/* Table */}
+                {filter === "history" ? (
+                  <div className="overflow-x-auto rounded-xl border border-[#5F9598]/20">
+                    <table className="w-full">
+                      <thead className="bg-gradient-to-r from-[#1D546D] to-[#5F9598]">
+                        <tr>
+                          <th className="p-4 text-left text-[#F3F4F4] font-bold">Student</th>
+                          <th className="p-4 text-left text-[#F3F4F4] font-bold">Class</th>
+                          <th className="p-4 text-left text-[#F3F4F4] font-bold">Original Test</th>
+                          <th className="p-4 text-left text-[#F3F4F4] font-bold">Original Score</th>
+                          <th className="p-4 text-left text-[#F3F4F4] font-bold">Retest</th>
+                          <th className="p-4 text-left text-[#F3F4F4] font-bold">Retest Score</th>
+                          <th className="p-4 text-left text-[#F3F4F4] font-bold">Submitted</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {retestHistory.length === 0 ? (
+                          <tr>
+                            <td colSpan="7" className="p-10 text-center text-[#5F9598] bg-[#1D546D]/10">
+                              {loadingHistory ? "Loading..." : "No retest history found."}
+                            </td>
+                          </tr>
+                        ) : (
+                          retestHistory.map((record) => (
+                            <tr key={record.id} className="border-b border-[#5F9598]/10 bg-[#1D546D]/10 hover:bg-[#1D546D]/20 transition-colors">
+                              <td className="p-4 text-[#F3F4F4] font-bold">{record.student_name}</td>
+                              <td className="p-4 text-[#5F9598]">{record.class_name}</td>
+                              <td className="p-4 text-[#5F9598]">{record.original_test_title}</td>
+                              <td className="p-4 text-red-400 font-bold">
+                                {record.score} / {record.total_questions} ({Math.round((record.score / record.total_questions) * 100)}%)
+                              </td>
+                              <td className="p-4 text-[#5F9598]">{record.retest_title || 'Not taken yet'}</td>
+                              <td className="p-4">
+                                {record.retest_score !== null && record.retest_score !== undefined ? (
+                                  <span className={`font-bold ${record.retest_score >= record.score ? 'text-green-400' : 'text-orange-400'}`}>
+                                    {record.retest_score} / {record.total_questions} ({Math.round((record.retest_score / record.total_questions) * 100)}%)
+                                  </span>
+                                ) : (
+                                  <span className="text-[#5F9598]/50 italic">Not submitted</span>
+                                )}
+                              </td>
+                              <td className="p-4 text-[#5F9598] text-sm">
+                                {record.retest_submitted_at ? new Date(record.retest_submitted_at).toLocaleDateString() : 'N/A'}
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto rounded-xl border border-[#5F9598]/20">
+                    <table className="w-full">
+                      <thead className="bg-gradient-to-r from-[#1D546D] to-[#5F9598]">
+                        <tr>
+                          <th className="p-4 text-left text-[#F3F4F4] font-bold">Name</th>
+                          <th className="p-4 text-left text-[#F3F4F4] font-bold">Rank</th>
+                          <th className="p-4 text-left text-[#F3F4F4] font-bold">Army No</th>
+                          <th className="p-4 text-left text-[#F3F4F4] font-bold">Course No</th>
+                          <th className="p-4 text-left text-[#F3F4F4] font-bold">Unit</th>
+                          <th className="p-4 text-left text-[#F3F4F4] font-bold">Status</th>
+                          <th className="p-4 text-center text-[#F3F4F4] font-bold">OTP</th>
+                          <th className="p-4 text-center text-[#F3F4F4] font-bold">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredUsers.filter(u => u.id !== 0).map((u) => (
+                          <tr key={u.id} className="border-b border-[#5F9598]/10 bg-[#1D546D]/10 hover:bg-[#1D546D]/20 transition-colors">
+                            <td className="p-4">
+                              {u.role === "student" || filter === "student" ? (
+                                <button
+                                  onClick={() => navigate(`/student/${u.id}`)}
+                                  className="hover:underline font-bold text-[#F3F4F4] hover:text-[#5F9598] transition-colors"
+                                >
+                                  {u.name}
+                                </button>
+                              ) : (
+                                <span className="text-[#F3F4F4] font-bold">{u.name}</span>
+                              )}
+                            </td>
+                            <td className="p-4 text-[#5F9598]">{u.rank || "-"}</td>
+                            <td className="p-4 text-[#5F9598]">{u.army_no}</td>
+                            <td className="p-4 text-[#5F9598]">{u.course_no}</td>
+                            <td className="p-4 text-[#5F9598]">{u.unit}</td>
+                            <td className="p-4">
+                              <span className={`px-3 py-1 rounded-full text-xs font-bold ${u.status === "Approved" ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"
+                                }`}>
+                                {u.status || "Pending"}
+                              </span>
+                            </td>
+                            <td className="p-4 text-center font-semibold">
+                              {(() => {
+                                if (!u.otp) return <span className="text-[#5F9598]/50">-</span>;
+                                const timestamp = u.otp_at || u.otp_generated_at || u.updated_at || u.createdAt;
+                                if (timestamp) {
+                                  const generatedAt = new Date(timestamp).getTime();
+                                  const now = new Date().getTime();
+                                  const diffHrs = (now - generatedAt) / (1000 * 60 * 60);
+                                  if (diffHrs > 24) return <span className="text-[#5F9598]/50">-</span>;
+                                }
+                                if (!timestamp && u.otpValid === false) return <span className="text-[#5F9598]/50">-</span>;
+                                return (
+                                  <span className={u.otpValid ? "text-green-400" : "text-red-400"}>
+                                    {u.otp}
+                                  </span>
+                                );
+                              })()}
+                            </td>
+                            <td className="p-4">
+                              <div className="flex gap-2 justify-center">
+                                <button
+                                  onClick={() => startEdit(u)}
+                                  className="p-2 hover:bg-[#5F9598]/20 rounded-lg transition-colors text-[#5F9598]"
+                                  title="Edit"
+                                >
+                                  <FaEdit size={18} />
+                                </button>
+                                <button
+                                  onClick={() => generateOtp(u.army_no)}
+                                  className="p-2 hover:bg-yellow-500/20 rounded-lg transition-colors text-yellow-400"
+                                  title="Generate OTP"
+                                >
+                                  <FaKey size={18} />
+                                </button>
+                                {u.status !== "Approved" && (
+                                  <button
+                                    onClick={async () => {
+                                      if (role === "Instructor") {
+                                        await fetchInstructorClasses();
+                                        setApprovingStudent(u);
+                                        setSelectedClassId("");
+                                      } else {
+                                        api.put(`/users/${u.id}/status`, { status: "Approved" }).then(fetchUsers);
+                                      }
+                                    }}
+                                    className="p-2 hover:bg-green-500/20 rounded-lg transition-colors text-green-400"
+                                    title="Approve"
+                                  >
+                                    <FaCheck size={18} />
+                                  </button>
+                                )}
+                                <button
+                                  onClick={async () => {
+                                    if (window.confirm(`Delete ${u.name}?`)) {
+                                      try {
+                                        await api.delete(`/users/${u.id}`);
+                                        alert('User deleted successfully');
+                                        fetchUsers();
+                                      } catch (error) {
+                                        if (error.response?.data?.hasClasses) {
+                                          alert(`Cannot delete instructor!\n\n${error.response.data.message}\n\nPlease delete or reassign their classes first.`);
+                                        } else {
+                                          alert(`Error: ${error.response?.data?.message || 'Failed to delete user'}`);
+                                        }
+                                      }
+                                    }
+                                  }}
+                                  className="p-2 hover:bg-red-500/20 rounded-lg transition-colors text-red-400"
+                                  title="Delete"
+                                >
+                                  <FaTrash size={18} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Retests Tab */}
+          {activeTab === "retests" && role === "Instructor" && (
+            <div className="animate-fade-in">
+              <div className="content-card">
+                <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center gap-4">
+                    <button
+                      onClick={() => setActiveTab("overview")}
+                      className="p-3 hover:bg-[#5F9598]/20 rounded-xl transition-colors text-[#5F9598] hover:text-[#F3F4F4]"
+                      title="Back to Home"
+                    >
+                      <FiArrowRight size={24} className="rotate-180" />
+                    </button>
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#1D546D] to-[#5F9598] flex items-center justify-center shadow-lg">
+                      <FaSync className="text-[#F3F4F4]" size={28} />
+                    </div>
+                    <div>
+                      <h2 className="text-1.5xl font-black text-[#F3F4F4]">Retest Requests</h2>
+                      <p className="text-sm text-[#5F9598] font-medium mt-1">
+                        {retestRequests.length} total requests
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto rounded-xl border border-[#5F9598]/20">
+                  <table className="w-full">
+                    <thead className="bg-gradient-to-r from-[#1D546D] to-[#5F9598]">
+                      <tr>
+                        <th className="p-4 text-left text-[#F3F4F4] font-bold">Student</th>
+                        <th className="p-4 text-left text-[#F3F4F4] font-bold">Class</th>
+                        <th className="p-4 text-left text-[#F3F4F4] font-bold">Original Test</th>
+                        <th className="p-4 text-left text-[#F3F4F4] font-bold">Previous Score</th>
+                        <th className="p-4 text-left text-[#F3F4F4] font-bold">Retest Score</th>
+                        <th className="p-4 text-left text-[#F3F4F4] font-bold">Requested</th>
+                        <th className="p-4 text-left text-[#F3F4F4] font-bold">Status</th>
+                        <th className="p-4 text-center text-[#F3F4F4] font-bold">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {retestRequests.length === 0 ? (
+                        <tr>
+                          <td colSpan="8" className="p-10 text-center text-[#5F9598] bg-[#1D546D]/10">
+                            No retest requests found.
+                          </td>
+                        </tr>
+                      ) : (
+                        retestRequests.map((req) => (
+                          <tr key={req.id} className="border-b border-[#5F9598]/10 bg-[#1D546D]/10 hover:bg-[#1D546D]/20 transition-colors">
+                            <td className="p-4 text-[#F3F4F4] font-bold">{req.student_name}</td>
+                            <td className="p-4 text-[#5F9598]">{req.class_name}</td>
+                            <td className="p-4 text-[#5F9598]">{req.test_title}</td>
+                            <td className="p-4 text-red-400 font-bold">
+                              {req.score} / {req.total_questions} ({Math.round((req.score / req.total_questions) * 100)}%)
+                            </td>
+                            <td className="p-4">
+                              {req.retest_score !== null && req.retest_score !== undefined ? (
+                                <span className={`font-bold ${req.retest_score >= req.score ? 'text-green-400' : 'text-orange-400'}`}>
+                                  {req.retest_score} / {req.total_questions} ({Math.round((req.retest_score / req.total_questions) * 100)}%)
+                                </span>
+                              ) : (
+                                <span className="text-[#5F9598]/50 italic">Not taken yet</span>
+                              )}
+                            </td>
+                            <td className="p-4 text-[#5F9598] text-sm">
+                              {new Date(req.created_at).toLocaleDateString()}
+                            </td>
+                            <td className="p-4">
+                              <span className={`px-3 py-1 rounded-full text-xs font-bold ${req.retest_score !== null && req.retest_score !== undefined ? 'bg-purple-500/20 text-purple-400' :
+                                req.status === 'Pending' ? 'bg-blue-500/20 text-blue-400' :
+                                  req.status === 'Approved' ? 'bg-green-500/20 text-green-400' :
+                                    req.status === 'Denied' ? 'bg-red-500/20 text-red-400' :
+                                      'bg-gray-500/20 text-gray-400'
+                                }`}>
+                                {req.retest_score !== null && req.retest_score !== undefined ? 'COMPLETED' : req.status}
+                              </span>
+                            </td>
+                            <td className="p-4">
+                              {req.status === 'Pending' && (
+                                <div className="flex gap-2 justify-center">
+                                  <button
+                                    onClick={() => handleRetestStatus(req.id, 'Approved')}
+                                    className="bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 text-xs font-bold"
+                                  >
+                                    <FaCheck size={12} /> Approve
+                                  </button>
+                                  <button
+                                    onClick={() => handleRetestStatus(req.id, 'Denied')}
+                                    className="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 text-xs font-bold"
+                                  >
+                                    <FiX size={12} /> Deny
+                                  </button>
+                                </div>
+                              )}
+                              {req.status === 'Approved' && (
+                                <button
+                                  onClick={() => navigate(`/${req.class_id}/generatetest?studentId=${req.student_id}&requestId=${req.id}`)}
+                                  className="w-full bg-gradient-to-r from-[#1D546D] to-[#5F9598] hover:shadow-lg text-white px-3 py-1.5 rounded-lg transition-all flex items-center justify-center gap-1 text-xs font-bold"
+                                >
+                                  <FaPlus size={12} /> Create Test
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
           )}
         </div>
-        {searchQuery && (
-          <p className="mt-2 text-xs text-gray-600">
-            Found <span className="font-semibold" style={{ color: '#074F06' }}>{filteredUsers.length}</span> {filter === "student" ? "student" : "instructor"}{filteredUsers.length !== 1 ? "s" : ""}
-          </p>
-        )}
       </div>
 
-      {/* TABLE */}
-      {filter === "retest" ? (
-        <div className="overflow-x-auto mt-4 shadow-md rounded-lg border border-gray-200">
-          <table className="w-full text-left">
-            <thead className="text-white" style={{ backgroundColor: '#074F06' }}>
-              <tr>
-                <th className="p-3">Student</th>
-                <th className="p-3">Class</th>
-                <th className="p-3">Original Test</th>
-                <th className="p-3">Previous Score</th>
-                <th className="p-3">Retest Score</th>
-                <th className="p-3">Requested At</th>
-                <th className="p-3">Status</th>
-                <th className="p-3 text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {retestRequests.length === 0 ? (
-                <tr>
-                  <td colSpan="8" className="p-10 text-center text-gray-500 bg-white">
-                    No retest requests found.
-                  </td>
-                </tr>
-              ) : (
-                retestRequests.map((req) => (
-                  <tr key={req.id} className="border-b" style={{ backgroundColor: '#D5F2D5' }}>
-                    <td className="p-3 font-bold">{req.student_name}</td>
-                    <td className="p-3">{req.class_name}</td>
-                    <td className="p-3">{req.test_title}</td>
-                    <td className="p-3 text-red-600 font-bold">
-                      {req.score} / {req.total_questions} ({Math.round((req.score / req.total_questions) * 100)}%)
-                    </td>
-                    <td className="p-3">
-                      {req.retest_score !== null && req.retest_score !== undefined ? (
-                        <span className={`font-bold ${req.retest_score >= req.score ? 'text-green-600' : 'text-orange-600'}`}>
-                          {req.retest_score} / {req.total_questions} ({Math.round((req.retest_score / req.total_questions) * 100)}%)
-                        </span>
-                      ) : (
-                        <span className="text-gray-500 italic">Not taken yet</span>
-                      )}
-                    </td>
-                    <td className="p-3 text-xs">{new Date(req.created_at).toLocaleString('en-US', {
-                      year: 'numeric',
-                      month: '2-digit',
-                      day: '2-digit'
-                    })}</td>
-                    <td className="p-3">
-                      <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${req.retest_score !== null && req.retest_score !== undefined ? 'bg-purple-100 text-purple-700' :
-                        req.status === 'Pending' ? 'bg-blue-100 text-blue-700' :
-                          req.status === 'Approved' ? 'bg-green-100 text-green-700' :
-                            req.status === 'Denied' ? 'bg-red-100 text-red-700' :
-                              'bg-gray-100 text-gray-700'
-                        }`}>
-                        {req.retest_score !== null && req.retest_score !== undefined ? 'COMPLETED' : req.status}
-                      </span>
-                    </td>
-                    <td className="p-3">
-                      {req.status === 'Pending' && (
-                        <div className="flex gap-2 justify-center">
-                          <button
-                            onClick={() => handleRetestStatus(req.id, 'Approved')}
-                            className="bg-green-600 text-white p-2 rounded hover:bg-green-700 transition-all flex items-center gap-1 text-[10px]"
-                            title="Approve Request"
-                          >
-                            <FaCheck size={12} /> Approve
-                          </button>
-                          <button
-                            onClick={() => handleRetestStatus(req.id, 'Denied')}
-                            className="bg-red-600 text-white p-2 rounded hover:bg-red-700 transition-all flex items-center gap-1 text-[10px]"
-                            title="Deny Request"
-                          >
-                            <FiX size={12} /> Deny
-                          </button>
-                        </div>
-                      )}
-                      {req.status === 'Approved' && (
-                        <button
-                          onClick={() => navigate(`/${req.class_id}/generatetest?studentId=${req.student_id}&requestId=${req.id}`)}
-                          className="w-full bg-[#074F06] text-white p-2 rounded hover:bg-green-800 transition-all flex items-center justify-center gap-1 text-[10px]"
-                        >
-                          <FaPlus size={12} /> Create New Test
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      ) : filter === "history" ? (
-        <div className="overflow-x-auto mt-4 shadow-md rounded-lg border border-gray-200">
-          <table className="w-full text-left">
-            <thead className="text-white" style={{ backgroundColor: '#074F06' }}>
-              <tr>
-                <th className="p-3">Student</th>
-                <th className="p-3">Class</th>
-                <th className="p-3">Original Test</th>
-                <th className="p-3">Original Score</th>
-                <th className="p-3">Retest</th>
-                <th className="p-3">Retest Score</th>
-                <th className="p-3">Retest Submitted</th>
-              </tr>
-            </thead>
-            <tbody>
-              {retestHistory.length === 0 ? (
-                <tr>
-                  <td colSpan="7" className="p-10 text-center text-gray-500 bg-white">
-                    {loadingHistory ? "Loading..." : "No retest history found."}
-                  </td>
-                </tr>
-              ) : (
-                retestHistory.map((record) => (
-                  <tr key={record.id} className="border-b" style={{ backgroundColor: '#D5F2D5' }}>
-                    <td className="p-3 font-bold">{record.student_name}</td>
-                    <td className="p-3">{record.class_name}</td>
-                    <td className="p-3">{record.original_test_title}</td>
-                    <td className="p-3 text-red-600 font-bold">
-                      {record.score} / {record.total_questions} ({Math.round((record.score / record.total_questions) * 100)}%)
-                    </td>
-                    <td className="p-3">{record.retest_title || 'Not taken yet'}</td>
-                    <td className="p-3">
-                      {record.retest_score !== null && record.retest_score !== undefined ? (
-                        <span className={`font-bold ${record.retest_score >= record.score ? 'text-green-600' : 'text-orange-600'}`}>
-                          {record.retest_score} / {record.total_questions} ({Math.round((record.retest_score / record.total_questions) * 100)}%)
-                        </span>
-                      ) : (
-                        <span className="text-gray-500 italic">Not submitted</span>
-                      )}
-                    </td>
-                    <td className="p-3 text-xs">
-                      {record.retest_submitted_at ? new Date(record.retest_submitted_at).toLocaleDateString() : 'N/A'}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        renderTable(filteredUsers)
-      )}
-
-      {/* PROFESSIONALLY REDESIGNED MODAL */}
+      {/* Edit Modal */}
       {showModal && (
-        <div className="fixed inset-0 professional-modal-overlay flex justify-center items-center z-[100] p-4">
-          <div className="professional-modal-content animate-in fade-in zoom-in duration-200">
-            {/* Header */}
-            <div className="modal-header flex justify-between items-center">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-[100] p-4">
+          <div className="bg-[#061E29] border border-[#5F9598]/30 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="bg-gradient-to-r from-[#1D546D] to-[#5F9598] p-4 flex justify-between items-center">
               <div>
-                <h3 className="text-lg font-bold text-gray-900 leading-none">
-                  {editingUser ? "Edit User Account" : "Add New User"}
+                <h3 className="text-lg font-bold text-[#F3F4F4]">
+                  {editingUser ? "Edit User" : "Add User"}
                 </h3>
-                <p className="text-[10px] text-gray-500 mt-1 uppercase font-semibold tracking-wider">
-                  System Administration
-                </p>
+                <p className="text-xs text-[#F3F4F4]/70 uppercase tracking-wider">System Administration</p>
               </div>
               <button
                 onClick={cancelEdit}
-                className="p-2 hover:bg-gray-200 rounded-full transition-colors text-gray-400 hover:text-gray-600"
+                className="p-2 hover:bg-white/10 rounded-full transition-colors text-[#F3F4F4]"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <FiX size={20} />
               </button>
             </div>
 
-            <form onSubmit={submitForm} className="p-3 space-y-2.5">
-              {/* Credentials Section */}
-              <div className="grid grid-cols-2 gap-2.5">
-                <div className="modal-form-group">
-                  <label className="modal-input-label">Full Name</label>
+            <form onSubmit={submitForm} className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-bold text-[#5F9598] uppercase tracking-wider block mb-2">Full Name</label>
                   <input
-                    className="modal-input-field"
+                    className="w-full bg-[#1D546D]/20 border border-[#5F9598]/30 rounded-lg px-4 py-2.5 text-sm text-[#F3F4F4] focus:outline-none focus:border-[#5F9598]"
                     name="name"
-                    placeholder="Enter full name"
+                    placeholder="Enter name"
                     value={form.name}
                     onChange={handleChange}
                   />
                 </div>
-                <div className="modal-form-group">
-                  <label className="modal-input-label">Rank</label>
+                <div>
+                  <label className="text-xs font-bold text-[#5F9598] uppercase tracking-wider block mb-2">Rank</label>
                   <select
-                    className="modal-input-field"
+                    className="w-full bg-[#1D546D]/20 border border-[#5F9598]/30 rounded-lg px-4 py-2.5 text-sm text-[#F3F4F4] focus:outline-none focus:border-[#5F9598]"
                     name="rank"
                     value={form.rank}
                     onChange={handleChange}
@@ -771,34 +754,34 @@ export default function AdminDashboard() {
                     ))}
                   </select>
                 </div>
-                <div className="modal-form-group col-span-2">
-                  <label className="modal-input-label">Army No</label>
-                  <input
-                    className="modal-input-field"
-                    name="army_no"
-                    placeholder="Army No"
-                    value={form.army_no}
-                    onChange={handleChange}
-                  />
-                </div>
               </div>
 
-              {/* Units Section */}
-              <div className="grid grid-cols-2 gap-2.5">
-                <div className="modal-form-group">
-                  <label className="modal-input-label">Unit</label>
+              <div>
+                <label className="text-xs font-bold text-[#5F9598] uppercase tracking-wider block mb-2">Army No</label>
+                <input
+                  className="w-full bg-[#1D546D]/20 border border-[#5F9598]/30 rounded-lg px-4 py-2.5 text-sm text-[#F3F4F4] focus:outline-none focus:border-[#5F9598]"
+                  name="army_no"
+                  placeholder="Army No"
+                  value={form.army_no}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-bold text-[#5F9598] uppercase tracking-wider block mb-2">Unit</label>
                   <input
-                    className="modal-input-field"
+                    className="w-full bg-[#1D546D]/20 border border-[#5F9598]/30 rounded-lg px-4 py-2.5 text-sm text-[#F3F4F4] focus:outline-none focus:border-[#5F9598]"
                     name="unit"
-                    placeholder="Assigned unit"
+                    placeholder="Unit"
                     value={form.unit}
                     onChange={handleChange}
                   />
                 </div>
-                <div className="modal-form-group">
-                  <label className="modal-input-label">Course Number</label>
+                <div>
+                  <label className="text-xs font-bold text-[#5F9598] uppercase tracking-wider block mb-2">Course No</label>
                   <input
-                    className="modal-input-field"
+                    className="w-full bg-[#1D546D]/20 border border-[#5F9598]/30 rounded-lg px-4 py-2.5 text-sm text-[#F3F4F4] focus:outline-none focus:border-[#5F9598]"
                     name="course_no"
                     placeholder="Course No"
                     value={form.course_no}
@@ -807,56 +790,50 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              {/* Roles Section */}
-              <div className="grid grid-cols-2 gap-2.5">
-                <div className="modal-form-group">
-                  <label className="modal-input-label">System Role</label>
-                  <select className="modal-input-field" name="role" value={form.role} onChange={handleChange}>
-                    <option value="student">Student</option>
-                    <option value="instructor">Instructor</option>
+              {(filter === "student" || form.role === "student") && allClasses.length > 0 && (
+                <div>
+                  <label className="text-xs font-bold text-[#5F9598] uppercase tracking-wider block mb-2">Assign Class</label>
+                  <select
+                    className="w-full bg-[#1D546D]/20 border border-[#5F9598]/30 rounded-lg px-4 py-2.5 text-sm text-[#F3F4F4] focus:outline-none focus:border-[#5F9598]"
+                    name="class_id"
+                    value={form.class_id}
+                    onChange={handleChange}
+                  >
+                    <option value="">Select Class</option>
+                    {allClasses.map((cls) => (
+                      <option key={cls.id} value={cls.id}>{cls.name}</option>
+                    ))}
                   </select>
-                </div>
-                <div className="modal-form-group">
-                  <label className="modal-input-label">Account Status</label>
-                  <select className="modal-input-field" name="status" value={form.status} onChange={handleChange}>
-                    <option value="Pending">Pending</option>
-                    <option value="Approved">Approved</option>
-                    <option value="Denied">Denied</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Assignments - Enhanced Display */}
-              {editingUser && (form.role === "student" || filter === "student") && (
-                <div className="pt-2 border-t border-gray-100 flex flex-col gap-2">
-                  <div className="modal-form-group">
-                    <label className="modal-input-label">Current Enrolled Classes</label>
-                    <div className="flex flex-wrap gap-2 mt-1">
-                      {editingUser?.class_names ? (
-                        editingUser.class_names.split(', ').map((cls, idx) => (
-                          <span key={idx} className="assignment-badge">
-                            {cls}
-                          </span>
-                        ))
-                      ) : (
-                        <p className="text-[10px] text-gray-400 italic">No active class assignments</p>
-                      )}
-                    </div>
-                  </div>
                 </div>
               )}
 
-              {/* Action Buttons */}
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-50">
+              {!editingUser && (
+                <div>
+                  <label className="text-xs font-bold text-[#5F9598] uppercase tracking-wider block mb-2">Password</label>
+                  <input
+                    type="password"
+                    className="w-full bg-[#1D546D]/20 border border-[#5F9598]/30 rounded-lg px-4 py-2.5 text-sm text-[#F3F4F4] focus:outline-none focus:border-[#5F9598]"
+                    name="password"
+                    placeholder="Password"
+                    value={form.password}
+                    onChange={handleChange}
+                  />
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="submit"
+                  className="flex-1 bg-gradient-to-r from-[#1D546D] to-[#5F9598] text-[#F3F4F4] py-3 rounded-lg font-bold hover:shadow-lg transition-all"
+                >
+                  {editingUser ? "Update" : "Create"}
+                </button>
                 <button
                   type="button"
-                  className="btn-secondary-modal hover:bg-gray-200 transition-colors"
                   onClick={cancelEdit}
+                  className="flex-1 bg-[#1D546D]/20 text-[#5F9598] py-3 rounded-lg font-bold hover:bg-[#1D546D]/30 transition-all"
                 >
                   Cancel
-                </button>
-                <button className="btn-primary-modal shadow-lg shadow-green-900/10">
-                  {editingUser ? "Save Changes" : "Create Account"}
                 </button>
               </div>
             </form>
@@ -864,85 +841,260 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* APPROVE STUDENT WITH CLASS SELECTION MODAL (For Instructors) */}
-      {approvingStudent && role === "Instructor" && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-          <div className="p-6 rounded-lg shadow-lg w-[400px]" style={{ backgroundColor: '#D5F2D5' }}>
-            <h3 className="text-xl font-bold mb-4">Approve Student & Assign to Class</h3>
-            <p className="mb-4 text-gray-600">
-              Student: <strong>{approvingStudent.name}</strong> ({approvingStudent.army_no})
-            </p>
-
-            {instructorClasses.length === 0 ? (
-              <div className="mb-4 p-3 bg-yellow-100 border border-yellow-400 rounded">
-                <p className="text-yellow-800 mb-2">No classes available. Please create a class first.</p>
+      {/* Class Selection Modal for Instructor Approval */}
+      {approvingStudent && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-[100] p-4">
+          <div className="bg-[#061E29] border border-[#5F9598]/30 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+            <div className="bg-gradient-to-r from-[#1D546D] to-[#5F9598] p-4">
+              <h3 className="text-lg font-bold text-[#F3F4F4]">Assign to Class</h3>
+              <p className="text-xs text-[#F3F4F4]/70">Select a class for {approvingStudent.name}</p>
+            </div>
+            <div className="p-6 space-y-4">
+              <select
+                value={selectedClassId}
+                onChange={(e) => setSelectedClassId(e.target.value)}
+                className="w-full bg-[#1D546D]/20 border border-[#5F9598]/30 rounded-lg px-4 py-3 text-sm text-[#F3F4F4] focus:outline-none focus:border-[#5F9598]"
+              >
+                <option value="">Select a class</option>
+                {instructorClasses.map((cls) => (
+                  <option key={cls.id} value={cls.id}>{cls.name}</option>
+                ))}
+              </select>
+              <div className="flex gap-3">
+                <button
+                  onClick={async () => {
+                    if (!selectedClassId) {
+                      alert("Please select a class");
+                      return;
+                    }
+                    try {
+                      await api.put(`/users/${approvingStudent.id}/status`, {
+                        status: "Approved",
+                        class_id: selectedClassId
+                      });
+                      setApprovingStudent(null);
+                      setSelectedClassId("");
+                      fetchUsers();
+                    } catch (err) {
+                      alert("Failed to approve student");
+                    }
+                  }}
+                  className="flex-1 bg-gradient-to-r from-[#1D546D] to-[#5F9598] text-[#F3F4F4] py-3 rounded-lg font-bold hover:shadow-lg transition-all"
+                >
+                  Approve
+                </button>
                 <button
                   onClick={() => {
                     setApprovingStudent(null);
                     setSelectedClassId("");
-                    navigate("/classes");
                   }}
-                  className="hover:text-green-800 underline font-semibold"
-                  style={{ color: '#074F06' }}
+                  className="flex-1 bg-[#1D546D]/20 text-[#5F9598] py-3 rounded-lg font-bold hover:bg-[#1D546D]/30 transition-all"
                 >
-                  Go to Classes Page →
+                  Cancel
                 </button>
               </div>
-            ) : (
-              <div className="mb-4">
-                <label className="block mb-2 font-semibold">Select Class:</label>
-                <select
-                  className="w-full border px-3 py-2 rounded text-black"
-                  value={selectedClassId}
-                  onChange={(e) => setSelectedClassId(e.target.value)}
-                >
-                  <option value="">-- Select a class --</option>
-                  {instructorClasses.map((cls) => (
-                    <option key={cls.id} value={cls.id}>
-                      {cls.class_name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            <div className="flex justify-end gap-3 mt-4">
-              <button
-                type="button"
-                className="bg-gray-300 px-4 py-2 rounded"
-                onClick={() => {
-                  setApprovingStudent(null);
-                  setSelectedClassId("");
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                className="bg-green-600 text-white px-4 py-2 rounded disabled:bg-gray-400 disabled:cursor-not-allowed"
-                disabled={!selectedClassId || instructorClasses.length === 0}
-                onClick={async () => {
-                  try {
-                    await api.put(`/users/${approvingStudent.id}/status`, {
-                      status: "Approved",
-                      classId: selectedClassId,
-                    });
-                    alert("Student approved and assigned to class successfully!");
-                    setApprovingStudent(null);
-                    setSelectedClassId("");
-                    fetchUsers();
-                  } catch (err) {
-                    console.error(err);
-                    alert("Error approving student");
-                  }
-                }}
-              >
-                Approve & Assign
-              </button>
             </div>
           </div>
         </div>
       )}
 
+      {/* Styles */}
+      <style>{`
+        .glass-container {
+          background: rgba(29, 84, 109, 0.5);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(95, 149, 152, 0.3);
+          border-radius: 24px;
+          padding: 2rem;
+        }
+
+        .content-card {
+          background: rgba(29, 84, 109, 0.5);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(95, 149, 152, 0.3);
+          border-radius: 24px;
+          padding: 2.5rem;
+        }
+
+        .tab-btn {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.75rem 1.5rem;
+          border-radius: 0.75rem;
+          font-weight: 700;
+          font-size: 0.875rem;
+          color: rgba(95, 149, 152, 0.7);
+          transition: all 0.3s ease;
+          border: 1px solid transparent;
+        }
+
+        .tab-btn:hover {
+          background: rgba(29, 84, 109, 0.3);
+          color: #F3F4F4;
+        }
+
+        .tab-active {
+          background: linear-gradient(135deg, #1D546D, #5F9598);
+          color: #F3F4F4;
+          box-shadow: 0 4px 12px rgba(95, 149, 152, 0.3);
+          border-color: rgba(95, 149, 152, 0.4);
+        }
+
+        .hero-action-card {
+          background: rgba(29, 84, 109, 0.5);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(95, 149, 152, 0.3);
+          border-radius: 1rem;
+          padding: 1.5rem;
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          transition: all 0.3s ease;
+          min-width: 320px;
+        }
+
+        .hero-action-card:hover {
+          background: rgba(29, 84, 109, 0.7);
+          border-color: rgba(95, 149, 152, 0.5);
+          transform: translateY(-4px);
+          box-shadow: 0 12px 24px rgba(29, 84, 109, 0.3);
+        }
+
+        .hero-card-icon {
+          width: 56px;
+          height: 56px;
+          border-radius: 1rem;
+          background: linear-gradient(135deg, #1D546D, #5F9598);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #F3F4F4;
+          flex-shrink: 0;
+        }
+
+        .text-gradient {
+          background: linear-gradient(135deg, #5F9598, #1D546D);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+
+        .floating-orb {
+          position: absolute;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(95, 149, 152, 0.3), transparent);
+          filter: blur(60px);
+          animation: float-orb 20s infinite ease-in-out;
+        }
+
+        .orb-1 {
+          width: 400px;
+          height: 400px;
+          top: -200px;
+          left: -200px;
+        }
+
+        .orb-2 {
+          width: 500px;
+          height: 500px;
+          bottom: -250px;
+          right: -250px;
+          animation-delay: -10s;
+        }
+
+        .orb-3 {
+          width: 300px;
+          height: 300px;
+          top: 50%;
+          left: 50%;
+          animation-delay: -5s;
+        }
+
+        .floating-shape {
+          position: absolute;
+          border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+          background: linear-gradient(135deg, rgba(95, 149, 152, 0.1), rgba(29, 84, 109, 0.1));
+          animation: float-orb 15s infinite ease-in-out;
+        }
+
+        .shape-1 {
+          width: 200px;
+          height: 200px;
+          top: 10%;
+          left: 10%;
+        }
+
+        .shape-2 {
+          width: 150px;
+          height: 150px;
+          top: 60%;
+          right: 15%;
+          animation-delay: -5s;
+        }
+
+        .shape-3 {
+          width: 180px;
+          height: 180px;
+          bottom: 20%;
+          left: 20%;
+          animation-delay: -10s;
+        }
+
+        .shape-4 {
+          width: 120px;
+          height: 120px;
+          top: 30%;
+          right: 30%;
+          animation-delay: -7s;
+        }
+
+        .loading-spinner {
+          width: 50px;
+          height: 50px;
+          border: 4px solid rgba(95, 149, 152, 0.2);
+          border-top-color: #5F9598;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+
+        @keyframes float-orb {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          33% { transform: translate(30px, -30px) scale(1.1); }
+          66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+
+        @keyframes gradient-slow {
+          0%, 100% { opacity: 0.5; }
+          50% { opacity: 0.8; }
+        }
+
+        .animate-gradient-slow {
+          animation: gradient-slow 10s ease-in-out infinite;
+        }
+
+        .animate-fade-in {
+          animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes zoom-in {
+          from { transform: scale(0.95); }
+          to { transform: scale(1); }
+        }
+
+        .animate-in {
+          animation: fadeIn 0.3s ease-out, zoom-in 0.3s ease-out;
+        }
+      `}</style>
     </div>
   );
 }

@@ -122,20 +122,23 @@ export default function TestMaker() {
 
 
   return (
-    <div className="min-h-screen p-6" style={{ backgroundColor: '#f0fdf4' }}>
+    <div className="min-h-screen p-6" style={{ backgroundColor: '#061E29' }}>
       <div className="max-w-4xl mx-auto">
 
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-3 rounded-lg" style={{ backgroundColor: '#074F06' }}>
-              <FaRandom className="text-white" size={28} />
+          <div className="flex items-center gap-4 mb-4">
+            <div className="relative">
+              <div className="p-4 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 shadow-lg shadow-cyan-500/50">
+                <FaRandom className="text-white" size={32} />
+              </div>
+              <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-xl blur opacity-30 animate-pulse"></div>
             </div>
             <div>
-              <h1 className="text-3xl font-bold" style={{ color: '#074F06' }}>
+              <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400 mb-1">
                 Test Maker - Question Bank
               </h1>
-              <p className="text-gray-600">
+              <p className="text-cyan-100/70 text-sm">
                 Upload one PDF with all questions. We'll randomly distribute them across multiple test sets.
               </p>
             </div>
@@ -143,358 +146,379 @@ export default function TestMaker() {
         </div>
 
         {/* How It Works */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl shadow-md p-6 mb-6 border-2 border-blue-200">
-          <div className="flex items-start gap-3 mb-3">
-            <div className="p-2 rounded-lg bg-blue-600">
-              <FiLayers className="text-white" size={24} />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-blue-900">How It Works</h2>
-              <p className="text-sm text-blue-800 mt-1">Simple 3-step process to create randomized test sets</p>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-            <div className="bg-white rounded-lg p-4 border-2 border-blue-200">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">1</div>
-                <h3 className="font-bold text-blue-900">Upload Question Bank</h3>
+        <div className="relative rounded-xl p-6 mb-6 border border-cyan-500/30 overflow-hidden"
+          style={{
+            backgroundColor: 'rgba(6, 182, 212, 0.05)',
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
+            boxShadow: '0 8px 32px 0 rgba(6, 182, 212, 0.15)'
+          }}>
+          <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-blue-500/5"></div>
+          <div className="relative z-10">
+            <div className="flex items-start gap-3 mb-4">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600">
+                <FiLayers className="text-white" size={24} />
               </div>
-              <p className="text-sm text-gray-700">One PDF with all your questions (e.g., 50 questions)</p>
-            </div>
-            <div className="bg-white rounded-lg p-4 border-2 border-blue-200">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">2</div>
-                <h3 className="font-bold text-blue-900">Configure Sets</h3>
+              <div>
+                <h2 className="text-xl font-bold text-cyan-400">How It Works</h2>
+                <p className="text-sm text-cyan-100/60 mt-1">Simple 3-step process to create randomized test sets</p>
               </div>
-              <p className="text-sm text-gray-700">Specify how many sets and questions per set (e.g., 5 sets × 10 questions)</p>
             </div>
-            <div className="bg-white rounded-lg p-4 border-2 border-blue-200">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">3</div>
-                <h3 className="font-bold text-blue-900">Random Distribution</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+              <div className="rounded-lg p-4 border border-cyan-500/30 bg-gradient-to-br from-cyan-900/20 to-blue-900/20 backdrop-blur-sm">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 text-white flex items-center justify-center font-bold shadow-lg shadow-cyan-500/50">1</div>
+                  <h3 className="font-bold text-cyan-300">Upload Question Bank</h3>
+                </div>
+                <p className="text-sm text-cyan-100/70">One PDF with all your questions (e.g., 50 questions)</p>
               </div>
-              <p className="text-sm text-gray-700">Questions randomly distributed to sets, sets randomly assigned to students</p>
+              <div className="rounded-lg p-4 border border-cyan-500/30 bg-gradient-to-br from-cyan-900/20 to-blue-900/20 backdrop-blur-sm">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 text-white flex items-center justify-center font-bold shadow-lg shadow-cyan-500/50">2</div>
+                  <h3 className="font-bold text-cyan-300">Configure Sets</h3>
+                </div>
+                <p className="text-sm text-cyan-100/70">Specify how many sets and questions per set (e.g., 5 sets × 10 questions)</p>
+              </div>
+              <div className="rounded-lg p-4 border border-cyan-500/30 bg-gradient-to-br from-cyan-900/20 to-blue-900/20 backdrop-blur-sm">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 text-white flex items-center justify-center font-bold shadow-lg shadow-cyan-500/50">3</div>
+                  <h3 className="font-bold text-cyan-300">Random Distribution</h3>
+                </div>
+                <p className="text-sm text-cyan-100/70">Questions randomly distributed to sets, sets randomly assigned to students</p>
+              </div>
             </div>
           </div>
         </div>
 
         {/* PDF Format Guide */}
-        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl shadow-md p-6 mb-6 border-2" style={{ borderColor: '#D5F2D5' }}>
-          <div className="flex items-start justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg" style={{ backgroundColor: '#074F06' }}>
-                <FiFileText className="text-white" size={24} />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold" style={{ color: '#074F06' }}>PDF Format Requirements</h2>
-                <p className="text-sm text-gray-700">Your PDF must follow this exact format for questions to be parsed correctly</p>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowFormatGuide(!showFormatGuide)}
-              className="px-4 py-2 text-white rounded-lg font-semibold transition-all"
-              style={{ backgroundColor: '#074F06' }}
-              onMouseEnter={(e) => e.target.style.backgroundColor = '#053d05'}
-              onMouseLeave={(e) => e.target.style.backgroundColor = '#074F06'}
-            >
-              {showFormatGuide ? 'Hide' : 'Show'} Example
-            </button>
-          </div>
-
-          {showFormatGuide && (
-            <div className="mt-4 bg-white rounded-lg p-6 border-2" style={{ borderColor: '#D5F2D5' }}>
-              <h3 className="font-bold mb-3 flex items-center gap-2" style={{ color: '#074F06' }}>
-                <FiCheckCircle style={{ color: '#074F06' }} />
-                Correct Format Example:
-              </h3>
-              <div className="p-4 rounded-lg font-mono text-sm space-y-3 border-2 border-gray-300" style={{ backgroundColor: '#f0fdf4' }}>
+        <div className="relative rounded-xl p-6 mb-6 border border-cyan-500/30 overflow-hidden"
+          style={{
+            backgroundColor: 'rgba(6, 182, 212, 0.05)',
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
+          }}>
+          <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-blue-500/5"></div>
+          <div className="relative z-10">
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600">
+                  <FiFileText className="text-white" size={24} />
+                </div>
                 <div>
-                  <span className="font-bold" style={{ color: '#074F06' }}>1.</span> <span className="text-gray-800">What is the capital of France?</span>
-                </div>
-                <div className="ml-4 space-y-1">
-                  <div><span className="font-bold" style={{ color: '#16a34a' }}>A.</span> <span className="text-gray-700">London</span></div>
-                  <div><span className="font-bold" style={{ color: '#16a34a' }}>B.</span> <span className="text-gray-700">Paris</span></div>
-                  <div><span className="font-bold" style={{ color: '#16a34a' }}>C.</span> <span className="text-gray-700">Berlin</span></div>
-                  <div><span className="font-bold" style={{ color: '#16a34a' }}>D.</span> <span className="text-gray-700">Madrid</span></div>
-                </div>
-                <div className="ml-4">
-                  <span className="font-bold" style={{ color: '#15803d' }}>Answer:</span> <span className="text-gray-800">B</span>
-                </div>
-
-                <div className="border-t-2 border-gray-300 pt-3 mt-3">
-                  <span className="font-bold" style={{ color: '#074F06' }}>2.</span> <span className="text-gray-800">The Earth is flat.</span>
-                </div>
-                <div className="ml-4 space-y-1">
-                  <div><span className="font-bold" style={{ color: '#16a34a' }}>A.</span> <span className="text-gray-700">True</span></div>
-                  <div><span className="text-blue-600 font-bold">B.</span> <span className="text-gray-700">False</span></div>
-                </div>
-                <div className="ml-4">
-                  <span className="font-bold" style={{ color: '#15803d' }}>Answer:</span> <span className="text-gray-800">False</span>
+                  <h2 className="text-xl font-bold text-cyan-400">PDF Format Requirements</h2>
+                  <p className="text-sm text-cyan-100/60">Your PDF must follow this exact format for questions to be parsed correctly</p>
                 </div>
               </div>
-
-              <div className="mt-4 p-4 rounded-lg border-2" style={{ backgroundColor: '#D5F2D5', borderColor: '#074F06' }}>
-                <h4 className="font-bold mb-2" style={{ color: '#074F06' }}>📋 Important Rules:</h4>
-                <ul className="list-disc list-inside space-y-1 text-sm" style={{ color: '#074F06' }}>
-                  <li>Start each question with a number followed by a period (1., 2., 3...)</li>
-                  <li>Options must start with A., B., C., or D. (with period)</li>
-                  <li>Each answer must be on a new line starting with "Answer:" followed by the letter or True/False</li>
-                  <li>Leave blank lines between questions for better readability</li>
-                  <li>PDF must contain selectable text (not scanned images)</li>
-                </ul>
-              </div>
+              <button
+                onClick={() => setShowFormatGuide(!showFormatGuide)}
+                className="px-4 py-2 rounded-lg font-semibold transition-all bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:shadow-lg hover:shadow-cyan-500/50"
+              >
+                {showFormatGuide ? 'Hide' : 'Show'} Example
+              </button>
             </div>
-          )}
+
+            {showFormatGuide && (
+              <div className="mt-4 rounded-lg p-6 border border-cyan-500/30" style={{ backgroundColor: 'rgba(6, 30, 41, 0.5)' }}>
+                <h3 className="font-bold mb-3 flex items-center gap-2 text-cyan-300">
+                  <FiCheckCircle className="text-cyan-400" />
+                  Correct Format Example:
+                </h3>
+                <div className="p-4 rounded-lg font-mono text-sm space-y-3 border border-cyan-500/30" style={{ backgroundColor: 'rgba(6, 182, 212, 0.1)' }}>
+                  <div>
+                    <span className="font-bold text-cyan-400">1.</span> <span className="text-cyan-100">What is the capital of France?</span>
+                  </div>
+                  <div className="ml-4 space-y-1">
+                    <div><span className="font-bold text-blue-400">A.</span> <span className="text-cyan-100/70">London</span></div>
+                    <div><span className="font-bold text-blue-400">B.</span> <span className="text-cyan-100/70">Paris</span></div>
+                    <div><span className="font-bold text-blue-400">C.</span> <span className="text-cyan-100/70">Berlin</span></div>
+                    <div><span className="font-bold text-blue-400">D.</span> <span className="text-cyan-100/70">Madrid</span></div>
+                  </div>
+                  <div className="ml-4">
+                    <span className="font-bold text-green-400">Answer:</span> <span className="text-cyan-100">B</span>
+                  </div>
+
+                  <div className="border-t border-cyan-500/30 pt-3 mt-3">
+                    <span className="font-bold text-cyan-400">2.</span> <span className="text-cyan-100">The Earth is flat.</span>
+                  </div>
+                  <div className="ml-4 space-y-1">
+                    <div><span className="font-bold text-blue-400">A.</span> <span className="text-cyan-100/70">True</span></div>
+                    <div><span className="font-bold text-blue-400">B.</span> <span className="text-cyan-100/70">False</span></div>
+                  </div>
+                  <div className="ml-4">
+                    <span className="font-bold text-green-400">Answer:</span> <span className="text-cyan-100">False</span>
+                  </div>
+                </div>
+
+                <div className="mt-4 p-4 rounded-lg border border-cyan-500/50" style={{ backgroundColor: 'rgba(6, 182, 212, 0.1)' }}>
+                  <h4 className="font-bold mb-2 text-cyan-300">📋 Important Rules:</h4>
+                  <ul className="list-disc list-inside space-y-1 text-sm text-cyan-100/70">
+                    <li>Start each question with a number followed by a period (1., 2., 3...)</li>
+                    <li>Options must start with A., B., C., or D. (with period)</li>
+                    <li>Each answer must be on a new line starting with "Answer:" followed by the letter or True/False</li>
+                    <li>Leave blank lines between questions for better readability</li>
+                    <li>PDF must contain selectable text (not scanned images)</li>
+                  </ul>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Access Check */}
         {role !== "Instructor" && role !== "admin" ? (
-          <div className="bg-red-100 text-red-700 p-4 rounded-lg">
+          <div className="bg-red-900/20 border border-red-500/50 text-red-300 p-4 rounded-lg">
             Access Denied. Only Instructors can create tests.
           </div>
         ) : (
 
-          <div className="bg-white rounded-xl shadow-lg p-8 space-y-6">
+          <div className="relative rounded-xl p-8 space-y-6 border border-cyan-500/30 overflow-hidden"
+            style={{
+              backgroundColor: 'rgba(6, 30, 41, 0.8)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+            }}>
+            <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-blue-500/5"></div>
+            <div className="relative z-10 space-y-6">
 
-            {/* 1. Test Details */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="flex items-center gap-2 font-semibold text-sm mb-2" style={{ color: '#074F06' }}>
-                  <FiFileText /> Test Name *
-                </label>
-                <input
-                  type="text"
-                  className="w-full p-3 border-2 rounded-lg outline-none transition-all focus:border-green-600"
-                  placeholder="e.g. Map Reading Mid-Term"
-                  value={title}
-                  onChange={e => setTitle(e.target.value)}
-                />
-              </div>
+              {/* 1. Test Details */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="flex items-center gap-2 font-semibold text-sm mb-2 text-cyan-300">
+                    <FiFileText /> Test Name *
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full p-3 border border-cyan-500/30 rounded-lg outline-none transition-all bg-cyan-900/20 text-cyan-100 placeholder-cyan-100/40 focus:border-cyan-400 focus:shadow-lg focus:shadow-cyan-500/20"
+                    placeholder="e.g. Map Reading Mid-Term"
+                    value={title}
+                    onChange={e => setTitle(e.target.value)}
+                  />
+                </div>
 
-              <div>
-                <label className="flex items-center gap-2 font-semibold text-sm mb-2" style={{ color: '#074F06' }}>
-                  <FiList /> Select Class *
-                </label>
-                <select
-                  className="w-full p-3 border-2 rounded-lg outline-none transition-all bg-white focus:border-green-600"
-                  value={selectedClassId}
-                  onChange={e => setSelectedClassId(e.target.value)}
-                >
-                  <option value="">-- Select Class --</option>
-                  {classes.map(c => (
-                    <option key={c.id} value={c.id}>{c.class_name}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <hr className="border-gray-100" />
-
-            {/* 2. Question Bank Upload */}
-            <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-xl border-2 border-purple-200">
-              <label className="flex items-center gap-2 font-semibold text-lg mb-3 text-purple-900">
-                <FaFilePdf size={24} /> Upload Question Bank PDF *
-              </label>
-              <p className="text-sm text-purple-800 mb-4">
-                Upload a single PDF containing all your questions. The system will randomly select questions for each set.
-              </p>
-              <div className="bg-white p-4 rounded-lg border-2 border-purple-300">
-                <input
-                  type="file"
-                  accept=".pdf"
-                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-6 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-100 file:text-purple-700 hover:file:bg-purple-200 cursor-pointer"
-                  onChange={(e) => handleQuestionBankChange(e.target.files[0])}
-                />
-                {questionBankFile && (
-                  <div className="mt-3 flex items-center gap-2 text-green-700">
-                    <FiCheckCircle size={20} />
-                    <span className="font-semibold">{questionBankFile.name}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <hr className="border-gray-100" />
-
-            {/* 3. Set Configuration */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="flex items-center gap-2 font-semibold text-sm mb-3" style={{ color: '#074F06' }}>
-                  <FaLayerGroup /> Number of Sets *
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  max="26"
-                  className="w-full p-3 border-2 rounded-lg font-bold text-lg focus:border-green-600"
-                  value={numberOfSets}
-                  onChange={e => {
-                    const val = parseInt(e.target.value);
-                    if (val > 0 && val <= 26) setNumberOfSets(val);
-                  }}
-                />
-                <p className="text-xs text-gray-500 mt-1">How many different test variations to create (Set A, B, C...)</p>
-              </div>
-
-              <div>
-                <label className="flex items-center gap-2 font-semibold text-sm mb-3" style={{ color: '#074F06' }}>
-                  <FiList /> Questions Per Set *
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  className="w-full p-3 border-2 rounded-lg font-bold text-lg focus:border-green-600"
-                  value={questionsPerSet}
-                  onChange={e => {
-                    const val = parseInt(e.target.value);
-                    if (val > 0) setQuestionsPerSet(val);
-                  }}
-                />
-                <p className="text-xs text-gray-500 mt-1">How many questions each student will receive</p>
-              </div>
-            </div>
-
-            {/* Info Box */}
-            <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                <FiActivity className="text-blue-600 mt-1" size={20} />
-                <div className="text-sm text-blue-900">
-                  <p className="font-semibold mb-1">📊 Configuration Summary:</p>
-                  <ul className="space-y-1">
-                    <li>• You will create <span className="font-bold">{numberOfSets} different test sets</span></li>
-                    <li>• Each set will have <span className="font-bold">{questionsPerSet} questions</span></li>
-                    <li>• Questions will be <span className="font-bold">randomly selected</span> from your question bank</li>
-                    <li>• Sets will be <span className="font-bold">randomly assigned</span> to students</li>
-                  </ul>
+                <div>
+                  <label className="flex items-center gap-2 font-semibold text-sm mb-2 text-cyan-300">
+                    <FiList /> Select Class *
+                  </label>
+                  <select
+                    className="w-full p-3 border border-cyan-500/30 rounded-lg outline-none transition-all bg-cyan-900/20 text-cyan-100 focus:border-cyan-400 focus:shadow-lg focus:shadow-cyan-500/20"
+                    value={selectedClassId}
+                    onChange={e => setSelectedClassId(e.target.value)}
+                  >
+                    <option value="">-- Select Class --</option>
+                    {classes.map(c => (
+                      <option key={c.id} value={c.id}>{c.class_name}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
-            </div>
 
-            <hr className="border-gray-100" />
+              <hr className="border-cyan-500/20" />
 
-            {/* 4. Exam Config */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="flex items-center gap-2 font-semibold text-sm mb-2" style={{ color: '#074F06' }}>
-                  Exam Type
+              {/* 2. Question Bank Upload */}
+              <div className="rounded-xl p-6 border border-purple-500/30" style={{ backgroundColor: 'rgba(168, 85, 247, 0.05)' }}>
+                <label className="flex items-center gap-2 font-semibold text-lg mb-3 text-purple-300">
+                  <FaFilePdf size={24} /> Upload Question Bank PDF *
                 </label>
-                <select
-                  className="w-full p-3 border-2 rounded-lg bg-white focus:border-green-600"
-                  value={examConfig.examType}
-                  onChange={e => setExamConfig({ ...examConfig, examType: e.target.value })}
-                >
-                  <option value="UNTIMED">Untimed (Practice)</option>
-                  <option value="TIMED">Timed (Duration)</option>
-
-                </select>
+                <p className="text-sm text-purple-200/60 mb-4">
+                  Upload a single PDF containing all your questions. The system will randomly select questions for each set.
+                </p>
+                <div className="bg-purple-900/20 p-4 rounded-lg border border-purple-500/30">
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    className="block w-full text-sm text-cyan-100/70 file:mr-4 file:py-3 file:px-6 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gradient-to-r file:from-purple-500 file:to-pink-500 file:text-white hover:file:shadow-lg hover:file:shadow-purple-500/50 cursor-pointer"
+                    onChange={(e) => handleQuestionBankChange(e.target.files[0])}
+                  />
+                  {questionBankFile && (
+                    <div className="mt-3 flex items-center gap-2 text-green-400">
+                      <FiCheckCircle size={20} />
+                      <span className="font-semibold">{questionBankFile.name}</span>
+                    </div>
+                  )}
+                </div>
               </div>
-              <div>
-                <label className="flex items-center gap-2 font-semibold text-sm mb-2" style={{ color: '#074F06' }}>
-                  <FiCheckCircle /> Pass Threshold (Questions)
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  className="w-full p-3 border-2 rounded-lg focus:border-green-600"
-                  value={examConfig.passThreshold}
-                  onChange={e => {
-                    const val = parseInt(e.target.value) || 1;
-                    setExamConfig({ ...examConfig, passThreshold: val >= 1 ? val : 1 });
-                  }}
-                />
-              </div>
-            </div>
 
-            {/* Conditional Timed Config */}
-            {examConfig.examType === 'TIMED' && (
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 flex items-center gap-4">
-                <FiClock className="text-blue-600" size={24} />
-                <div className="flex-1">
-                  <label className="font-semibold text-sm text-blue-800 block mb-1">Duration (Minutes)</label>
+              <hr className="border-cyan-500/20" />
+
+              {/* 3. Set Configuration */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="flex items-center gap-2 font-semibold text-sm mb-3 text-cyan-300">
+                    <FaLayerGroup /> Number of Sets *
+                  </label>
                   <input
                     type="number"
                     min="1"
-                    className="w-full p-2 border rounded focus:border-blue-500"
-                    value={examConfig.durationMinutes}
+                    max="26"
+                    className="w-full p-3 border border-cyan-500/30 rounded-lg font-bold text-lg bg-cyan-900/20 text-cyan-100 focus:border-cyan-400 focus:shadow-lg focus:shadow-cyan-500/20 outline-none"
+                    value={numberOfSets}
+                    onChange={e => {
+                      const val = parseInt(e.target.value);
+                      if (val > 0 && val <= 26) setNumberOfSets(val);
+                    }}
+                  />
+                  <p className="text-xs text-cyan-100/50 mt-1">How many different test variations to create (Set A, B, C...)</p>
+                </div>
+
+                <div>
+                  <label className="flex items-center gap-2 font-semibold text-sm mb-3 text-cyan-300">
+                    <FiList /> Questions Per Set *
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    className="w-full p-3 border border-cyan-500/30 rounded-lg font-bold text-lg bg-cyan-900/20 text-cyan-100 focus:border-cyan-400 focus:shadow-lg focus:shadow-cyan-500/20 outline-none"
+                    value={questionsPerSet}
+                    onChange={e => {
+                      const val = parseInt(e.target.value);
+                      if (val > 0) setQuestionsPerSet(val);
+                    }}
+                  />
+                  <p className="text-xs text-cyan-100/50 mt-1">How many questions each student will receive</p>
+                </div>
+              </div>
+
+              {/* Info Box */}
+              <div className="rounded-lg p-4 border border-blue-500/30" style={{ backgroundColor: 'rgba(59, 130, 246, 0.05)' }}>
+                <div className="flex items-start gap-3">
+                  <FiActivity className="text-blue-400 mt-1" size={20} />
+                  <div className="text-sm text-blue-200">
+                    <p className="font-semibold mb-1">📊 Configuration Summary:</p>
+                    <ul className="space-y-1 text-cyan-100/70">
+                      <li>• You will create <span className="font-bold text-cyan-300">{numberOfSets} different test sets</span></li>
+                      <li>• Each set will have <span className="font-bold text-cyan-300">{questionsPerSet} questions</span></li>
+                      <li>• Questions will be <span className="font-bold text-cyan-300">randomly selected</span> from your question bank</li>
+                      <li>• Sets will be <span className="font-bold text-cyan-300">randomly assigned</span> to students</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <hr className="border-cyan-500/20" />
+
+              {/* 4. Exam Config */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="flex items-center gap-2 font-semibold text-sm mb-2 text-cyan-300">
+                    Exam Type
+                  </label>
+                  <select
+                    className="w-full p-3 border border-cyan-500/30 rounded-lg bg-cyan-900/20 text-cyan-100 focus:border-cyan-400 focus:shadow-lg focus:shadow-cyan-500/20 outline-none"
+                    value={examConfig.examType}
+                    onChange={e => setExamConfig({ ...examConfig, examType: e.target.value })}
+                  >
+                    <option value="UNTIMED">Untimed (Practice)</option>
+                    <option value="TIMED">Timed (Duration)</option>
+
+                  </select>
+                </div>
+                <div>
+                  <label className="flex items-center gap-2 font-semibold text-sm mb-2 text-cyan-300">
+                    <FiCheckCircle /> Pass Threshold (Questions)
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    className="w-full p-3 border border-cyan-500/30 rounded-lg bg-cyan-900/20 text-cyan-100 focus:border-cyan-400 focus:shadow-lg focus:shadow-cyan-500/20 outline-none"
+                    value={examConfig.passThreshold}
                     onChange={e => {
                       const val = parseInt(e.target.value) || 1;
-                      setExamConfig({ ...examConfig, durationMinutes: val >= 1 ? val : 1 });
+                      setExamConfig({ ...examConfig, passThreshold: val >= 1 ? val : 1 });
                     }}
                   />
                 </div>
               </div>
-            )}
 
-            {examConfig.examType === 'FIXED_TIME' && (
-              <div className="bg-purple-50 p-4 rounded-lg border border-purple-100 grid grid-cols-2 gap-4">
-                <div>
-                  <label className="font-semibold text-sm text-purple-800 block mb-1">Start Time</label>
-                  <input
-                    type="datetime-local"
-                    className="w-full p-2 border rounded focus:border-purple-500"
-                    value={examConfig.startTime}
-                    onChange={e => setExamConfig({ ...examConfig, startTime: e.target.value })}
-                  />
+              {/* Conditional Timed Config */}
+              {examConfig.examType === 'TIMED' && (
+                <div className="rounded-lg p-4 border border-blue-500/30 flex items-center gap-4" style={{ backgroundColor: 'rgba(59, 130, 246, 0.05)' }}>
+                  <FiClock className="text-blue-400" size={24} />
+                  <div className="flex-1">
+                    <label className="font-semibold text-sm text-blue-300 block mb-1">Duration (Minutes)</label>
+                    <input
+                      type="number"
+                      min="1"
+                      className="w-full p-2 border border-blue-500/30 rounded bg-blue-900/20 text-cyan-100 focus:border-blue-400 outline-none"
+                      value={examConfig.durationMinutes}
+                      onChange={e => {
+                        const val = parseInt(e.target.value) || 1;
+                        setExamConfig({ ...examConfig, durationMinutes: val >= 1 ? val : 1 });
+                      }}
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="font-semibold text-sm text-purple-800 block mb-1">End Time</label>
-                  <input
-                    type="datetime-local"
-                    className="w-full p-2 border rounded focus:border-purple-500"
-                    value={examConfig.endTime}
-                    onChange={e => setExamConfig({ ...examConfig, endTime: e.target.value })}
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Submit */}
-            <button
-              onClick={handleSubmit}
-              disabled={uploading}
-              className="w-full py-4 text-white rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-              style={{ backgroundColor: '#074F06' }}
-            >
-              {uploading ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Creating Test Sets from Question Bank...
-                </>
-              ) : (
-                <>
-                  <FiUpload size={24} />
-                  Create Test Sets from Question Bank
-                </>
               )}
-            </button>
 
+              {examConfig.examType === 'FIXED_TIME' && (
+                <div className="rounded-lg p-4 border border-purple-500/30 grid grid-cols-2 gap-4" style={{ backgroundColor: 'rgba(168, 85, 247, 0.05)' }}>
+                  <div>
+                    <label className="font-semibold text-sm text-purple-300 block mb-1">Start Time</label>
+                    <input
+                      type="datetime-local"
+                      className="w-full p-2 border border-purple-500/30 rounded bg-purple-900/20 text-cyan-100 focus:border-purple-400 outline-none"
+                      value={examConfig.startTime}
+                      onChange={e => setExamConfig({ ...examConfig, startTime: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="font-semibold text-sm text-purple-300 block mb-1">End Time</label>
+                    <input
+                      type="datetime-local"
+                      className="w-full p-2 border border-purple-500/30 rounded bg-purple-900/20 text-cyan-100 focus:border-purple-400 outline-none"
+                      value={examConfig.endTime}
+                      onChange={e => setExamConfig({ ...examConfig, endTime: e.target.value })}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Submit */}
+              <button
+                onClick={handleSubmit}
+                disabled={uploading}
+                className="w-full py-4 text-white rounded-xl font-bold text-lg shadow-lg transition-all transform hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed bg-gradient-to-r from-cyan-500 to-blue-600 hover:shadow-cyan-500/50"
+              >
+                {uploading ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Creating Test Sets from Question Bank...
+                  </>
+                ) : (
+                  <>
+                    <FiUpload size={24} />
+                    Create Test Sets from Question Bank
+                  </>
+                )}
+              </button>
+
+            </div>
           </div>
         )}
 
         {/* Format Error Modal */}
         {showFormatModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6 rounded-t-2xl" style={{ background: 'linear-gradient(to right, #074F06, #16a34a)' }}>
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-cyan-500/30" style={{ backgroundColor: '#061E29' }}>
+              <div className="p-6 rounded-t-2xl bg-gradient-to-r from-red-600 to-orange-600">
                 <div className="flex items-center gap-3 text-white">
                   <FiActivity size={32} />
                   <div>
                     <h2 className="text-2xl font-bold">Invalid PDF Format</h2>
-                    <p className="text-green-100">Your PDF doesn't match the required format</p>
+                    <p className="text-red-100">Your PDF doesn't match the required format</p>
                   </div>
                 </div>
               </div>
 
               <div className="p-6 space-y-4">
-                <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4">
-                  <h3 className="font-bold text-red-900 mb-2 flex items-center gap-2">
-                    <FiActivity className="text-red-600" />
+                <div className="bg-red-900/20 border border-red-500/50 rounded-lg p-4">
+                  <h3 className="font-bold text-red-300 mb-2 flex items-center gap-2">
+                    <FiActivity className="text-red-400" />
                     What went wrong?
                   </h3>
-                  <p className="text-red-800 text-sm">
+                  <p className="text-red-200/80 text-sm">
                     We couldn't find any valid questions in your PDF. This usually means:
                   </p>
-                  <ul className="list-disc list-inside mt-2 text-sm text-red-800 space-y-1">
+                  <ul className="list-disc list-inside mt-2 text-sm text-red-200/70 space-y-1">
                     <li>The PDF format doesn't match our requirements</li>
                     <li>The PDF is a scanned image (text must be selectable)</li>
                     <li>Questions are not numbered correctly (must use 1., 2., 3...)</li>
@@ -503,24 +527,24 @@ export default function TestMaker() {
                   </ul>
                 </div>
 
-                <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4">
-                  <h3 className="font-bold text-green-900 mb-3 flex items-center gap-2">
-                    <FiCheckCircle className="text-green-600" />
+                <div className="bg-green-900/20 border border-green-500/50 rounded-lg p-4">
+                  <h3 className="font-bold text-green-300 mb-3 flex items-center gap-2">
+                    <FiCheckCircle className="text-green-400" />
                     Required Format:
                   </h3>
-                  <div className="bg-white p-4 rounded-lg font-mono text-sm space-y-2 border border-green-300">
-                    <div><span className="text-green-600 font-bold">1.</span> <span className="text-gray-800">Your question text here?</span></div>
-                    <div className="ml-4"><span className="text-blue-600 font-bold">A.</span> <span className="text-gray-700">First option</span></div>
-                    <div className="ml-4"><span className="text-blue-600 font-bold">B.</span> <span className="text-gray-700">Second option</span></div>
-                    <div className="ml-4"><span className="text-blue-600 font-bold">C.</span> <span className="text-gray-700">Third option</span></div>
-                    <div className="ml-4"><span className="text-blue-600 font-bold">D.</span> <span className="text-gray-700">Fourth option</span></div>
-                    <div className="ml-4"><span className="text-purple-600 font-bold">Answer:</span> <span className="text-gray-800">A</span></div>
+                  <div className="bg-cyan-900/20 p-4 rounded-lg font-mono text-sm space-y-2 border border-cyan-500/30">
+                    <div><span className="text-green-400 font-bold">1.</span> <span className="text-cyan-100">Your question text here?</span></div>
+                    <div className="ml-4"><span className="text-blue-400 font-bold">A.</span> <span className="text-cyan-100/70">First option</span></div>
+                    <div className="ml-4"><span className="text-blue-400 font-bold">B.</span> <span className="text-cyan-100/70">Second option</span></div>
+                    <div className="ml-4"><span className="text-blue-400 font-bold">C.</span> <span className="text-cyan-100/70">Third option</span></div>
+                    <div className="ml-4"><span className="text-blue-400 font-bold">D.</span> <span className="text-cyan-100/70">Fourth option</span></div>
+                    <div className="ml-4"><span className="text-purple-400 font-bold">Answer:</span> <span className="text-cyan-100">A</span></div>
                   </div>
                 </div>
 
-                <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
-                  <h3 className="font-bold text-blue-900 mb-2">💡 Quick Tips:</h3>
-                  <ul className="list-disc list-inside text-sm text-blue-800 space-y-1">
+                <div className="bg-blue-900/20 border border-blue-500/50 rounded-lg p-4">
+                  <h3 className="font-bold text-blue-300 mb-2">💡 Quick Tips:</h3>
+                  <ul className="list-disc list-inside text-sm text-blue-200/70 space-y-1">
                     <li>Use a period (.) after question numbers and option letters</li>
                     <li>Make sure text is selectable (not a scanned image)</li>
                     <li>Each answer must be on its own line</li>
@@ -535,17 +559,14 @@ export default function TestMaker() {
                       setShowFormatGuide(true);
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
-                    className="flex-1 px-6 py-3 text-white rounded-lg font-semibold transition-all flex items-center justify-center gap-2"
-                    style={{ backgroundColor: '#074F06' }}
-                    onMouseEnter={(e) => e.target.style.backgroundColor = '#053d05'}
-                    onMouseLeave={(e) => e.target.style.backgroundColor = '#074F06'}
+                    className="flex-1 px-6 py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:shadow-lg hover:shadow-cyan-500/50"
                   >
                     <FiFileText />
                     View Full Format Guide
                   </button>
                   <button
                     onClick={() => setShowFormatModal(false)}
-                    className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 transition-all"
+                    className="px-6 py-3 bg-cyan-900/30 border border-cyan-500/30 text-cyan-100 rounded-lg font-semibold hover:bg-cyan-900/50 transition-all"
                   >
                     Close
                   </button>

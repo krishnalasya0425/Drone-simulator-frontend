@@ -3,317 +3,150 @@ import api from "../entities/axios";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import InfoModal from "../components/InfoModal";
-import { FiEye, FiEyeOff } from "react-icons/fi";
+import { FiEye, FiEyeOff, FiUser, FiLock, FiMail, FiAward, FiArrowRight } from "react-icons/fi";
 
 export default function Register() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({
-    name: "",
-    rank: "",
-    unit: "",
-    course_no: "",
-    army_no: "",
-    role: "",
-    password: "",
-  });
-
   const [showPassword, setShowPassword] = useState(false);
-  const [isOtherRank, setIsOtherRank] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const [formData, setFormData] = useState({
+    name: "", armyNo: "", rank: "", customRank: "", role: "", courseNo: "", password: "", confirmPassword: "",
+  });
 
   const handleRankChange = (e) => {
-    const value = e.target.value;
-    if (value === "Others") {
-      setIsOtherRank(true);
-      setForm({ ...form, rank: "" });
-    } else {
-      setIsOtherRank(false);
-      setForm({ ...form, rank: value });
-    }
+    const selectedRank = e.target.value;
+    setFormData({ ...formData, rank: selectedRank, customRank: selectedRank === "Others" ? formData.customRank : "" });
   };
 
-  // Modal State
-  const [modal, setModal] = useState({
-    isOpen: false,
-    title: "",
-    message: "",
-    type: "info"
-  });
-
-  const closeModal = () => {
-    setModal(prev => ({ ...prev, isOpen: false }));
-    // If it was a success message, redirect to login
-    if (modal.type === "success") {
-      navigate("/login");
-    }
-  };
-
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const [modal, setModal] = useState({ isOpen: false, title: "", message: "", type: "info" });
+  const closeModal = () => { setModal(prev => ({ ...prev, isOpen: false })); if (modal.type === "success") navigate("/login"); };
+  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    if (formData.password !== formData.confirmPassword) {
+      setModal({ isOpen: true, title: "Password Mismatch", message: "Passwords do not match.", type: "error" });
+      return;
+    }
+    const finalRank = formData.rank === "Others" ? formData.customRank : formData.rank;
     try {
-      const response = await api.post("/auth/register", form);
-   
-
-      setModal({
-        isOpen: true,
-        title: "Registration Successful",
-        message: response.data.message || "Registration submitted. Await approval.",
-        type: "success"
+      await api.post("/auth/register", {
+        name: formData.name,
+        army_no: formData.armyNo,
+        rank: finalRank,
+        role: formData.role,
+        course_no: formData.courseNo,
+        password: formData.password
       });
-
+      setModal({ isOpen: true, title: "Request Sent", message: "Registration successful. Pending admin approval.", type: "success" });
     } catch (err) {
-      console.error('Registration error:', err);
-
-      let errorMessage = "Error registering";
-      let errorTitle = "Registration Failed";
-
-      if (err.response?.data?.message) {
-        errorMessage = err.response.data.message;
-      } else if (err.response?.data?.error) {
-        errorMessage = err.response.data.error;
-      } else if (err.message) {
-        errorMessage = err.message;
-      }
-
-      // Specific handling based on backend messages
-      if (errorMessage.includes("Already Registered") || errorMessage.includes("already exists")) {
-        errorTitle = "User Already Exists";
-      } else if (errorMessage.includes("Weak Password")) {
-        errorTitle = "Weak Password";
-      } else if (errorMessage.includes("Missing")) {
-        errorTitle = "Missing Information";
-      } else if (errorMessage.includes("Invalid Name")) {
-        errorTitle = "Invalid Name";
-      } else if (errorMessage.includes("Invalid Army No")) {
-        errorTitle = "Invalid Army No";
-      }
-
-
-
-      setModal({
-        isOpen: true,
-        title: errorTitle,
-        message: errorMessage,
-        type: "error"
-      });
+      setModal({ isOpen: true, title: "Failed", message: err.response?.data?.message || err.message, type: "error" });
     }
   };
 
+  const ranks = ["Sepoy (Sep)", "Naik (Nk)", "Havildar (Hav)", "Naib Subedar (Nb Sub)", "Subedar (Sub)", "Subedar Major (Sub Maj)", "Lieutenant (Lt)", "Captain (Capt)", "Major (Maj)", "Lieutenant Colonel (Lt Col)", "Colonel (Col)", "Others"];
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-green-100 p-4">
-      <InfoModal
-        isOpen={modal.isOpen}
-        onClose={closeModal}
-        title={modal.title}
-        message={modal.message}
-        type={modal.type}
-      />
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden font-sans" style={{ background: '#070C10' }}>
+      <InfoModal isOpen={modal.isOpen} onClose={closeModal} title={modal.title} message={modal.message} type={modal.type} />
 
-      <div className="bg-white rounded-xl shadow-xl p-8 w-full max-w-2xl">
+      {/* 1. Background with Vignette */}
+      <div
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: 'url(https://i.pinimg.com/736x/a6/eb/be/a6ebbea28b6d2c431512aaf6079102a0.jpg)', opacity: '0.35', filter: 'grayscale(0.3)' }}
+      ></div>
+      <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at center, transparent 20%, rgba(7, 12, 16, 0.95) 100%)' }}></div>
 
-        {/* Logo */}
-        <div className="flex items-center justify-center mb-4">
-          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2">
-            <circle cx="20" cy="20" r="20" fill="#074F06" />
-            <path d="M20 10C16.134 10 13 13.134 13 17C13 22.25 20 30 20 30C20 30 27 22.25 27 17C27 13.134 23.866 10 20 10ZM20 19.5C18.619 19.5 17.5 18.381 17.5 17C17.5 15.619 18.619 14.5 20 14.5C21.381 14.5 22.5 15.619 22.5 17C22.5 18.381 21.381 19.5 20 19.5Z" fill="white" />
-          </svg>
-          <h1 className="text-xl font-bold" style={{ color: '#074F06' }}>VR-MaRS</h1>
+      {/* 2. HUD Grid */}
+      <div className="absolute inset-0 pointer-events-none opacity-20">
+        <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(95, 149, 152, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(95, 149, 152, 0.1) 1px, transparent 1px)', backgroundSize: '50px 50px' }}></div>
+      </div>
+
+      {/* 3. Container */}
+      <div className="relative z-10 w-full max-w-4xl rounded-2xl overflow-hidden shadow-2xl flex max-h-[90vh]" style={{ background: 'rgba(10, 25, 35, 0.4)', backdropFilter: 'blur(25px)', border: '1px solid rgba(95, 149, 152, 0.15)' }}>
+
+        {/* Decorative accents */}
+        <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-[#5F9598]/30 rounded-tr-2xl"></div>
+        <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-[#5F9598]/30 rounded-bl-2xl"></div>
+
+        <div className="hidden md:block md:w-[40%] relative overflow-hidden border-r border-white/5">
+          <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: 'url(https://i.pinimg.com/736x/a6/eb/be/a6ebbea28b6d2c431512aaf6079102a0.jpg)' }}></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#0a1923]/80"></div>
         </div>
 
-        <h2 className="text-2xl font-semibold text-center mb-2 text-gray-800">
-          Create Account
-        </h2>
-        <p className="text-gray-600 text-center mb-6">
-          Fill the details below to register
-        </p>
-
-        {/* Form */}
-        <form
-          onSubmit={handleSubmit}
-          className="grid grid-cols-2 gap-4"
-        >
-          <input
-            name="name"
-            placeholder="Full Name *"
-            onChange={handleChange}
-            value={form.name}
-            className="col-span-2 w-full px-4 py-2 border rounded-lg outline-none"
-            style={{
-              transition: 'box-shadow 0.2s',
-              borderColor: form.name ? '#d1d5db' : '#ef4444',
-              borderWidth: '2px'
-            }}
-            onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px #074F06'}
-            onBlur={(e) => e.target.style.boxShadow = ''}
-            required
-          />
-
-
-
-         
-
-          <select
-            name="rank"
-            onChange={handleRankChange}
-            value={isOtherRank ? "Others" : form.rank}
-            className="col-span-2 w-full px-4 py-2 border rounded-lg outline-none bg-white"
-            style={{
-              transition: 'box-shadow 0.2s',
-              borderColor: (isOtherRank ? form.rank : form.rank) ? '#d1d5db' : '#ef4444',
-              borderWidth: '2px'
-            }}
-            onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px #074F06'}
-            onBlur={(e) => e.target.style.boxShadow = ''}
-            required
-          >
-            <option value="">Select Rank *</option>
-            <option value="Sepoy (Sep)">Sepoy (Sep)</option>
-            <option value="Rifleman (RFN)">Rifleman (RFN)</option>
-            <option value="Lance Naik (L/Nk)">Lance Naik (L/Nk)</option>
-            <option value="Naik (Nk)">Naik (Nk)</option>
-            <option value="Havildar (Hav)">Havildar (Hav)</option>
-            <option value="Naib Subedar (Nb Sub)">Naib Subedar (Nb Sub)</option>
-            <option value="Subedar (Sub)">Subedar (Sub)</option>
-            <option value="Subedar Major (Sub Maj)">Subedar Major (Sub Maj)</option>
-            <option value="Lieutenant (Lt)">Lieutenant (Lt)</option>
-            <option value="Captain (Capt)">Captain (Capt)</option>
-            <option value="Major (Maj)">Major (Maj)</option>
-            <option value="Lieutenant Colonel (Lt Col)">Lieutenant Colonel (Lt Col)</option>
-            <option value="Colonel (Col)">Colonel (Col)</option>
-            <option value="Others">Others</option>
-          </select>
-
-          {isOtherRank && (
-            <input
-              name="rank"
-              placeholder="Enter Rank *"
-              onChange={handleChange}
-              value={form.rank}
-              className="col-span-2 w-full px-4 py-2 border rounded-lg outline-none"
-              style={{
-                transition: 'box-shadow 0.2s',
-                borderColor: form.rank ? '#d1d5db' : '#ef4444',
-                borderWidth: '2px'
-              }}
-              onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px #074F06'}
-              onBlur={(e) => e.target.style.boxShadow = ''}
-              required
-            />
-          )}
-
-          <input
-            name="unit"
-            placeholder="Unit *"
-            onChange={handleChange}
-            value={form.unit}
-            className="w-full px-4 py-2 border rounded-lg outline-none"
-            style={{
-              transition: 'box-shadow 0.2s',
-              borderColor: form.unit ? '#d1d5db' : '#ef4444',
-              borderWidth: '2px'
-            }}
-            onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px #074F06'}
-            onBlur={(e) => e.target.style.boxShadow = ''}
-            required
-          />
-
-          <input
-            name="course_no"
-            placeholder="Course No"
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-lg outline-none"
-            style={{ transition: 'box-shadow 0.2s' }}
-            onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px #074F06'}
-            onBlur={(e) => e.target.style.boxShadow = ''}
-          />
-
-          <input
-            name="army_no"
-            placeholder="Army No *"
-            onChange={handleChange}
-            value={form.army_no}
-            className="w-full px-4 py-2 border rounded-lg outline-none"
-            style={{
-              transition: 'box-shadow 0.2s',
-              borderColor: form.army_no ? '#d1d5db' : '#ef4444',
-              borderWidth: '2px'
-            }}
-            onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px #074F06'}
-            onBlur={(e) => e.target.style.boxShadow = ''}
-            pattern="[a-zA-Z0-9]+"
-            title="Army No must be alphanumeric (letters and numbers only)"
-            required
-          />
-
-          <select
-            name="role"
-            onChange={handleChange}
-            value={form.role}
-            className="w-full px-4 py-2 border rounded-lg outline-none bg-white"
-            style={{
-              transition: 'box-shadow 0.2s',
-              borderColor: form.role ? '#d1d5db' : '#ef4444',
-              borderWidth: '2px'
-            }}
-            onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px #074F06'}
-            onBlur={(e) => e.target.style.boxShadow = ''}
-            required
-          >
-            <option value="">Select Role *</option>
-            <option value="student">Student</option>
-            <option value="instructor">Instructor</option>
-          </select>
-
-          <div className="relative col-span-2">
-            <input
-              type={showPassword ? "text" : "password"}
-              name="password"
-              placeholder="Password *"
-              onChange={handleChange}
-              value={form.password}
-              minLength="6"
-              className="w-full px-4 py-2 border rounded-lg outline-none pr-10"
-              style={{
-                transition: 'box-shadow 0.2s',
-                borderColor: (form.password && form.password.length >= 6) ? '#d1d5db' : '#ef4444',
-                borderWidth: '2px'
-              }}
-              onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px #074F06'}
-              onBlur={(e) => e.target.style.boxShadow = ''}
-              required
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
-            >
-              {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
-            </button>
+        <div className="w-full md:w-[60%] p-8 md:p-10 flex flex-col justify-center overflow-y-auto">
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-1.5 h-6 bg-[#5F9598]"></div>
+              <h1 className="text-2xl font-black text-[#E6F1F5] uppercase tracking-tighter">Mission Enrollment</h1>
+            </div>
+            <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-[#5F9598]/60 pl-4">SECURE REQUEST GATEWAY</p>
           </div>
-          <p className="col-span-2 text-xs text-gray-500 -mt-2">Password must be at least 6 characters</p>
 
-          <button
-            type="submit"
-            className="col-span-2 w-full py-2 text-white rounded-lg font-semibold transition"
-            style={{ backgroundColor: '#074F06' }}
-            onMouseEnter={(e) => e.target.style.backgroundColor = '#053d05'}
-            onMouseLeave={(e) => e.target.style.backgroundColor = '#074F06'}
-          >
-            Register
-          </button>
-        </form>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-[9px] font-sans text-white/50 uppercase tracking-widest block mb-1.5">Full Name</label>
+                <input type="text" name="name" placeholder="IDENTIFIER" value={formData.name} onChange={handleChange} required className="w-full bg-[#0a1923]/40 border border-white/10 rounded-lg px-4 py-2.5 text-xs text-white placeholder:text-white/10 focus:outline-none focus:border-[#5F9598]/50 focus:bg-[#0a1923]/60 transition-all font-sans" />
+              </div>
+              <div>
+                <label className="text-[9px] font-sans text-white/50 uppercase tracking-widest block mb-1.5">Army Number</label>
+                <input type="text" name="armyNo" placeholder="REG-ID" value={formData.armyNo} onChange={handleChange} required className="w-full bg-[#0a1923]/40 border border-white/10 rounded-lg px-4 py-2.5 text-xs text-white placeholder:text-white/10 focus:outline-none focus:border-[#5F9598]/50 focus:bg-[#0a1923]/60 transition-all font-sans" />
+              </div>
+            </div>
 
-        {/* Link to Login */}
-        <p className="text-center text-sm text-gray-600 mt-6">
-          Already have an account?{" "}
-          <a href="/login" className="hover:underline" style={{ color: '#074F06' }}>
-            Login here
-          </a>
-        </p>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-[9px] font-sans text-white/50 uppercase tracking-widest block mb-1.5">User Role</label>
+                <select name="role" value={formData.role} onChange={handleChange} required className="w-full bg-[#0a1923]/40 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white focus:outline-none focus:border-[#5F9598]/50 appearance-none font-sans">
+                  <option value="">SELECT ROLE</option>
+                  <option value="Student">Student</option>
+                  <option value="Instructor">Instructor</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[9px] font-sans text-white/50 uppercase tracking-widest block mb-1.5">Service Rank</label>
+                <select name="rank" value={formData.rank} onChange={handleRankChange} required className="w-full bg-[#0a1923]/40 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white focus:outline-none focus:border-[#5F9598]/50 appearance-none font-sans">
+                  <option value="">RANK SELECT</option>
+                  {ranks.map((r, i) => <option key={i} value={r} className="bg-[#0a1923]">{r}</option>)}
+                </select>
+              </div>
+            </div>
 
+            <div>
+              <label className="text-[9px] font-sans text-white/50 uppercase tracking-widest block mb-1.5">Course No</label>
+              <input type="text" name="courseNo" placeholder="CN-XXX" value={formData.courseNo} onChange={handleChange} required className="w-full bg-[#0a1923]/40 border border-white/10 rounded-lg px-4 py-2.5 text-xs text-white placeholder:text-white/10 focus:outline-none focus:border-[#5F9598]/50 focus:bg-[#0a1923]/60 transition-all font-sans" />
+            </div>
+
+            {formData.rank === "Others" && (
+              <input type="text" name="customRank" placeholder="SPECIFY RANK" value={formData.customRank} onChange={handleChange} required className="w-full bg-[#0a1923]/40 border border-white/10 rounded-lg px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[#5F9598]/50 font-sans transition-all" />
+            )}
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="relative">
+                <label className="text-[9px] font-sans text-white/50 uppercase tracking-widest block mb-1.5">Access Key</label>
+                <input type={showPassword ? "text" : "password"} name="password" placeholder="••••••••" value={formData.password} onChange={handleChange} required className="w-full bg-[#0a1923]/40 border border-white/10 rounded-lg px-4 py-2.5 text-xs text-white placeholder:text-white/10 focus:outline-none focus:border-[#5F9598]/50 font-sans" />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-9 text-white/20 hover:text-[#5F9598]"><FiEye size={12} /></button>
+              </div>
+              <div className="relative">
+                <label className="text-[9px] font-sans text-white/50 uppercase tracking-widest block mb-1.5">Retype Key</label>
+                <input type={showConfirmPassword ? "text" : "password"} name="confirmPassword" placeholder="••••••••" value={formData.confirmPassword} onChange={handleChange} required className="w-full bg-[#0a1923]/40 border border-white/10 rounded-lg px-4 py-2.5 text-xs text-white placeholder:text-white/10 focus:outline-none focus:border-[#5F9598]/50 font-sans" />
+                <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-9 text-white/20 hover:text-[#5F9598]"><FiEye size={12} /></button>
+              </div>
+            </div>
+
+            <button type="submit" className="w-full py-4 bg-[#5F9598] text-[#070C10] font-black text-xs uppercase tracking-[0.2em] rounded-lg hover:bg-[#1D546D] hover:shadow-[0_0_25px_rgba(95,149,152,0.4)] transition-all flex items-center justify-center gap-3 mt-4">
+              <span>Submit for Clearance</span>
+              <FiArrowRight size={16} />
+            </button>
+          </form>
+
+          <div className="mt-8 pt-6 border-t border-white/5 text-center">
+            <span className="text-[9px] font-sans text-white/20 uppercase mr-3">// Clearance Already Granted?</span>
+            <a href="/login" className="text-[10px] font-sans text-[#5F9598] hover:text-[#F3F4F4] transition-colors uppercase font-bold underline decoration-[#5F9598]/30 underline-offset-4">Return to HQ</a>
+          </div>
+        </div>
       </div>
     </div>
   );

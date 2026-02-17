@@ -34,9 +34,9 @@ export default function MainLayout() {
   const isTestPage = location.pathname.endsWith('/questions');
 
   return (
-    <div className="w-screen h-screen flex flex-col text-black overflow-hidden bg-gradient-to-br from-green-50 to-green-100">
+    <div className="w-screen h-screen flex flex-col text-[#F3F4F4] overflow-hidden" style={{ background: 'transparent' }}>
       {!isTestPage && <Header role={role} />}
-      <div className="flex-grow overflow-auto bg-gradient-to-br from-green-50 to-green-100">
+      <div className="flex-grow overflow-auto" style={{ background: 'transparent' }}>
         {routes}
       </div>
     </div>
