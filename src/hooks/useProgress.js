@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import progressAPI from '../entities/progress';
 
 /**
@@ -80,7 +80,7 @@ export const useDocumentProgress = (studentId, docId, classId, docType) => {
         });
     }, [updateProgress]);
 
-    return {
+    return useMemo(() => ({
         progress,
         loading,
         updateProgress,
@@ -88,7 +88,7 @@ export const useDocumentProgress = (studentId, docId, classId, docType) => {
         trackImageProgress,
         trackVideoProgress,
         refreshProgress: fetchProgress
-    };
+    }), [progress, loading, updateProgress, trackPDFProgress, trackImageProgress, trackVideoProgress, fetchProgress]);
 };
 
 /**
@@ -120,11 +120,11 @@ export const useClassProgress = (studentId, classId) => {
         fetchClassProgress();
     }, [fetchClassProgress]);
 
-    return {
+    return useMemo(() => ({
         classProgress,
         loading,
         refreshClassProgress: fetchClassProgress
-    };
+    }), [classProgress, loading, fetchClassProgress]);
 };
 
 /**
@@ -155,9 +155,9 @@ export const useAllStudentsProgress = (classId) => {
         fetchAllStudentsProgress();
     }, [fetchAllStudentsProgress]);
 
-    return {
+    return useMemo(() => ({
         studentsProgress,
         loading,
         refreshStudentsProgress: fetchAllStudentsProgress
-    };
+    }), [studentsProgress, loading, fetchAllStudentsProgress]);
 };

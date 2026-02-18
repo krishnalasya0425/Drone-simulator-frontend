@@ -17,23 +17,23 @@ import SubtopicsPage from "../components/SubtopicsPageProgress";
 
 const routesConfig = [
   { path: '/forgotpassword', element: <ForgotPassword /> },
-  { path: '/dashboard', element: <AdminDashboard />, roles: ['admin', 'Instructor'], label: 'Dashboard' },
-  { path: '/student-dashboard', element: <StudentDashboard />, roles: ['Student'], label: 'Dashboard' },
-  { path: '/as', element: <StudentDashboard />, roles: ['Student'] }, // Additional route 
-  { path: '/student/:studentId', element: <StudentDetails />, roles: ['admin', 'Instructor'] },
-  { path: '/classes', element: <Classes />, roles: ['admin', 'Instructor', 'Student'], label: 'Classes' },
-  { path: '/:classId/docs', element: <Docs />, roles: ['admin', 'Instructor', 'Student'] },
-  { path: '/:classId/:studentId/progress', element: <SubtopicsPage />, roles: ['admin', 'Instructor', 'Student'] },
+  { path: '/dashboard', element: <AdminDashboard />, roles: ['admin', 'instructor'], label: 'Dashboard' },
+  { path: '/student-dashboard', element: <StudentDashboard />, roles: ['student'], label: 'Dashboard' },
+  { path: '/as', element: <StudentDashboard />, roles: ['student'] }, // Additional route 
+  { path: '/student/:studentId', element: <StudentDetails />, roles: ['admin', 'instructor'] },
+  { path: '/classes', element: <Classes />, roles: ['admin', 'instructor', 'student'], label: 'Classes' },
+  { path: '/:classId/docs', element: <Docs />, roles: ['admin', 'instructor', 'student'] },
+  { path: '/:classId/:studentId/progress', element: <SubtopicsPage />, roles: ['admin', 'instructor', 'student'] },
   {
-    path: '/:classId/subtopics', element: <Subtopics />, roles: ['admin', 'Instructor']
+    path: '/:classId/subtopics', element: <Subtopics />, roles: ['admin', 'instructor']
   },
 
-  { path: '/:classId/generatetest', element: <GenerateTest />, roles: ['admin', 'Instructor'] },
-  { path: '/test-maker', element: <TestMaker />, roles: ['Instructor'], label: 'Test Maker' },
-  { path: '/:testId/questions', element: <Test />, roles: ['Student'] },
-  { path: '/:testId/review', element: <ClassWiseScore />, roles: ['admin', 'Instructor', 'Student'] },
-  { path: '/scores', element: <Scoremodal />, roles: ['admin', 'Instructor', 'Student'], label: 'Tests' },
-  { path: '/review/:test_set_id/:student_id', element: <TestReview />, roles: ['admin', 'Instructor', 'Student'] },
+  { path: '/:classId/generatetest', element: <GenerateTest />, roles: ['admin', 'instructor'] },
+  { path: '/test-maker', element: <TestMaker />, roles: ['instructor'], label: 'Test Maker' },
+  { path: '/:testId/questions', element: <Test />, roles: ['student'] },
+  { path: '/:testId/review', element: <ClassWiseScore />, roles: ['admin', 'instructor', 'student'] },
+  { path: '/scores', element: <Scoremodal />, roles: ['admin', 'instructor', 'student'], label: 'Tests' },
+  { path: '/review/:test_set_id/:student_id', element: <TestReview />, roles: ['admin', 'instructor', 'student'] },
 ];
 
 export default routesConfig;

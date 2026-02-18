@@ -94,6 +94,7 @@ const DocumentViewerWithProgress = ({ doc, classId, studentId, onClose }) => {
                             if (prev.has(pageNum)) return prev;
                             const next = new Set(prev);
                             next.add(pageNum);
+                            // Only track progress if the size actually changed
                             setTimeout(() => trackPDFProgress(next.size, totalPages), 0);
                             return next;
                         });

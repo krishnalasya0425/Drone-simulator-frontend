@@ -17,14 +17,14 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/" element={
         user ? (
-          <Navigate to={user.role === 'Student' ? "/student-dashboard" : "/dashboard"} />
+          <Navigate to={user.role?.toLowerCase() === 'student' ? "/student-dashboard" : "/dashboard"} />
         ) : (
           <Navigate to="/login" />
         )
       } />
       <Route path="/landing" element={<LandingPage />} />
-      <Route path="/login" element={user ? <Navigate to={user.role === 'Student' ? "/student-dashboard" : "/dashboard"} /> : <Login />} />
-      <Route path="/register" element={user ? <Navigate to={user.role === 'Student' ? "/student-dashboard" : "/dashboard"} /> : <Register />} />
+      <Route path="/login" element={user ? <Navigate to={user.role?.toLowerCase() === 'student' ? "/student-dashboard" : "/dashboard"} /> : <Login />} />
+      <Route path="/register" element={user ? <Navigate to={user.role?.toLowerCase() === 'student' ? "/student-dashboard" : "/dashboard"} /> : <Register />} />
       <Route path="/forgotpassword" element={<ForgotPassword />} />
 
       {user ? (

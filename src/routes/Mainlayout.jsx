@@ -1,35 +1,25 @@
 import React, { useEffect } from "react";
-import { useRoutes, useLocation, Navigate } from "react-router-dom";
+import { useRoutes, useLocation, useNavigate } from "react-router-dom";
 import RouteConfig from "./RouteConfig";
 import Header from "../components/Header";
 import { useAuth } from "../context/AuthContext";
 
 export default function MainLayout() {
 
-  const role = localStorage.getItem("role")
-
+  const role = localStorage.getItem("role")?.toLowerCase();
   const location = useLocation();
-
-  // Store last visited page
-  useEffect(() => {
-    localStorage.setItem("lastPage", location.pathname);
-  }, [location]);
+  const navigate = useNavigate();
 
   // Filter routes based on role
   const allowedRoutes = RouteConfig.filter(
     route => !route.roles || route.roles.includes(role)
   );
 
+  console.log('Role:', role);
+  console.log('Allowed routes:', allowedRoutes);
+  console.log('Current path:', location.pathname);
+
   const routes = useRoutes(allowedRoutes);
-
-  // Check if user is authorized to access route
-  const currentRoute = RouteConfig.find(r => r.path === location.pathname);
-  const isAuthorized =
-    !currentRoute || !currentRoute.roles || currentRoute.roles.includes(role);
-
-  if (!isAuthorized) {
-    return <Navigate to="/" replace />;
-  }
 
   const isTestPage = location.pathname.endsWith('/questions');
 
@@ -42,3 +32,4 @@ export default function MainLayout() {
     </div>
   );
 }
+                           

@@ -113,7 +113,15 @@ function SubtopicsPage({ classId: propClassId, studentId: propStudentId, embedde
     }
 
     fetchFullDroneProgress();
-  }, [classId, studentId, selectedDroneCategory, refreshTrigger]);
+  }, [classId, studentId, refreshTrigger]); // Removed selectedDroneCategory from dependencies
+
+  // Update hierarchy when selected category changes without refetching from API
+  useEffect(() => {
+    if (fullDroneData.length > 0 && selectedDroneCategory) {
+      const currentCatData = fullDroneData.find(c => c.id === selectedDroneCategory.id);
+      setDroneHierarchy(currentCatData?.modules || []);
+    }
+  }, [selectedDroneCategory, fullDroneData]);
 
   const toggleModule = (moduleId) => {
     setExpandedModules(prev => ({
