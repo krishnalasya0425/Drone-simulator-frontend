@@ -34,86 +34,77 @@ function SubtopicsPage({ classId: propClassId, studentId: propStudentId, embedde
   const classId = propClassId || params.classId;
   const studentId = propStudentId || params.studentId || localStorage.getItem("id");
 
-  // Fetch subtopics & progress
+  // UNIFIED DATA FETCHING
   useEffect(() => {
-    async function fetchData() {
+    let isMounted = true;
+
+    async function fetchComponentData() {
+      if (!classId || !studentId) return;
+
       try {
-        const [subRes, progressRes, classProgressRes] = await Promise.all([
+        const [
+          subRes,
+          progressRes,
+          classProgressRes,
+          categoriesData,
+          fullProgressData,
+          userDataRes,
+          classDataRes
+        ] = await Promise.all([
           SubtopicService.getSubtopicsByClassId(classId),
           CompletionProgressService.getProgressByStudentAndClass(studentId, classId),
-          progressAPI.getClassProgress(studentId, classId)
+          progressAPI.getClassProgress(studentId, classId),
+          droneTrainingAPI.getAllCategories(),
+          droneTrainingAPI.getStudentProgress(studentId, classId),
+          userService.getUserById(studentId),
+          classService.getClassInfo(classId)
         ]);
 
-        const userData = await userService.getUserById(studentId);
-        setUserData(userData);
+        if (!isMounted) return;
 
-        const classData = await classService.getClassInfo(classId);
-        setClassData(classData);
-
+        // 1. Basic Progress Data
         if (subRes.data.success) setSubtopics(subRes.data.data);
-
         if (progressRes.data.success) {
           const progress = progressRes.data.data;
           setCompletedSubtopicIds(progress.completed_subtopics || []);
           setCompletionPercentage(progress.completion_percentage || 0);
         }
+        if (classProgressRes.data.success) setClassProgress(classProgressRes.data.data);
 
-        // Set class progress (PDF, image, video percentages)
-        if (classProgressRes.data.success) {
-          setClassProgress(classProgressRes.data.data);
-        }
-      } catch (err) {
-        console.error('Error fetching data:', err);
-      }
-    }
+        // 2. User & Class Metadata
+        setUserData(userDataRes);
+        setClassData(classDataRes);
 
-    if (classId) fetchData();
-  }, [classId, studentId]);
-
-  // Fetch drone training categories
-  useEffect(() => {
-    async function fetchDroneCategories() {
-      try {
-        const categoriesData = await droneTrainingAPI.getAllCategories();
+        // 3. Drone Training Data
         setDroneCategories(categoriesData);
+        setFullDroneData(fullProgressData);
 
-        // Auto-select first category
-        if (categoriesData.length > 0) {
-          setSelectedDroneCategory(categoriesData[0]);
-        }
+        // 4. Initial Drone Category Selection (Only if not already set)
+        setSelectedDroneCategory(prev => {
+          if (prev) return prev;
+          if (categoriesData.length > 0) return categoriesData[0];
+          if (fullProgressData.length > 0) return fullProgressData[0];
+          return null;
+        });
+
       } catch (err) {
-        console.error('Error fetching drone categories:', err);
+        console.error('Error fetching component data:', err);
       }
     }
 
-    if (classId && studentId) fetchDroneCategories();
-  }, [classId, studentId]);
+    fetchComponentData();
+    return () => { isMounted = false; };
+  }, [classId, studentId, refreshTrigger]);
 
-  // Fetch drone training history and hierarchy (Fetch-all approach)
+  // DERIVED HIERARCHY EFFECT
   useEffect(() => {
-    async function fetchFullDroneProgress() {
-      if (!classId || !studentId) return;
-
-      try {
-        const fullData = await droneTrainingAPI.getStudentProgress(studentId, classId);
-        // fullData is now an array of categories with modules inside
-        setFullDroneData(fullData);
-
-        // Update current hierarchy based on selected category
-        if (selectedDroneCategory) {
-          const currentCatData = fullData.find(c => c.id === selectedDroneCategory.id);
-          setDroneHierarchy(currentCatData?.modules || []);
-        } else if (fullData.length > 0) {
-          setSelectedDroneCategory(fullData[0]);
-          setDroneHierarchy(fullData[0].modules || []);
-        }
-      } catch (err) {
-        console.error('Error fetching full drone progress:', err);
-      }
+    if (selectedDroneCategory && fullDroneData.length > 0) {
+      const currentCatData = fullDroneData.find(c => c.id === selectedDroneCategory.id);
+      setDroneHierarchy(currentCatData?.modules || []);
+    } else {
+      setDroneHierarchy([]);
     }
-
-    fetchFullDroneProgress();
-  }, [classId, studentId, selectedDroneCategory, refreshTrigger]);
+  }, [selectedDroneCategory?.id, fullDroneData]);
 
   const toggleModule = (moduleId) => {
     setExpandedModules(prev => ({
@@ -436,16 +427,6 @@ function SubtopicsPage({ classId: propClassId, studentId: propStudentId, embedde
                               const hasSubSubmodules = submodule.subsubmodules && submodule.subsubmodules.length > 0;
                               const submoduleProgress = submodule.progress;
 
-                              // DEBUG: Log progress data
-                              if (submodule.submodule_name === 'Start') {
-                                console.log('🔍 Start submodule:', {
-                                  id: submodule.id,
-                                  name: submodule.submodule_name,
-                                  progress: submoduleProgress,
-                                  completed: submoduleProgress?.completed
-                                });
-                              }
-
                               return (
                                 <div key={submodule.id} className="ml-6 bg-[#0a2533]/40 rounded-xl border border-white/5">
                                   {/* Submodule Header */}
@@ -477,7 +458,6 @@ function SubtopicsPage({ classId: propClassId, studentId: propStudentId, embedde
 
                                     {(() => {
                                       const shouldShow = (submoduleProgress?.completed === true || submoduleProgress?.completed === 1);
-                                      console.log(`✓ ${submodule.submodule_name}: completed=${submoduleProgress?.completed}, type=${typeof submoduleProgress?.completed}, shouldShow=${shouldShow}`);
                                       return shouldShow && <FiCheckCircle className="text-[#00C2C7]" size={16} />;
                                     })()}
                                   </button>
