@@ -113,7 +113,7 @@ export default function ContactUs() {
                   
                   <div className="bg-[#1D546D]/20 rounded-xl p-5 border border-[#5F9598]/30">
                     <p className="text-[#F3F4F4] font-bold text-lg mb-1">Shubham Raj</p>
-                    <p className="text-[#5F9598] text-sm mb-3">Technical Support Lead</p>
+                    <p className="text-[#5F9598] text-sm mb-3">IT</p>
                     
                     <div className="flex items-center gap-3 text-[#F3F4F4] mb-2">
                       <FiPhone size={16} className="text-[#5F9598]" />
