@@ -14,7 +14,7 @@ import TestReview from "../components/TestReview";
 import StudentDetails from "../pages/Admin/StudentDetails";
 import Subtopics from "../components/Subtopics";
 import SubtopicsPage from "../components/SubtopicsPageProgress";
-
+import ContactUs from "../pages/ContactUs";
 const routesConfig = [
   { path: '/forgotpassword', element: <ForgotPassword /> },
   { path: '/dashboard', element: <AdminDashboard />, roles: ['admin', 'Instructor'], label: 'Dashboard' },
@@ -34,6 +34,13 @@ const routesConfig = [
   { path: '/:testId/review', element: <ClassWiseScore />, roles: ['admin', 'Instructor', 'Student'] },
   { path: '/scores', element: <Scoremodal />, roles: ['admin', 'Instructor', 'Student'], label: 'Tests' },
   { path: '/review/:test_set_id/:student_id', element: <TestReview />, roles: ['admin', 'Instructor', 'Student'] },
+  // Contact Us route - corrected syntax
+  { 
+    path: "/contact", 
+    element: <ContactUs />,  // Use element, not component
+    label: "Contact Us",
+    roles: ["admin", "Instructor", "Student"] // Available to all roles
+  }
 ];
 
 export default routesConfig;

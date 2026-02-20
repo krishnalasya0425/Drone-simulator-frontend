@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FaUserCircle } from "react-icons/fa";
-import { FiLogOut } from "react-icons/fi";
+import { FiLogOut, FiUsers } from "react-icons/fi";
 import { useAuth } from "../context/AuthContext";
 import routeConfig from "../routes/RouteConfig";
 
@@ -39,7 +39,8 @@ export default function Header({ role: propRole }) {
         "/:classId/generatetest",
         "/:classId/review",
         "/:testId/questions",
-        "/:testId/review"
+        "/:testId/review",
+        "/as" // Exclude the additional student route
     ];
 
     // Filter navigation items
@@ -47,9 +48,10 @@ export default function Header({ role: propRole }) {
         // Exclude dynamic paths
         if (excludedPaths.includes(r.path)) return false;
         // Exclude routes without labels
-        if (!r.label && r.path !== '/forgotpassword') return false;
+        if (!r.label) return false;
 
-        // For students, hide Classes and Scores from navbar
+        // For students, hide Classes and Scores from navbar if you want
+        // But keep Contact Us visible
         if (role === 'Student') {
             if (r.path === '/classes' || r.path === '/scores') {
                 return false;
@@ -94,11 +96,13 @@ export default function Header({ role: propRole }) {
                             <Link
                                 key={idx}
                                 to={r.path}
-                                className={`text-sm font-bold px-6 py-2.5 rounded-lg transition-all duration-300 ${isActive
-                                    ? 'bg-[#00C2C7]/20 text-[#00C2C7] border border-[#00C2C7]/40 shadow-lg shadow-[#00C2C7]/10'
-                                    : 'text-white/60 hover:text-white hover:bg-white/5 border border-transparent'
-                                    }`}
+                                className={`text-sm font-bold px-6 py-2.5 rounded-lg transition-all duration-300 flex items-center gap-2 ${
+                                    isActive
+                                        ? 'bg-[#00C2C7]/20 text-[#00C2C7] border border-[#00C2C7]/40 shadow-lg shadow-[#00C2C7]/10'
+                                        : 'text-white/60 hover:text-white hover:bg-white/5 border border-transparent'
+                                }`}
                             >
+                                {r.path === '/contact' && <FiUsers size={18} />}
                                 {label}
                             </Link>
                         );
