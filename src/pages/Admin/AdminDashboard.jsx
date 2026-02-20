@@ -255,83 +255,72 @@ export default function AdminDashboard() {
           {/* Overview Tab - Hero Landing */}
           {activeTab === "overview" && (
             <div className="animate-fade-in">
-              <div className="relative min-h-[70vh] flex items-center justify-center">
+              <div className="relative min-h-[60vh] flex items-center justify-center">
                 <div className="absolute inset-0 overflow-hidden rounded-3xl">
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#1D546D]/20 via-[#5F9598]/10 to-[#1D546D]/20 animate-gradient-slow"></div>
-                  <div className="floating-shape shape-1"></div>
-                  <div className="floating-shape shape-2"></div>
-                  <div className="floating-shape shape-3"></div>
-                  <div className="floating-shape shape-4"></div>
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#00C2C7]/10 via-transparent to-[#0099a3]/10 animate-gradient-slow"></div>
                 </div>
 
                 <div className="relative z-10 text-center max-w-4xl mx-auto px-6">
                   <div className="mb-8">
-                    {/* <div className="inline-block px-6 py-2 bg-[#5F9598]/20 backdrop-blur-sm border border-[#5F9598]/30 rounded-full mb-6">
-                      <span className="text-[#5F9598] text-sm font-bold uppercase tracking-wider">
-                        {role === "Instructor" ? "Instructor Portal" : "Admin Portal"}
-                      </span>
-                    </div> */}
-                    <h1 className="text-5xl md:text-6xl font-black mb-6 leading-tight">
-                      <span className="text-gradient">Welcome Back,</span>
+                    <h1 className="text-4xl md:text-5xl font-black mb-4 leading-tight uppercase italic tracking-tight">
+                      <span className="text-[#00C2C7]">Welcome Back,</span>
                       <br />
                       <span className="text-[#F3F4F4]">{userName}</span>
                     </h1>
-                    <p className="text-xl text-[#5F9598] font-medium max-w-2xl mx-auto leading-relaxed">
-                      {role === "Instructor"
-                        ? "Manage your students, review progress, and approve retest requests from your centralized command center."
-                        : "Full system control at your fingertips. Manage users, oversee operations, and maintain platform excellence."}
+                    <p className="text-sm text-[#00C2C7]/60 font-black uppercase tracking-[0.2em]">
+                      {role === "Instructor" ? "Instructor Command Center" : "Admin Control Panel"}
                     </p>
                   </div>
 
                   <div className="flex flex-wrap gap-4 justify-center">
                     <button
                       onClick={() => { setActiveTab("manage"); setFilter("student"); }}
-                      className="hero-action-card group"
+                      className="flex items-center gap-4 px-6 py-4 bg-[#0a2533]/60 backdrop-blur-xl border border-[#00C2C7]/20 rounded-2xl hover:border-[#00C2C7]/50 hover:bg-[#00C2C7]/10 transition-all group min-w-[260px]"
                     >
-                      <div className="hero-card-icon">
-                        <FaUserGraduate size={28} />
+                      <div className="w-11 h-11 rounded-xl bg-[#00C2C7]/10 border border-[#00C2C7]/30 flex items-center justify-center text-[#00C2C7] flex-shrink-0">
+                        <FaUserGraduate size={20} />
                       </div>
                       <div className="text-left">
-                        <h3 className="text-lg font-bold text-[#F3F4F4] mb-1">Manage Students</h3>
-                        <p className="text-sm text-[#5F9598]">View and edit student accounts</p>
+                        <h3 className="text-base font-black text-[#F3F4F4] group-hover:text-[#00C2C7] uppercase italic">Manage Students</h3>
+                        <p className="text-[10px] text-[#00C2C7]/50 uppercase tracking-wider">View & edit accounts</p>
                       </div>
-                      <FiArrowRight className="ml-auto text-[#5F9598] group-hover:translate-x-1 transition-transform" size={20} />
+                      <FiArrowRight className="ml-auto text-[#00C2C7]/50 group-hover:translate-x-1 transition-transform" size={18} />
                     </button>
 
                     {role === "admin" && (
                       <button
                         onClick={() => { setActiveTab("manage"); setFilter("instructor"); }}
-                        className="hero-action-card group"
+                        className="flex items-center gap-4 px-6 py-4 bg-[#0a2533]/60 backdrop-blur-xl border border-[#00C2C7]/20 rounded-2xl hover:border-[#00C2C7]/50 hover:bg-[#00C2C7]/10 transition-all group min-w-[260px]"
                       >
-                        <div className="hero-card-icon">
-                          <FaChalkboardTeacher size={28} />
+                        <div className="w-11 h-11 rounded-xl bg-[#00C2C7]/10 border border-[#00C2C7]/30 flex items-center justify-center text-[#00C2C7] flex-shrink-0">
+                          <FaChalkboardTeacher size={20} />
                         </div>
                         <div className="text-left">
-                          <h3 className="text-lg font-bold text-[#F3F4F4] mb-1">Manage Instructors</h3>
-                          <p className="text-sm text-[#5F9598]">Oversee instructor accounts</p>
+                          <h3 className="text-base font-black text-[#F3F4F4] group-hover:text-[#00C2C7] uppercase italic">Manage Instructors</h3>
+                          <p className="text-[10px] text-[#00C2C7]/50 uppercase tracking-wider">Oversee instructor accounts</p>
                         </div>
-                        <FiArrowRight className="ml-auto text-[#5F9598] group-hover:translate-x-1 transition-transform" size={20} />
+                        <FiArrowRight className="ml-auto text-[#00C2C7]/50 group-hover:translate-x-1 transition-transform" size={18} />
                       </button>
                     )}
 
                     {role === "Instructor" && (
                       <button
                         onClick={() => { setActiveTab("retests"); setFilter("retest"); }}
-                        className="hero-action-card group"
+                        className="flex items-center gap-4 px-6 py-4 bg-[#0a2533]/60 backdrop-blur-xl border border-[#00C2C7]/20 rounded-2xl hover:border-[#00C2C7]/50 hover:bg-[#00C2C7]/10 transition-all group min-w-[260px]"
                       >
-                        <div className="hero-card-icon">
-                          <FaSync size={28} />
+                        <div className="w-11 h-11 rounded-xl bg-[#00C2C7]/10 border border-[#00C2C7]/30 flex items-center justify-center text-[#00C2C7] flex-shrink-0">
+                          <FaSync size={20} />
                         </div>
                         <div className="text-left">
-                          <h3 className="text-lg font-bold text-[#F3F4F4] mb-1">Retest Requests</h3>
-                          <p className="text-sm text-[#5F9598]">Review and approve retests</p>
+                          <h3 className="text-base font-black text-[#F3F4F4] group-hover:text-[#00C2C7] uppercase italic">Retest Requests</h3>
+                          <p className="text-[10px] text-[#00C2C7]/50 uppercase tracking-wider">Review and approve retests</p>
                         </div>
                         {retestRequests.filter(r => r.status === 'Pending').length > 0 && (
                           <span className="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold">
                             {retestRequests.filter(r => r.status === 'Pending').length}
                           </span>
                         )}
-                        <FiArrowRight className="ml-2 text-[#5F9598] group-hover:translate-x-1 transition-transform" size={20} />
+                        <FiArrowRight className="ml-2 text-[#00C2C7]/50 group-hover:translate-x-1 transition-transform" size={18} />
                       </button>
                     )}
                   </div>
@@ -343,23 +332,23 @@ export default function AdminDashboard() {
           {/* Manage Users Tab */}
           {activeTab === "manage" && (
             <div className="animate-fade-in">
-              <div className="content-card">
+              <div className="bg-[#0a2533]/60 backdrop-blur-xl border border-[#00C2C7]/20 rounded-2xl p-6">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-8">
-                  <div className="flex items-center gap-4">
+                <div className="flex items-center justify-between mb-5">
+                  <div className="flex items-center gap-3">
                     <button
                       onClick={() => setActiveTab("overview")}
-                      className="p-3 hover:bg-[#5F9598]/20 rounded-xl transition-colors text-[#5F9598] hover:text-[#F3F4F4]"
+                      className="p-2 hover:bg-[#00C2C7]/10 rounded-lg transition-colors text-[#00C2C7]/60 hover:text-[#00C2C7]"
                       title="Back to Home"
                     >
-                      <FiArrowRight size={24} className="rotate-180" />
+                      <FiArrowRight size={18} className="rotate-180" />
                     </button>
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#1D546D] to-[#5F9598] flex items-center justify-center shadow-lg">
-                      <FiUsers className="text-[#F3F4F4]" size={28} />
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00C2C7] to-[#0099a3] flex items-center justify-center shadow-lg">
+                      <FiUsers className="text-[#061E29]" size={18} />
                     </div>
                     <div>
-                      <h2 className="text-1.5xl font-black text-[#F3F4F4]">User Management</h2>
-                      <p className="text-sm text-[#5F9598] font-medium mt-1">
+                      <h2 className="text-lg font-black text-[#F3F4F4] uppercase italic tracking-tight">User Management</h2>
+                      <p className="text-[9px] text-[#00C2C7]/60 font-black uppercase tracking-wider">
                         {filteredUsers.length} {filter === "student" ? "students" : "instructors"} found
                       </p>
                     </div>
@@ -367,52 +356,52 @@ export default function AdminDashboard() {
 
                   {/* Search Bar */}
                   <div className="relative max-w-sm w-full ml-auto">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <FaSearch className="text-[#5F9598]" size={16} />
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FaSearch className="text-[#00C2C7]/40" size={14} />
                     </div>
                     <input
                       type="text"
                       placeholder={`Search ${filter === "student" ? "students" : "instructors"}...`}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 bg-[#1D546D]/20 border border-[#5F9598]/30 rounded-lg text-sm text-[#F3F4F4] placeholder:text-[#5F9598]/50 focus:outline-none focus:border-[#5F9598] transition-all"
+                      className="w-full pl-9 pr-4 py-2 bg-[#061E29] border border-[#00C2C7]/20 rounded-lg text-sm text-[#F3F4F4] placeholder:text-[#00C2C7]/30 focus:outline-none focus:border-[#00C2C7]/50 transition-all"
                     />
                   </div>
                 </div>
 
                 {/* Filter Buttons */}
                 {role === "admin" && (
-                  <div className="flex gap-4 mb-6">
+                  <div className="flex gap-2 mb-5">
                     <button
-                      className={`px-5 py-3 rounded-xl font-bold flex items-center gap-2 transition-all ${filter === "student"
-                        ? "bg-gradient-to-r from-[#1D546D] to-[#5F9598] text-[#F3F4F4] shadow-lg"
-                        : "bg-[#1D546D]/20 text-[#5F9598] hover:bg-[#1D546D]/30"
+                      className={`px-4 py-2 rounded-lg font-bold text-xs flex items-center gap-2 transition-all uppercase tracking-wider ${filter === "student"
+                        ? "bg-[#00C2C7] text-[#061E29] shadow-lg"
+                        : "bg-[#00C2C7]/10 text-[#00C2C7]/60 hover:bg-[#00C2C7]/20 border border-[#00C2C7]/20"
                         }`}
                       onClick={() => { setFilter("student"); setSearchQuery(""); }}
                     >
-                      <FaUserGraduate />
+                      <FaUserGraduate size={12} />
                       Students
                     </button>
 
                     <button
-                      className={`px-5 py-3 rounded-xl font-bold flex items-center gap-2 transition-all ${filter === "instructor"
-                        ? "bg-gradient-to-r from-[#1D546D] to-[#5F9598] text-[#F3F4F4] shadow-lg"
-                        : "bg-[#1D546D]/20 text-[#5F9598] hover:bg-[#1D546D]/30"
+                      className={`px-4 py-2 rounded-lg font-bold text-xs flex items-center gap-2 transition-all uppercase tracking-wider ${filter === "instructor"
+                        ? "bg-[#00C2C7] text-[#061E29] shadow-lg"
+                        : "bg-[#00C2C7]/10 text-[#00C2C7]/60 hover:bg-[#00C2C7]/20 border border-[#00C2C7]/20"
                         }`}
                       onClick={() => { setFilter("instructor"); setSearchQuery(""); }}
                     >
-                      <FaChalkboardTeacher />
+                      <FaChalkboardTeacher size={12} />
                       Instructors
                     </button>
 
                     <button
-                      className={`px-5 py-3 rounded-xl font-bold flex items-center gap-2 transition-all ${filter === "history"
-                        ? "bg-gradient-to-r from-[#1D546D] to-[#5F9598] text-[#F3F4F4] shadow-lg"
-                        : "bg-[#1D546D]/20 text-[#5F9598] hover:bg-[#1D546D]/30"
+                      className={`px-4 py-2 rounded-lg font-bold text-xs flex items-center gap-2 transition-all uppercase tracking-wider ${filter === "history"
+                        ? "bg-[#00C2C7] text-[#061E29] shadow-lg"
+                        : "bg-[#00C2C7]/10 text-[#00C2C7]/60 hover:bg-[#00C2C7]/20 border border-[#00C2C7]/20"
                         }`}
                       onClick={() => { setFilter("history"); setSearchQuery(""); }}
                     >
-                      <FaFileSignature />
+                      <FaFileSignature size={12} />
                       Retest History
                     </button>
                   </div>
@@ -422,9 +411,9 @@ export default function AdminDashboard() {
 
                 {/* Table */}
                 {filter === "history" ? (
-                  <div className="overflow-x-auto rounded-xl border border-[#5F9598]/20">
+                  <div className="overflow-x-auto rounded-xl border border-[#00C2C7]/10">
                     <table className="w-full">
-                      <thead className="bg-gradient-to-r from-[#1D546D] to-[#5F9598]">
+                      <thead className="bg-[#00C2C7]/10 border-b border-[#00C2C7]/20">
                         <tr>
                           <th className="p-4 text-left text-[#F3F4F4] font-bold">Student</th>
                           <th className="p-4 text-left text-[#F3F4F4] font-bold">Class</th>
@@ -444,14 +433,14 @@ export default function AdminDashboard() {
                           </tr>
                         ) : (
                           retestHistory.map((record) => (
-                            <tr key={record.id} className="border-b border-[#5F9598]/10 bg-[#1D546D]/10 hover:bg-[#1D546D]/20 transition-colors">
+                            <tr key={record.id} className="border-b border-[#00C2C7]/5 hover:bg-[#00C2C7]/5 transition-colors">
                               <td className="p-4 text-[#F3F4F4] font-bold">{record.student_name}</td>
-                              <td className="p-4 text-[#5F9598]">{record.class_name}</td>
-                              <td className="p-4 text-[#5F9598]">{record.original_test_title}</td>
+                              <td className="p-4 text-[#00C2C7]/60">{record.class_name}</td>
+                              <td className="p-4 text-[#00C2C7]/60">{record.original_test_title}</td>
                               <td className="p-4 text-red-400 font-bold">
                                 {record.score} / {record.total_questions} ({Math.round((record.score / record.total_questions) * 100)}%)
                               </td>
-                              <td className="p-4 text-[#5F9598]">{record.retest_title || 'Not taken yet'}</td>
+                              <td className="p-4 text-[#00C2C7]/60">{record.retest_title || 'Not taken yet'}</td>
                               <td className="p-4">
                                 {record.retest_score !== null && record.retest_score !== undefined ? (
                                   <span className={`font-bold ${record.retest_score >= record.score ? 'text-green-400' : 'text-orange-400'}`}>
@@ -461,7 +450,7 @@ export default function AdminDashboard() {
                                   <span className="text-[#5F9598]/50 italic">Not submitted</span>
                                 )}
                               </td>
-                              <td className="p-4 text-[#5F9598] text-sm">
+                              <td className="p-4 text-[#00C2C7]/60 text-sm">
                                 {record.retest_submitted_at ? new Date(record.retest_submitted_at).toLocaleDateString() : 'N/A'}
                               </td>
                             </tr>
@@ -471,9 +460,9 @@ export default function AdminDashboard() {
                     </table>
                   </div>
                 ) : (
-                  <div className="overflow-x-auto rounded-xl border border-[#5F9598]/20">
+                  <div className="overflow-x-auto rounded-xl border border-[#00C2C7]/10">
                     <table className="w-full">
-                      <thead className="bg-gradient-to-r from-[#1D546D] to-[#5F9598]">
+                      <thead className="bg-[#00C2C7]/10 border-b border-[#00C2C7]/20">
                         <tr>
                           <th className="p-4 text-left text-[#F3F4F4] font-bold">Name</th>
                           <th className="p-4 text-left text-[#F3F4F4] font-bold">Rank</th>
@@ -487,12 +476,12 @@ export default function AdminDashboard() {
                       </thead>
                       <tbody>
                         {filteredUsers.filter(u => u.id !== 0).map((u) => (
-                          <tr key={u.id} className="border-b border-[#5F9598]/10 bg-[#1D546D]/10 hover:bg-[#1D546D]/20 transition-colors">
+                          <tr key={u.id} className="border-b border-[#00C2C7]/5 hover:bg-[#00C2C7]/5 transition-colors">
                             <td className="p-4">
                               {u.role === "student" || filter === "student" ? (
                                 <button
                                   onClick={() => navigate(`/student/${u.id}`)}
-                                  className="hover:underline font-bold text-[#F3F4F4] hover:text-[#5F9598] transition-colors"
+                                  className="hover:underline font-bold text-[#F3F4F4] hover:text-[#00C2C7] transition-colors"
                                 >
                                   {u.name}
                                 </button>
@@ -500,10 +489,10 @@ export default function AdminDashboard() {
                                 <span className="text-[#F3F4F4] font-bold">{u.name}</span>
                               )}
                             </td>
-                            <td className="p-4 text-[#5F9598]">{u.rank || "-"}</td>
-                            <td className="p-4 text-[#5F9598]">{u.army_no}</td>
-                            <td className="p-4 text-[#5F9598]">{u.course_no}</td>
-                            <td className="p-4 text-[#5F9598]">{u.unit}</td>
+                            <td className="p-4 text-[#00C2C7]/60">{u.rank || "-"}</td>
+                            <td className="p-4 text-[#00C2C7]/60">{u.army_no}</td>
+                            <td className="p-4 text-[#00C2C7]/60">{u.course_no}</td>
+                            <td className="p-4 text-[#00C2C7]/60">{u.unit}</td>
                             <td className="p-4">
                               <span className={`px-3 py-1 rounded-full text-xs font-bold ${u.status === "Approved" ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"
                                 }`}>
@@ -512,15 +501,15 @@ export default function AdminDashboard() {
                             </td>
                             <td className="p-4 text-center font-semibold">
                               {(() => {
-                                if (!u.otp) return <span className="text-[#5F9598]/50">-</span>;
+                                if (!u.otp) return <span className="text-[#00C2C7]/30">-</span>;
                                 const timestamp = u.otp_at || u.otp_generated_at || u.updated_at || u.createdAt;
                                 if (timestamp) {
                                   const generatedAt = new Date(timestamp).getTime();
                                   const now = new Date().getTime();
                                   const diffHrs = (now - generatedAt) / (1000 * 60 * 60);
-                                  if (diffHrs > 24) return <span className="text-[#5F9598]/50">-</span>;
+                                  if (diffHrs > 24) return <span className="text-[#00C2C7]/30">-</span>;
                                 }
-                                if (!timestamp && u.otpValid === false) return <span className="text-[#5F9598]/50">-</span>;
+                                if (!timestamp && u.otpValid === false) return <span className="text-[#00C2C7]/30">-</span>;
                                 return (
                                   <span className={u.otpValid ? "text-green-400" : "text-red-400"}>
                                     {u.otp}
@@ -532,7 +521,7 @@ export default function AdminDashboard() {
                               <div className="flex gap-2 justify-center">
                                 <button
                                   onClick={() => startEdit(u)}
-                                  className="p-2 hover:bg-[#5F9598]/20 rounded-lg transition-colors text-[#5F9598]"
+                                  className="p-2 hover:bg-[#00C2C7]/10 rounded-lg transition-colors text-[#00C2C7]/60 hover:text-[#00C2C7]"
                                   title="Edit"
                                 >
                                   <FaEdit size={18} />
@@ -597,31 +586,31 @@ export default function AdminDashboard() {
           {/* Retests Tab */}
           {activeTab === "retests" && role === "Instructor" && (
             <div className="animate-fade-in">
-              <div className="content-card">
-                <div className="flex items-center justify-between mb-8">
-                  <div className="flex items-center gap-4">
+              <div className="bg-[#0a2533]/60 backdrop-blur-xl border border-[#00C2C7]/20 rounded-2xl p-6">
+                <div className="flex items-center justify-between mb-5">
+                  <div className="flex items-center gap-3">
                     <button
                       onClick={() => setActiveTab("overview")}
-                      className="p-3 hover:bg-[#5F9598]/20 rounded-xl transition-colors text-[#5F9598] hover:text-[#F3F4F4]"
+                      className="p-2 hover:bg-[#00C2C7]/10 rounded-lg transition-colors text-[#00C2C7]/60 hover:text-[#00C2C7]"
                       title="Back to Home"
                     >
-                      <FiArrowRight size={24} className="rotate-180" />
+                      <FiArrowRight size={18} className="rotate-180" />
                     </button>
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#1D546D] to-[#5F9598] flex items-center justify-center shadow-lg">
-                      <FaSync className="text-[#F3F4F4]" size={28} />
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00C2C7] to-[#0099a3] flex items-center justify-center shadow-lg">
+                      <FaSync className="text-[#061E29]" size={16} />
                     </div>
                     <div>
-                      <h2 className="text-1.5xl font-black text-[#F3F4F4]">Retest Requests</h2>
-                      <p className="text-sm text-[#5F9598] font-medium mt-1">
+                      <h2 className="text-lg font-black text-[#F3F4F4] uppercase italic tracking-tight">Retest Requests</h2>
+                      <p className="text-[9px] text-[#00C2C7]/60 font-black uppercase tracking-wider">
                         {retestRequests.length} total requests
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="overflow-x-auto rounded-xl border border-[#5F9598]/20">
+                <div className="overflow-x-auto rounded-xl border border-[#00C2C7]/10">
                   <table className="w-full">
-                    <thead className="bg-gradient-to-r from-[#1D546D] to-[#5F9598]">
+                    <thead className="bg-[#00C2C7]/10 border-b border-[#00C2C7]/20">
                       <tr>
                         <th className="p-4 text-left text-[#F3F4F4] font-bold">Student</th>
                         <th className="p-4 text-left text-[#F3F4F4] font-bold">Class</th>
@@ -642,10 +631,10 @@ export default function AdminDashboard() {
                         </tr>
                       ) : (
                         retestRequests.map((req) => (
-                          <tr key={req.id} className="border-b border-[#5F9598]/10 bg-[#1D546D]/10 hover:bg-[#1D546D]/20 transition-colors">
+                          <tr key={req.id} className="border-b border-[#00C2C7]/5 hover:bg-[#00C2C7]/5 transition-colors">
                             <td className="p-4 text-[#F3F4F4] font-bold">{req.student_name}</td>
-                            <td className="p-4 text-[#5F9598]">{req.class_name}</td>
-                            <td className="p-4 text-[#5F9598]">{req.test_title}</td>
+                            <td className="p-4 text-[#00C2C7]/60">{req.class_name}</td>
+                            <td className="p-4 text-[#00C2C7]/60">{req.test_title}</td>
                             <td className="p-4 text-red-400 font-bold">
                               {req.score} / {req.total_questions} ({Math.round((req.score / req.total_questions) * 100)}%)
                             </td>
@@ -658,7 +647,7 @@ export default function AdminDashboard() {
                                 <span className="text-[#5F9598]/50 italic">Not taken yet</span>
                               )}
                             </td>
-                            <td className="p-4 text-[#5F9598] text-sm">
+                            <td className="p-4 text-[#00C2C7]/60 text-sm">
                               {new Date(req.created_at).toLocaleDateString()}
                             </td>
                             <td className="p-4">
@@ -691,7 +680,7 @@ export default function AdminDashboard() {
                               {req.status === 'Approved' && (
                                 <button
                                   onClick={() => navigate(`/${req.class_id}/generatetest?studentId=${req.student_id}&requestId=${req.id}`)}
-                                  className="w-full bg-gradient-to-r from-[#1D546D] to-[#5F9598] hover:shadow-lg text-white px-3 py-1.5 rounded-lg transition-all flex items-center justify-center gap-1 text-xs font-bold"
+                                  className="w-full bg-gradient-to-r from-[#00C2C7] to-[#0099a3] hover:shadow-lg text-[#061E29] px-3 py-1.5 rounded-lg transition-all flex items-center justify-center gap-1 text-xs font-bold"
                                 >
                                   <FaPlus size={12} /> Create Test
                                 </button>
@@ -711,29 +700,29 @@ export default function AdminDashboard() {
 
       {/* Edit Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-[100] p-4">
-          <div className="bg-[#061E29] border border-[#5F9598]/30 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div className="bg-gradient-to-r from-[#1D546D] to-[#5F9598] p-4 flex justify-between items-center">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-[100] p-4">
+          <div className="bg-[#061E29] border border-[#00C2C7]/30 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="bg-gradient-to-r from-[#00C2C7]/20 to-[#0099a3]/10 border-b border-[#00C2C7]/20 p-4 flex justify-between items-center">
               <div>
-                <h3 className="text-lg font-bold text-[#F3F4F4]">
+                <h3 className="text-base font-black text-[#F3F4F4] uppercase italic tracking-tight">
                   {editingUser ? "Edit User" : "Add User"}
                 </h3>
-                <p className="text-xs text-[#F3F4F4]/70 uppercase tracking-wider">System Administration</p>
+                <p className="text-[9px] text-[#00C2C7]/60 uppercase tracking-widest">System Administration</p>
               </div>
               <button
                 onClick={cancelEdit}
-                className="p-2 hover:bg-white/10 rounded-full transition-colors text-[#F3F4F4]"
+                className="p-1.5 hover:bg-[#00C2C7]/10 rounded-lg transition-colors text-[#00C2C7]/60 hover:text-[#00C2C7]"
               >
-                <FiX size={20} />
+                <FiX size={16} />
               </button>
             </div>
 
-            <form onSubmit={submitForm} className="p-6 space-y-4">
+            <form onSubmit={submitForm} className="p-5 space-y-3">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-bold text-[#5F9598] uppercase tracking-wider block mb-2">Full Name</label>
+                  <label className="text-[9px] font-black text-[#00C2C7]/70 uppercase tracking-wider block mb-1.5">Full Name</label>
                   <input
-                    className="w-full bg-[#1D546D]/20 border border-[#5F9598]/30 rounded-lg px-4 py-2.5 text-sm text-[#F3F4F4] focus:outline-none focus:border-[#5F9598]"
+                    className="w-full bg-[#0a2533] border border-[#00C2C7]/20 rounded-lg px-3 py-2 text-sm text-[#F3F4F4] focus:outline-none focus:border-[#00C2C7]/50 transition-all"
                     name="name"
                     placeholder="Enter name"
                     value={form.name}
@@ -741,9 +730,9 @@ export default function AdminDashboard() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-[#5F9598] uppercase tracking-wider block mb-2">Rank</label>
+                  <label className="text-[9px] font-black text-[#00C2C7]/70 uppercase tracking-wider block mb-1.5">Rank</label>
                   <select
-                    className="w-full bg-[#1D546D]/20 border border-[#5F9598]/30 rounded-lg px-4 py-2.5 text-sm text-[#F3F4F4] focus:outline-none focus:border-[#5F9598]"
+                    className="w-full bg-[#0a2533] border border-[#00C2C7]/20 rounded-lg px-3 py-2 text-sm text-[#F3F4F4] focus:outline-none focus:border-[#00C2C7]/50 transition-all"
                     name="rank"
                     value={form.rank}
                     onChange={handleChange}
@@ -759,7 +748,7 @@ export default function AdminDashboard() {
               <div>
                 <label className="text-xs font-bold text-[#5F9598] uppercase tracking-wider block mb-2">Army No</label>
                 <input
-                  className="w-full bg-[#1D546D]/20 border border-[#5F9598]/30 rounded-lg px-4 py-2.5 text-sm text-[#F3F4F4] focus:outline-none focus:border-[#5F9598]"
+                  className="w-full bg-[#0a2533] border border-[#00C2C7]/20 rounded-lg px-3 py-2 text-sm text-[#F3F4F4] focus:outline-none focus:border-[#00C2C7]/50 transition-all"
                   name="army_no"
                   placeholder="Army No"
                   value={form.army_no}
@@ -769,9 +758,9 @@ export default function AdminDashboard() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-bold text-[#5F9598] uppercase tracking-wider block mb-2">Unit</label>
+                  <label className="text-[9px] font-black text-[#00C2C7]/70 uppercase tracking-wider block mb-1.5">Unit</label>
                   <input
-                    className="w-full bg-[#1D546D]/20 border border-[#5F9598]/30 rounded-lg px-4 py-2.5 text-sm text-[#F3F4F4] focus:outline-none focus:border-[#5F9598]"
+                    className="w-full bg-[#0a2533] border border-[#00C2C7]/20 rounded-lg px-3 py-2 text-sm text-[#F3F4F4] focus:outline-none focus:border-[#00C2C7]/50 transition-all"
                     name="unit"
                     placeholder="Unit"
                     value={form.unit}
@@ -779,9 +768,9 @@ export default function AdminDashboard() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-[#5F9598] uppercase tracking-wider block mb-2">Course No</label>
+                  <label className="text-[9px] font-black text-[#00C2C7]/70 uppercase tracking-wider block mb-1.5">Course No</label>
                   <input
-                    className="w-full bg-[#1D546D]/20 border border-[#5F9598]/30 rounded-lg px-4 py-2.5 text-sm text-[#F3F4F4] focus:outline-none focus:border-[#5F9598]"
+                    className="w-full bg-[#0a2533] border border-[#00C2C7]/20 rounded-lg px-3 py-2 text-sm text-[#F3F4F4] focus:outline-none focus:border-[#00C2C7]/50 transition-all"
                     name="course_no"
                     placeholder="Course No"
                     value={form.course_no}
@@ -792,9 +781,9 @@ export default function AdminDashboard() {
 
               {(filter === "student" || form.role === "student") && allClasses.length > 0 && (
                 <div>
-                  <label className="text-xs font-bold text-[#5F9598] uppercase tracking-wider block mb-2">Assign Class</label>
+                  <label className="text-[9px] font-black text-[#00C2C7]/70 uppercase tracking-wider block mb-1.5">Assign Class</label>
                   <select
-                    className="w-full bg-[#1D546D]/20 border border-[#5F9598]/30 rounded-lg px-4 py-2.5 text-sm text-[#F3F4F4] focus:outline-none focus:border-[#5F9598]"
+                    className="w-full bg-[#0a2533] border border-[#00C2C7]/20 rounded-lg px-3 py-2 text-sm text-[#F3F4F4] focus:outline-none focus:border-[#00C2C7]/50 transition-all"
                     name="class_id"
                     value={form.class_id}
                     onChange={handleChange}
@@ -809,10 +798,10 @@ export default function AdminDashboard() {
 
               {!editingUser && (
                 <div>
-                  <label className="text-xs font-bold text-[#5F9598] uppercase tracking-wider block mb-2">Password</label>
+                  <label className="text-[9px] font-black text-[#00C2C7]/70 uppercase tracking-wider block mb-1.5">Password</label>
                   <input
                     type="password"
-                    className="w-full bg-[#1D546D]/20 border border-[#5F9598]/30 rounded-lg px-4 py-2.5 text-sm text-[#F3F4F4] focus:outline-none focus:border-[#5F9598]"
+                    className="w-full bg-[#0a2533] border border-[#00C2C7]/20 rounded-lg px-3 py-2 text-sm text-[#F3F4F4] focus:outline-none focus:border-[#00C2C7]/50 transition-all"
                     name="password"
                     placeholder="Password"
                     value={form.password}
@@ -824,14 +813,14 @@ export default function AdminDashboard() {
               <div className="flex gap-3 pt-4">
                 <button
                   type="submit"
-                  className="flex-1 bg-gradient-to-r from-[#1D546D] to-[#5F9598] text-[#F3F4F4] py-3 rounded-lg font-bold hover:shadow-lg transition-all"
+                  className="flex-1 bg-gradient-to-r from-[#00C2C7] to-[#0099a3] text-[#061E29] py-2.5 rounded-lg font-black text-sm hover:shadow-lg transition-all"
                 >
                   {editingUser ? "Update" : "Create"}
                 </button>
                 <button
                   type="button"
                   onClick={cancelEdit}
-                  className="flex-1 bg-[#1D546D]/20 text-[#5F9598] py-3 rounded-lg font-bold hover:bg-[#1D546D]/30 transition-all"
+                  className="flex-1 bg-[#00C2C7]/10 text-[#00C2C7]/70 py-2.5 rounded-lg font-black text-sm hover:bg-[#00C2C7]/20 transition-all"
                 >
                   Cancel
                 </button>
@@ -844,16 +833,16 @@ export default function AdminDashboard() {
       {/* Class Selection Modal for Instructor Approval */}
       {approvingStudent && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-[100] p-4">
-          <div className="bg-[#061E29] border border-[#5F9598]/30 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
-            <div className="bg-gradient-to-r from-[#1D546D] to-[#5F9598] p-4">
-              <h3 className="text-lg font-bold text-[#F3F4F4]">Assign to Class</h3>
-              <p className="text-xs text-[#F3F4F4]/70">Select a class for {approvingStudent.name}</p>
+          <div className="bg-[#061E29] border border-[#00C2C7]/30 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+            <div className="bg-gradient-to-r from-[#00C2C7]/20 to-[#0099a3]/10 border-b border-[#00C2C7]/20 p-4">
+              <h3 className="text-base font-black text-[#F3F4F4] uppercase italic">Assign to Class</h3>
+              <p className="text-[9px] text-[#00C2C7]/60 uppercase tracking-widest mt-0.5">Select a class for {approvingStudent.name}</p>
             </div>
             <div className="p-6 space-y-4">
               <select
                 value={selectedClassId}
                 onChange={(e) => setSelectedClassId(e.target.value)}
-                className="w-full bg-[#1D546D]/20 border border-[#5F9598]/30 rounded-lg px-4 py-3 text-sm text-[#F3F4F4] focus:outline-none focus:border-[#5F9598]"
+                className="w-full bg-[#0a2533] border border-[#00C2C7]/20 rounded-lg px-3 py-2.5 text-sm text-[#F3F4F4] focus:outline-none focus:border-[#00C2C7]/50 transition-all"
               >
                 <option value="">Select a class</option>
                 {instructorClasses.map((cls) => (
@@ -879,7 +868,7 @@ export default function AdminDashboard() {
                       alert("Failed to approve student");
                     }
                   }}
-                  className="flex-1 bg-gradient-to-r from-[#1D546D] to-[#5F9598] text-[#F3F4F4] py-3 rounded-lg font-bold hover:shadow-lg transition-all"
+                  className="flex-1 bg-gradient-to-r from-[#00C2C7] to-[#0099a3] text-[#061E29] py-2.5 rounded-lg font-black text-sm hover:shadow-lg transition-all"
                 >
                   Approve
                 </button>
@@ -888,7 +877,7 @@ export default function AdminDashboard() {
                     setApprovingStudent(null);
                     setSelectedClassId("");
                   }}
-                  className="flex-1 bg-[#1D546D]/20 text-[#5F9598] py-3 rounded-lg font-bold hover:bg-[#1D546D]/30 transition-all"
+                  className="flex-1 bg-[#00C2C7]/10 text-[#00C2C7]/70 py-2.5 rounded-lg font-black text-sm hover:bg-[#00C2C7]/20 transition-all"
                 >
                   Cancel
                 </button>
@@ -901,80 +890,15 @@ export default function AdminDashboard() {
       {/* Styles */}
       <style>{`
         .glass-container {
-          background: rgba(29, 84, 109, 0.5);
+          background: rgba(10, 37, 51, 0.6);
           backdrop-filter: blur(20px);
-          border: 1px solid rgba(95, 149, 152, 0.3);
-          border-radius: 24px;
-          padding: 2rem;
-        }
-
-        .content-card {
-          background: rgba(29, 84, 109, 0.5);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(95, 149, 152, 0.3);
-          border-radius: 24px;
-          padding: 2.5rem;
-        }
-
-        .tab-btn {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          padding: 0.75rem 1.5rem;
-          border-radius: 0.75rem;
-          font-weight: 700;
-          font-size: 0.875rem;
-          color: rgba(95, 149, 152, 0.7);
-          transition: all 0.3s ease;
-          border: 1px solid transparent;
-        }
-
-        .tab-btn:hover {
-          background: rgba(29, 84, 109, 0.3);
-          color: #F3F4F4;
-        }
-
-        .tab-active {
-          background: linear-gradient(135deg, #1D546D, #5F9598);
-          color: #F3F4F4;
-          box-shadow: 0 4px 12px rgba(95, 149, 152, 0.3);
-          border-color: rgba(95, 149, 152, 0.4);
-        }
-
-        .hero-action-card {
-          background: rgba(29, 84, 109, 0.5);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(95, 149, 152, 0.3);
-          border-radius: 1rem;
+          border: 1px solid rgba(0, 194, 199, 0.2);
+          border-radius: 16px;
           padding: 1.5rem;
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-          transition: all 0.3s ease;
-          min-width: 320px;
-        }
-
-        .hero-action-card:hover {
-          background: rgba(29, 84, 109, 0.7);
-          border-color: rgba(95, 149, 152, 0.5);
-          transform: translateY(-4px);
-          box-shadow: 0 12px 24px rgba(29, 84, 109, 0.3);
-        }
-
-        .hero-card-icon {
-          width: 56px;
-          height: 56px;
-          border-radius: 1rem;
-          background: linear-gradient(135deg, #1D546D, #5F9598);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #F3F4F4;
-          flex-shrink: 0;
         }
 
         .text-gradient {
-          background: linear-gradient(135deg, #5F9598, #1D546D);
+          background: linear-gradient(135deg, #00C2C7, #0099a3);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;

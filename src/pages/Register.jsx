@@ -115,7 +115,7 @@ export default function Register() {
             </div>
 
             <div>
-              <label className="text-[9px] font-sans text-white/50 uppercase tracking-widest block mb-1.5">Course No</label>
+              <label className="text-[9px] font-sans text-white/50 uppercase tracking-widest block mb-1.5">Army ID</label>
               <input type="text" name="courseNo" placeholder="CN-XXX" value={formData.courseNo} onChange={handleChange} required className="w-full bg-[#0a1923]/40 border border-white/10 rounded-lg px-4 py-2.5 text-xs text-white placeholder:text-white/10 focus:outline-none focus:border-[#5F9598]/50 focus:bg-[#0a1923]/60 transition-all font-sans" />
             </div>
 
@@ -147,6 +147,18 @@ export default function Register() {
             <a href="/login" className="text-[10px] font-sans text-[#5F9598] hover:text-[#F3F4F4] transition-colors uppercase font-bold underline decoration-[#5F9598]/30 underline-offset-4">Return to HQ</a>
           </div>
         </div>
+      </div>
+
+      {/* Global Corporate Watermark */}
+      <div className="fixed bottom-6 right-8 opacity-25 pointer-events-none z-[9999] select-none text-right flex flex-col items-end">
+        <img
+          src="/edgeforce-logo.png"
+          alt="Edgeforce"
+          className="h-5 w-auto object-contain mb-1 brightness-150 contrast-125 grayscale"
+        />
+        {/* <div className="text-[8px] font-black tracking-[0.3em] uppercase text-[#5F9598] opacity-60">
+          Edgeforce Solutions
+        </div> */}
       </div>
     </div>
   );

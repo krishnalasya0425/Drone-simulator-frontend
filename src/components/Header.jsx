@@ -67,11 +67,11 @@ export default function Header({ role: propRole }) {
                 {/* LEFT SIDE: LOGO & BRAND */}
                 <div className="flex items-center gap-4">
                     {/* Logo */}
-                    <div className="w-12 h-12 bg-gradient-to-br from-[#00C2C7] to-[#0099a3] rounded-xl flex items-center justify-center shadow-lg shadow-[#00C2C7]/30 border border-[#00C2C7]/30">
+                    <div className="h-10 px-3 bg-[#0a2533]/50 rounded-xl flex items-center justify-center shadow-lg border border-[#00C2C7]/20 backdrop-blur-md">
                         <img
-                            src="/map-reading-logo-1.png"
-                            alt="Map Reading Logo"
-                            className="w-full h-full object-contain scale-110"
+                            src="/edgeforce-logo.png"
+                            alt="Edgeforce Logo"
+                            className="h-full w-auto object-contain brightness-110 contrast-125"
                         />
                     </div>
 

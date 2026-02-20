@@ -29,10 +29,15 @@ const SubtopicService = {
   },
 
   deleteByIds(data) {
-  return api.delete("/subtopics/bulk-delete", {
-    data 
-  });
-}
+    return api.delete("/subtopics/bulk-delete", {
+      data
+    });
+  },
+
+  // Sync subtopics from drone training hierarchy (modules → submodules → subsubmodules)
+  syncFromTraining(classId) {
+    return api.post(`/subtopics/sync-from-training/${classId}`);
+  }
 
 };
 

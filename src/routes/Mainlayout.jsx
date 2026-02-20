@@ -39,6 +39,18 @@ export default function MainLayout() {
       <div className="flex-grow overflow-auto" style={{ background: 'transparent' }}>
         {routes}
       </div>
+
+      {/* Global Corporate Watermark */}
+      <div className="fixed bottom-6 right-8 opacity-25 pointer-events-none z-[9999] select-none text-right flex flex-col items-end">
+        <img
+          src="/edgeforce-logo.png"
+          alt="Edgeforce"
+          className="h-5 w-auto object-contain mb-1 brightness-150 contrast-125 grayscale"
+        />
+        {/* <div className="text-[8px] font-black tracking-[0.3em] uppercase text-[#00C2C7] opacity-60">
+          Edgeforce Solutions
+        </div> */}
+      </div>
     </div>
   );
 }

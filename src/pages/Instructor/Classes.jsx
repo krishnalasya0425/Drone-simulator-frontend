@@ -192,30 +192,30 @@ const Classes = () => {
 
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Header Section */}
-        <div className="bg-[#0a2533]/60 backdrop-blur-xl rounded-[2.5rem] shadow-2xl p-10 mb-8 border border-[#00C2C7]/20 flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-            <FaRobot size={120} />
-          </div>
+        <div className="bg-[#0a2533]/60 backdrop-blur-xl rounded-2xl shadow-xl p-6 mb-5 border border-[#00C2C7]/20 flex flex-col md:flex-row items-center justify-between gap-5 relative overflow-hidden group">
+          {/* <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+            <FaRobot size={80} />
+          </div> */}
 
-          <div className="flex items-center gap-8 relative z-10">
-            <div className="w-20 h-20 rounded-3xl flex items-center justify-center text-[#061E29] text-3xl shadow-[0_0_30px_rgba(0,194,199,0.4)] bg-gradient-to-br from-[#00C2C7] to-[#0099a3] border border-[#00C2C7]/30">
+          <div className="flex items-center gap-5 relative z-10">
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-[#061E29] text-xl shadow-[0_0_20px_rgba(0,194,199,0.3)] bg-gradient-to-br from-[#00C2C7] to-[#0099a3] border border-[#00C2C7]/30">
               <FiLayers />
             </div>
             <div>
-              <h1 className="text-4xl font-black text-white tracking-tighter uppercase italic">
+              <h1 className="text-2xl font-black text-white tracking-tighter uppercase italic">
                 Course Registry
               </h1>
-              <div className="flex items-center gap-3 mt-2">
-                <span className="h-0.5 w-12 bg-[#00C2C7]"></span>
-                <p className="text-[#00C2C7] font-black text-xs uppercase tracking-[0.4em]">Operational Matrix v2.0</p>
-              </div>
+              {/* <div className="flex items-center gap-2 mt-1">
+                <span className="h-0.5 w-8 bg-[#00C2C7]"></span>
+                <p className="text-[#00C2C7] font-black text-[10px] uppercase tracking-[0.3em]">Operational Matrix v2.0</p>
+              </div> */}
             </div>
           </div>
 
           {role === "admin" && (
             <button
               onClick={() => setShowAddModal(true)}
-              className="bg-[#00C2C7] text-[#061E29] px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-[0_0_20px_rgba(0,194,199,0.3)] hover:shadow-[0_0_35px_rgba(0,194,199,0.5)] hover:scale-105 active:scale-95 transition-all flex items-center gap-3 relative z-10 group"
+              className="bg-[#00C2C7] text-[#061E29] px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest shadow-[0_0_15px_rgba(0,194,199,0.3)] hover:shadow-[0_0_25px_rgba(0,194,199,0.5)] hover:scale-105 active:scale-95 transition-all flex items-center gap-2 relative z-10 group"
             >
               <FiPlus className="stroke-[3]" />
               Initialize New Course
@@ -224,25 +224,25 @@ const Classes = () => {
         </div>
 
         {/* HUD Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-[#0a2533]/40 backdrop-blur-xl border border-white/5 p-6 rounded-[2rem] flex items-center gap-6 group hover:border-[#00C2C7]/20 transition-all">
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-[#00C2C7] border border-[#00C2C7]/30 bg-[#00C2C7]/10 shadow-[0_0_15px_rgba(0,194,199,0.1)]">
-              <FiBook size={24} />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+          <div className="bg-[#0a2533]/40 backdrop-blur-xl border border-white/5 p-4 rounded-xl flex items-center gap-4 group hover:border-[#00C2C7]/20 transition-all">
+            <div className="w-11 h-11 rounded-xl flex items-center justify-center text-[#00C2C7] border border-[#00C2C7]/30 bg-[#00C2C7]/10">
+              <FiBook size={18} />
             </div>
             <div>
-              <p className="text-[10px] text-[#00C2C7] font-black uppercase tracking-[0.2em] opacity-60">Total Active Courses</p>
-              <h3 className="text-3xl font-black text-white tracking-tighter mt-0.5">{classes.length}</h3>
+              <p className="text-[9px] text-[#00C2C7] font-black uppercase tracking-[0.2em] opacity-60">Total Active Courses</p>
+              <h3 className="text-xl font-black text-white tracking-tighter mt-0.5">{classes.length}</h3>
             </div>
           </div>
 
           {role === "admin" && (
-            <div className="bg-[#0a2533]/40 backdrop-blur-xl border border-white/5 p-6 rounded-[2rem] flex items-center gap-6 group hover:border-[#00C2C7]/20 transition-all">
-              <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-[#00C2C7] border border-[#00C2C7]/30 bg-[#00C2C7]/10 shadow-[0_0_15px_rgba(0,194,199,0.1)]">
-                <FiUsers size={24} />
+            <div className="bg-[#0a2533]/40 backdrop-blur-xl border border-white/5 p-4 rounded-xl flex items-center gap-4 group hover:border-[#00C2C7]/20 transition-all">
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center text-[#00C2C7] border border-[#00C2C7]/30 bg-[#00C2C7]/10">
+                <FiUsers size={18} />
               </div>
               <div>
-                <p className="text-[10px] text-[#00C2C7] font-black uppercase tracking-[0.2em] opacity-60">Operational Instructors</p>
-                <h3 className="text-3xl font-black text-white tracking-tighter mt-0.5">{instructors.length}</h3>
+                <p className="text-[9px] text-[#00C2C7] font-black uppercase tracking-[0.2em] opacity-60">Operational Instructors</p>
+                <h3 className="text-xl font-black text-white tracking-tighter mt-0.5">{instructors.length}</h3>
               </div>
             </div>
           )}
@@ -250,21 +250,21 @@ const Classes = () => {
 
         {/* Filter Section - Admin Only */}
         {role === "admin" && (
-          <div className="bg-[#0a2533]/40 backdrop-blur-xl border border-white/5 p-8 rounded-[2.5rem] mb-8">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center text-[#00C2C7] bg-[#00C2C7]/10 border border-[#00C2C7]/20">
-                  <FiFilter />
+          <div className="bg-[#0a2533]/40 backdrop-blur-xl border border-white/5 p-5 rounded-2xl mb-5">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-[#00C2C7] bg-[#00C2C7]/10 border border-[#00C2C7]/20">
+                  <FiFilter size={14} />
                 </div>
                 <div>
-                  <h2 className="text-sm font-black text-white uppercase tracking-widest italic">Filter Matrix</h2>
-                  <p className="text-[10px] text-[#00C2C7] font-black uppercase tracking-widest opacity-60">Selection by operational lead</p>
+                  <h2 className="text-xs font-black text-white uppercase tracking-widest italic">Filter </h2>
+                  {/* <p className="text-[9px] text-[#00C2C7] font-black uppercase tracking-widest opacity-60">Selection by operational lead</p> */}
                 </div>
               </div>
 
               <div className="relative group">
                 <select
-                  className="bg-[#061E29] border-2 border-white/5 text-white/80 font-black text-xs uppercase tracking-widest px-6 py-4 rounded-2xl outline-none focus:border-[#00C2C7]/50 appearance-none min-w-[300px] transition-all cursor-pointer"
+                  className="bg-[#061E29] border-2 border-white/5 text-white/80 font-black text-xs uppercase tracking-widest px-4 py-2.5 rounded-xl outline-none focus:border-[#00C2C7]/50 appearance-none min-w-[240px] transition-all cursor-pointer"
                   value={selectedInstructorId}
                   onChange={(e) => setSelectedInstructorId(e.target.value)}
                 >
@@ -291,19 +291,19 @@ const Classes = () => {
             <p className="text-[#00C2C7]/40 text-xs font-black uppercase tracking-[0.3em] mt-4">Registry currently awaiting course initialization</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {classes.map((cls, idx) => (
               <div
                 key={cls.id}
-                className="group relative bg-[#0a2533]/40 backdrop-blur-xl rounded-[2.5rem] border border-white/5 p-8 transition-all duration-500 hover:border-[#00C2C7]/30 hover:shadow-[0_0_40px_rgba(0,194,199,0.1)] overflow-hidden"
+                className="group relative bg-[#0a2533]/40 backdrop-blur-xl rounded-2xl border border-white/5 p-5 transition-all duration-500 hover:border-[#00C2C7]/30 hover:shadow-[0_0_30px_rgba(0,194,199,0.1)] overflow-hidden"
               >
                 <div className="absolute top-0 right-0 p-8 opacity-0 group-hover:opacity-10 transition-opacity">
                   <FiActivity size={80} className="text-[#00C2C7]" />
                 </div>
 
                 <div className="relative z-10 h-full flex flex-col">
-                  <div className="flex items-center gap-5 mb-8">
-                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-[#061E29] bg-gradient-to-br from-[#00C2C7] to-[#0099a3] font-black text-xl shadow-[0_0_15px_rgba(0,194,199,0.2)]">
+                  <div className="flex items-center gap-4 mb-5">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-[#061E29] bg-gradient-to-br from-[#00C2C7] to-[#0099a3] font-black text-base shadow-[0_0_10px_rgba(0,194,199,0.2)]">
                       {idx + 1}
                     </div>
                     <div className="flex-1">
@@ -317,7 +317,7 @@ const Classes = () => {
                           />
                         </div>
                       ) : (
-                        <h3 className="text-xl font-black text-white uppercase tracking-tighter italic">
+                        <h3 className="text-sm font-black text-white uppercase tracking-tighter italic">
                           {cls.class_name}
                         </h3>
                       )}
@@ -349,7 +349,7 @@ const Classes = () => {
                   <div className="mt-auto flex items-center gap-3">
                     <button
                       onClick={() => navigate(`/${cls.id}/docs`)}
-                      className="flex-1 bg-[#061E29] text-[#00C2C7] px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest border border-white/5 hover:border-[#00C2C7]/30 hover:bg-[#00C2C7]/5 transition-all flex items-center justify-center gap-2 group/access"
+                      className="flex-1 bg-[#061E29] text-[#00C2C7] px-4 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest border border-white/5 hover:border-[#00C2C7]/30 hover:bg-[#00C2C7]/5 transition-all flex items-center justify-center gap-2 group/access"
                     >
                       Initialize Content
                       <FiArrowRight className="group-hover/access:translate-x-1 transition-transform" />
@@ -381,24 +381,24 @@ const Classes = () => {
       {/* MODALS - Styled with the same theme */}
       {showAddModal && (
         <div className="fixed inset-0 bg-[#061E29]/80 backdrop-blur-md flex items-center justify-center z-[100] p-6">
-          <div className="bg-[#0a2533] rounded-[3rem] border border-[#00C2C7]/30 shadow-[0_0_100px_rgba(0,0,0,0.5)] w-full max-w-xl overflow-hidden relative">
-            <div className="p-12">
+          <div className="bg-[#0a2533] rounded-2xl border border-[#00C2C7]/30 shadow-2xl w-full max-w-lg overflow-hidden relative">
+            <div className="p-7">
               <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-[#00C2C7] text-[#061E29]">
-                  <FiPlus className="stroke-[3]" />
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-[#00C2C7] text-[#061E29]">
+                  <FiPlus className="stroke-[3]" size={16} />
                 </div>
-                <h3 className="text-3xl font-black text-white uppercase italic tracking-tighter">Protocol Creation</h3>
+                <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">Protocol Creation</h3>
               </div>
 
-              <div className="space-y-8">
+              <div className="space-y-4">
                 <div>
-                  <label className="text-[10px] font-black text-[#00C2C7] uppercase tracking-[0.3em] block mb-3">Unit Designation</label>
+                  <label className="text-[9px] font-black text-[#00C2C7] uppercase tracking-[0.3em] block mb-2">Unit Designation</label>
                   <input
                     type="text"
                     value={role === "admin" ? adminClassName : addClassName}
                     onChange={(e) => role === "admin" ? setAdminClassName(e.target.value) : setAddClassName(e.target.value)}
                     placeholder="Enter unique course tag..."
-                    className="w-full bg-[#061E29] border-2 border-white/5 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-[#00C2C7]/50 transition-all"
+                    className="w-full bg-[#061E29] border-2 border-white/5 rounded-xl px-4 py-3 text-white text-sm font-bold outline-none focus:border-[#00C2C7]/50 transition-all"
                   />
                 </div>
 
@@ -452,14 +452,14 @@ const Classes = () => {
       {/* Manage Instructors Modal */}
       {showManageInstructorsModal && selectedClassForInstructors && (
         <div className="fixed inset-0 bg-[#061E29]/80 backdrop-blur-md flex items-center justify-center z-[100] p-6">
-          <div className="bg-[#0a2533] rounded-[3rem] border border-[#00C2C7]/30 shadow-[0_0_100px_rgba(0,0,0,0.5)] w-full max-w-xl overflow-hidden relative">
-            <div className="p-12">
-              <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-[#00C2C7] text-[#061E29]">
-                  <FiUsers className="stroke-[3]" />
+          <div className="bg-[#0a2533] rounded-2xl border border-[#00C2C7]/30 shadow-2xl w-full max-w-lg overflow-hidden relative">
+            <div className="p-7">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-[#00C2C7] text-[#061E29]">
+                  <FiUsers className="stroke-[3]" size={16} />
                 </div>
                 <div>
-                  <h3 className="text-3xl font-black text-white uppercase italic tracking-tighter">Personnel Assignment</h3>
+                  <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">Personnel Assignment</h3>
                   <p className="text-[10px] text-[#00C2C7] font-black uppercase tracking-widest opacity-60 mt-1">Class: {selectedClassForInstructors.class_name}</p>
                 </div>
               </div>

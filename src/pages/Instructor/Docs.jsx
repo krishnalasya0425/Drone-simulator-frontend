@@ -234,7 +234,7 @@ const Docs = () => {
             <FaFilePdf size={isSmall ? 20 : 48} className="text-[#00C2C7]" />
           </div>
           {!isSmall && (
-            <span className="text-[10px] text-[#00C2C7]/60 font-black uppercase tracking-[0.3em] z-10 italic">Intelligence Report</span>
+            <span className="text-[10px] text-[#00C2C7]/60 font-black uppercase tracking-[0.3em] z-10 italic"> Report</span>
           )}
         </div>
       );
@@ -480,25 +480,23 @@ const Docs = () => {
 
   return (
     <div className="min-h-screen bg-[#061E29] p-8 font-sans text-white overflow-x-hidden relative">
-      <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-[#00C2C7]/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
-      <div className="fixed bottom-0 left-0 w-[500px] h-[500px] bg-[#00C2C7]/5 blur-[120px] rounded-full translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
 
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Header Section */}
-        <div className="bg-[#0a2533]/60 backdrop-blur-xl rounded-[2.5rem] shadow-2xl p-10 mb-8 border border-[#00C2C7]/20 flex flex-col xl:flex-row items-center justify-between gap-8 relative overflow-hidden group">
+        <div className="bg-[#0a2533]/60 backdrop-blur-xl rounded-2xl shadow-xl p-5 mb-5 border border-[#00C2C7]/20 flex flex-col xl:flex-row items-center justify-between gap-5 relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-            <FaRobot size={120} />
+            {/* <FaRobot size={80} /> */}
           </div>
 
-          <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
-            <div className="w-20 h-20 rounded-3xl flex items-center justify-center text-[#061E29] text-3xl shadow-[0_0_30px_rgba(0,194,199,0.4)] bg-gradient-to-br from-[#00C2C7] to-[#0099a3] border border-[#00C2C7]/30">
+          <div className="flex flex-col md:flex-row items-center gap-5 relative z-10">
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-[#061E29] text-xl shadow-[0_0_20px_rgba(0,194,199,0.3)] bg-gradient-to-br from-[#00C2C7] to-[#0099a3] border border-[#00C2C7]/30">
               <FaFolderOpen />
             </div>
             <div>
-              <h1 className="text-4xl font-black text-white tracking-tighter uppercase italic">
+              <h1 className="text-2xl font-black text-white tracking-tighter uppercase italic">
                 {classData.class_name || 'Terminal Output'}
               </h1>
-              <div className="flex flex-wrap items-center gap-4 mt-3">
+              <div className="flex flex-wrap items-center gap-3 mt-1.5">
                 <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[#00C2C7]/10 border border-[#00C2C7]/20 text-[#00C2C7] text-[10px] font-black uppercase tracking-widest">
                   <FiHash size={12} />
                   {docs.length} Assets
@@ -560,7 +558,7 @@ const Docs = () => {
                 className="flex items-center gap-3 px-8 py-4 bg-[#00C2C7] text-[#061E29] rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg hover:shadow-[0_0_30px_rgba(0,194,199,0.5)] transition-all active:scale-95"
               >
                 <FiActivity size={18} className="stroke-[3]" />
-                Efficiency Metrics
+                Modules
               </button>
             )}
 
@@ -605,14 +603,14 @@ const Docs = () => {
         </div>
 
         {/* View Selection & Diagnostics */}
-        <div className="bg-[#0a2533]/40 backdrop-blur-xl border border-white/5 rounded-[2.5rem] p-6 mb-8 flex flex-col lg:flex-row items-center justify-between gap-6">
+        <div className="bg-[#0a2533]/40 backdrop-blur-xl border border-white/5 rounded-2xl p-4 mb-5 flex flex-col lg:flex-row items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-4">
             <div
               className={`flex items-center gap-3 px-6 py-3 rounded-2xl cursor-pointer transition-all border ${activeFilter === 'pdf' ? 'bg-[#00C2C7] text-[#061E29] border-[#00C2C7] shadow-[0_8px_20px_rgba(0,194,199,0.3)]' : 'bg-[#061E29] text-[#00C2C7]/60 border-white/5 hover:border-[#00C2C7]/30'}`}
               onClick={() => setActiveFilter(activeFilter === 'pdf' ? 'all' : 'pdf')}
             >
               <FaFilePdf size={18} />
-              <span className="text-[10px] font-black uppercase tracking-widest italic">Intelligence</span>
+              <span className="text-[10px] font-black uppercase tracking-widest italic">PDF's</span>
               <span className="text-[10px] px-2 py-0.5 rounded-md bg-black/20 font-mono">{docs.filter(d => d.file_type?.includes('pdf')).length}</span>
             </div>
 
@@ -630,7 +628,7 @@ const Docs = () => {
               onClick={() => setActiveFilter(activeFilter === 'video' ? 'all' : 'video')}
             >
               <FaVideo size={18} />
-              <span className="text-[10px] font-black uppercase tracking-widest italic">Feeds</span>
+              <span className="text-[10px] font-black uppercase tracking-widest italic">Videos</span>
               <span className="text-[10px] px-2 py-0.5 rounded-md bg-black/20 font-mono">{docs.filter(d => d.file_type?.startsWith('video')).length}</span>
             </div>
           </div>
@@ -660,11 +658,11 @@ const Docs = () => {
               <FaFolderOpen size={48} />
             </div>
             <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter">Database Empty</h3>
-            <p className="text-[#00C2C7]/40 text-xs font-black uppercase tracking-[0.3em] mt-4 mb-10">No intelligence assets registered in this unit</p>
+            <p className="text-[#00C2C7]/40 text-xs font-black uppercase tracking-[0.3em] mt-4 mb-10">No assets registered in this unit</p>
             {role !== "Student" && (
               <button
                 onClick={() => setUploadDoc(true)}
-                className="bg-[#00C2C7] text-[#061E29] px-10 py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg hover:shadow-[0_0_30px_rgba(0,194,199,0.4)] transition-all active:scale-95"
+                className="bg-[#00C2C7] text-[#061E29] px-7 py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg hover:shadow-[0_0_30px_rgba(0,194,199,0.4)] transition-all active:scale-95"
               >
                 Initalize Asset
               </button>
@@ -802,76 +800,48 @@ const Docs = () => {
 
       {/* Add Students Modal */}
       {showAddStudentsModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden">
-            {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between" style={{ backgroundColor: '#D5F2D5' }}>
-              <h2 className="text-2xl font-bold flex items-center gap-2" style={{ color: '#074F06' }}>
-                <FaUserPlus size={24} />
-                Add Students to Class
-              </h2>
-              <button
-                onClick={() => {
-                  setShowAddStudentsModal(false);
-                  setSelectedStudents([]);
-                }}
-                className="p-2 hover:bg-white rounded-lg transition-colors"
-              >
-                <FiX size={24} style={{ color: '#074F06' }} />
+        <div className="fixed inset-0 bg-[#061E29]/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-[#0a2533] rounded-2xl border border-[#00C2C7]/20 w-full max-w-2xl max-h-[80vh] overflow-hidden">
+            <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-[#00C2C7] flex items-center justify-center text-[#061E29]">
+                  <FaUserPlus size={16} />
+                </div>
+                <h2 className="text-lg font-black text-white uppercase italic tracking-tighter">Add Students to Class</h2>
+              </div>
+              <button onClick={() => { setShowAddStudentsModal(false); setSelectedStudents([]); }} className="p-2 hover:bg-white/5 rounded-lg transition-colors text-white/40 hover:text-white">
+                <FiX size={20} />
               </button>
             </div>
-
-            {/* Modal Body */}
             <div className="p-6 overflow-y-auto max-h-[calc(80vh-180px)]">
               {loadingStudents ? (
                 <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderColor: '#074F06' }}></div>
-                  <p className="text-gray-600">Loading students...</p>
+                  <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#00C2C7] mx-auto mb-4"></div>
+                  <p className="text-[#00C2C7]/60 font-black uppercase text-xs tracking-widest">Loading Personnel...</p>
                 </div>
               ) : availableStudents.length === 0 ? (
                 <div className="text-center py-8">
-                  <FaUsers size={48} className="mx-auto mb-4 text-gray-400" />
-                  <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                    No Available Students
-                  </h3>
-                  <p className="text-gray-600">
-                    All approved students are already in this class.
-                  </p>
+                  <FaUsers size={40} className="mx-auto mb-4 text-[#00C2C7]/20" />
+                  <h3 className="text-sm font-black text-white uppercase italic">No Available Students</h3>
+                  <p className="text-white/40 text-xs mt-2">All approved students are already in this class.</p>
                 </div>
               ) : (
                 <>
-                  <div className="mb-4 p-3 rounded-lg" style={{ backgroundColor: '#D5F2D5' }}>
-                    <p className="text-sm font-semibold" style={{ color: '#074F06' }}>
-                      Select students to add to this class ({selectedStudents.length} selected)
-                    </p>
+                  <div className="mb-4 p-3 rounded-xl bg-[#061E29] border border-white/5">
+                    <p className="text-xs font-black text-[#00C2C7] uppercase tracking-widest">{selectedStudents.length} Selected</p>
                   </div>
                   <div className="space-y-2">
                     {availableStudents.map((student) => (
-                      <label
-                        key={student.id}
-                        className="flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all hover:shadow-md"
-                        style={{
-                          borderColor: selectedStudents.includes(student.id) ? '#074F06' : '#e5e7eb',
-                          backgroundColor: selectedStudents.includes(student.id) ? '#D5F2D5' : 'white'
-                        }}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedStudents.includes(student.id)}
-                          onChange={() => toggleStudentSelection(student.id)}
-                          className="w-5 h-5 rounded cursor-pointer"
-                          style={{ accentColor: '#074F06' }}
-                        />
+                      <label key={student.id} className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${selectedStudents.includes(student.id) ? 'border-[#00C2C7]/40 bg-[#00C2C7]/10' : 'border-white/5 bg-[#061E29] hover:border-white/10'}`}>
+                        <input type="checkbox" checked={selectedStudents.includes(student.id)} onChange={() => toggleStudentSelection(student.id)} className="w-4 h-4 rounded cursor-pointer accent-[#00C2C7]" />
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
-                            <h4 className="font-semibold text-gray-800">{student.name}</h4>
-                            {selectedStudents.includes(student.id) && (
-                              <FaCheckCircle size={16} style={{ color: '#074F06' }} />
-                            )}
+                            <h4 className="font-black text-sm text-white uppercase">{student.name}</h4>
+                            {selectedStudents.includes(student.id) && <FaCheckCircle size={14} className="text-[#00C2C7]" />}
                           </div>
-                          <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
-                            <span>Army No: {student.army_no}</span>
-                            <span>Course No: {student.course_no || '-'}</span>
+                          <div className="flex items-center gap-4 text-xs text-white/40 mt-1 font-bold uppercase tracking-wider">
+                            <span>Army: {student.army_no}</span>
+                            <span>Course: {student.course_no || '-'}</span>
                             <span>Unit: {student.unit || '-'}</span>
                           </div>
                         </div>
@@ -881,26 +851,9 @@ const Docs = () => {
                 </>
               )}
             </div>
-
-            {/* Modal Footer */}
-            <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-end gap-3" style={{ backgroundColor: '#f9fafb' }}>
-              <button
-                onClick={() => {
-                  setShowAddStudentsModal(false);
-                  setSelectedStudents([]);
-                }}
-                className="px-5 py-2 rounded-lg font-semibold text-gray-700 bg-gray-200 hover:bg-gray-300 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleAddSelectedStudents}
-                disabled={selectedStudents.length === 0}
-                className="px-5 py-2 rounded-lg font-semibold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ backgroundColor: '#074F06' }}
-                onMouseEnter={(e) => !e.target.disabled && (e.target.style.backgroundColor = '#053d05')}
-                onMouseLeave={(e) => !e.target.disabled && (e.target.style.backgroundColor = '#074F06')}
-              >
+            <div className="px-6 py-4 border-t border-white/5 flex items-center justify-end gap-3">
+              <button onClick={() => { setShowAddStudentsModal(false); setSelectedStudents([]); }} className="px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest text-white/40 bg-white/5 hover:bg-white/10 transition-all">Cancel</button>
+              <button onClick={handleAddSelectedStudents} disabled={selectedStudents.length === 0} className="px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest bg-[#00C2C7] text-[#061E29] disabled:opacity-30 disabled:cursor-not-allowed transition-all">
                 Add {selectedStudents.length > 0 && `(${selectedStudents.length})`} Student{selectedStudents.length !== 1 ? 's' : ''}
               </button>
             </div>
@@ -910,152 +863,81 @@ const Docs = () => {
 
       {/* View Students Modal */}
       {showViewStudentsModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[80vh] overflow-hidden">
-            {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between" style={{ backgroundColor: '#D5F2D5' }}>
-              <h2 className="text-2xl font-bold flex items-center gap-2" style={{ color: '#074F06' }}>
-                <FaUsers size={24} />
-                Students in {classData.class_name}
-              </h2>
-              <button
-                onClick={() => {
-                  setShowViewStudentsModal(false);
-                  setDeleteMode(false);
-                  setStudentsToDelete([]);
-                }}
-                className="p-2 hover:bg-white rounded-lg transition-colors"
-              >
-                <FiX size={24} style={{ color: '#074F06' }} />
+        <div className="fixed inset-0 bg-[#061E29]/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-[#0a2533] rounded-2xl border border-[#00C2C7]/20 w-full max-w-3xl max-h-[80vh] overflow-hidden">
+            <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-[#00C2C7] flex items-center justify-center text-[#061E29]">
+                  <FaUsers size={16} />
+                </div>
+                <div>
+                  <h2 className="text-lg font-black text-white uppercase italic tracking-tighter">Students in {classData.class_name}</h2>
+                  <p className="text-[9px] text-[#00C2C7]/50 font-black uppercase tracking-widest">{classStudents.length} Personnel Enrolled</p>
+                </div>
+              </div>
+              <button onClick={() => { setShowViewStudentsModal(false); setDeleteMode(false); setStudentsToDelete([]); }} className="p-2 hover:bg-white/5 rounded-lg transition-colors text-white/40 hover:text-white">
+                <FiX size={20} />
               </button>
             </div>
 
-            {/* Modal Body */}
             <div className="p-6 overflow-y-auto max-h-[calc(80vh-180px)]">
               {classStudents.length === 0 ? (
                 <div className="text-center py-8">
-                  <FaUsers size={48} className="mx-auto mb-4 text-gray-400" />
-                  <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                    No Students Enrolled
-                  </h3>
-                  <p className="text-gray-600 mb-4">
-                    This class doesn't have any students yet.
-                  </p>
-                  {/* Add Students button - Admin only */}
+                  <FaUsers size={40} className="mx-auto mb-4 text-[#00C2C7]/20" />
+                  <h3 className="text-sm font-black text-white uppercase italic mb-2">No Students Enrolled</h3>
+                  <p className="text-white/40 text-xs mb-4">This class doesn't have any students yet.</p>
                   {role === "admin" && (
-                    <button
-                      onClick={() => {
-                        setShowViewStudentsModal(false);
-                        handleAddStudentsClick();
-                      }}
-                      className="px-5 py-2 rounded-lg font-semibold text-white transition-all"
-                      style={{ backgroundColor: '#074F06' }}
-                      onMouseEnter={(e) => e.target.style.backgroundColor = '#053d05'}
-                      onMouseLeave={(e) => e.target.style.backgroundColor = '#074F06'}
-                    >
+                    <button onClick={() => { setShowViewStudentsModal(false); handleAddStudentsClick(); }} className="px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest bg-[#00C2C7] text-[#061E29] transition-all">
                       Add Students
                     </button>
                   )}
                 </div>
               ) : (
                 <>
-                  <div className="mb-4 p-3 rounded-lg flex items-center justify-between" style={{ backgroundColor: '#D5F2D5' }}>
-                    <p className="text-sm font-semibold" style={{ color: '#074F06' }}>
-                      {deleteMode
-                        ? `${studentsToDelete.length} student${studentsToDelete.length !== 1 ? 's' : ''} selected for removal`
-                        : `Total: ${classStudents.length} student${classStudents.length !== 1 ? 's' : ''}`
-                      }
+                  <div className="mb-4 p-3 rounded-xl bg-[#061E29] border border-white/5 flex items-center justify-between">
+                    <p className="text-xs font-black text-[#00C2C7] uppercase tracking-widest">
+                      {deleteMode ? `${studentsToDelete.length} Selected for Removal` : `Total: ${classStudents.length} Personnel`}
                     </p>
-                    {/* Delete mode toggle - Admin only */}
                     {!deleteMode && role === "admin" && (
-                      <button
-                        onClick={toggleDeleteMode}
-                        className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-white transition-all hover:shadow-md"
-                        style={{ backgroundColor: '#dc2626' }}
-                        onMouseEnter={(e) => e.target.style.backgroundColor = '#b91c1c'}
-                        onMouseLeave={(e) => e.target.style.backgroundColor = '#dc2626'}
-                      >
-                        <FaTrash size={14} />
-                        Remove Students
+                      <button onClick={toggleDeleteMode} className="flex items-center gap-2 px-3 py-1.5 rounded-xl font-black text-xs uppercase tracking-widest bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500 hover:text-white transition-all">
+                        <FaTrash size={12} /> Remove Students
                       </button>
                     )}
                   </div>
-                  <div className="overflow-x-auto">
+                  <div className="overflow-x-auto rounded-xl border border-white/5">
                     <table className="w-full">
-                      <thead className="text-white" style={{ backgroundColor: '#074F06' }}>
+                      <thead className="bg-[#00C2C7]/10 border-b border-[#00C2C7]/20">
                         <tr>
                           {deleteMode && (
                             <th className="px-4 py-3 text-left">
-                              <input
-                                type="checkbox"
-                                checked={studentsToDelete.length === classStudents.length}
-                                onChange={(e) => {
-                                  if (e.target.checked) {
-                                    setStudentsToDelete(classStudents.map(s => s.id));
-                                  } else {
-                                    setStudentsToDelete([]);
-                                  }
-                                }}
-                                className="w-5 h-5 rounded cursor-pointer"
-                                style={{ accentColor: '#dc2626' }}
-                              />
+                              <input type="checkbox" checked={studentsToDelete.length === classStudents.length} onChange={(e) => { if (e.target.checked) { setStudentsToDelete(classStudents.map(s => s.id)); } else { setStudentsToDelete([]); } }} className="w-4 h-4 rounded cursor-pointer accent-red-500" />
                             </th>
                           )}
-                          <th className="px-4 py-3 text-left">#</th>
-                          <th className="px-4 py-3 text-left">Name</th>
-                          <th className="px-4 py-3 text-left">Rank</th>
-                          <th className="px-4 py-3 text-left">Army No</th>
-                          <th className="px-4 py-3 text-left">Course No</th>
-                          <th className="px-4 py-3 text-left">Unit</th>
-                          <th className="px-4 py-3 text-center">Progress</th>
+                          <th className="px-4 py-3 text-left text-[#F3F4F4] font-black text-xs uppercase tracking-widest">#</th>
+                          <th className="px-4 py-3 text-left text-[#F3F4F4] font-black text-xs uppercase tracking-widest">Name</th>
+                          <th className="px-4 py-3 text-left text-[#F3F4F4] font-black text-xs uppercase tracking-widest">Rank</th>
+                          <th className="px-4 py-3 text-left text-[#F3F4F4] font-black text-xs uppercase tracking-widest">Army No</th>
+                          <th className="px-4 py-3 text-left text-[#F3F4F4] font-black text-xs uppercase tracking-widest">Course No</th>
+                          <th className="px-4 py-3 text-left text-[#F3F4F4] font-black text-xs uppercase tracking-widest">Unit</th>
+                          <th className="px-4 py-3 text-center text-[#F3F4F4] font-black text-xs uppercase tracking-widest">Progress</th>
                         </tr>
                       </thead>
                       <tbody>
                         {classStudents.map((student, index) => (
-                          <tr
-                            key={student.id}
-                            className={`border-b transition-colors ${deleteMode && studentsToDelete.includes(student.id)
-                              ? 'bg-red-50'
-                              : 'hover:bg-green-50'
-                              }`}
-                          >
+                          <tr key={student.id} className={`border-b border-white/5 transition-colors ${deleteMode && studentsToDelete.includes(student.id) ? 'bg-red-500/10' : 'hover:bg-[#00C2C7]/5'}`}>
                             {deleteMode && (
                               <td className="px-4 py-3">
-                                <input
-                                  type="checkbox"
-                                  checked={studentsToDelete.includes(student.id)}
-                                  onChange={() => toggleStudentForDeletion(student.id)}
-                                  className="w-5 h-5 rounded cursor-pointer"
-                                  style={{ accentColor: '#dc2626' }}
-                                />
+                                <input type="checkbox" checked={studentsToDelete.includes(student.id)} onChange={() => toggleStudentForDeletion(student.id)} className="w-4 h-4 rounded cursor-pointer accent-red-500" />
                               </td>
                             )}
-                            <td className="px-4 py-3 font-semibold" style={{ color: '#074F06' }}>
-                              {index + 1}
-                            </td>
-                            <td className="px-4 py-3 font-medium text-gray-800">
-                              {student.name}
-                            </td>
-                            <td className="px-4 py-3 text-gray-600">
-                              {student.rank || "-"}
-                            </td>
-                            <td className="px-4 py-3 text-gray-600">
-                              {student.army_no}
-                            </td>
-                            <td className="px-4 py-3 text-gray-600">
-                              {student.course_no}
-                            </td>
-                            <td className="px-4 py-3 text-gray-600">
-                              {student.unit}
-                            </td>
+                            <td className="px-4 py-3 font-black text-[#00C2C7] text-xs">{index + 1}</td>
+                            <td className="px-4 py-3 font-bold text-white text-sm">{student.name}</td>
+                            <td className="px-4 py-3 text-white/50 text-xs">{student.rank || "-"}</td>
+                            <td className="px-4 py-3 text-white/50 text-xs">{student.army_no}</td>
+                            <td className="px-4 py-3 text-white/50 text-xs">{student.course_no}</td>
+                            <td className="px-4 py-3 text-white/50 text-xs">{student.unit}</td>
                             <td className="px-4 py-3 text-center">
-                              <button
-                                onClick={() => window.location.href = `/${classId}/${student.id}/progress`}
-                                className="px-3 py-1.5 rounded-lg text-white text-xs font-bold hover:shadow-md transition-all"
-                                style={{ backgroundColor: '#074F06' }}
-                                onMouseEnter={(e) => e.target.style.backgroundColor = '#053d05'}
-                                onMouseLeave={(e) => e.target.style.backgroundColor = '#074F06'}
-                              >
+                              <button onClick={() => window.location.href = `/${classId}/${student.id}/progress`} className="px-3 py-1.5 rounded-xl text-[#061E29] bg-[#00C2C7] text-xs font-black uppercase tracking-widest hover:opacity-80 transition-all">
                                 View Progress
                               </button>
                             </td>
@@ -1068,37 +950,16 @@ const Docs = () => {
               )}
             </div>
 
-            {/* Modal Footer */}
-            <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-end gap-3" style={{ backgroundColor: '#f9fafb' }}>
+            <div className="px-6 py-4 border-t border-white/5 flex items-center justify-end gap-3">
               {deleteMode ? (
                 <>
-                  <button
-                    onClick={() => {
-                      setDeleteMode(false);
-                      setStudentsToDelete([]);
-                    }}
-                    className="px-5 py-2 rounded-lg font-semibold text-gray-700 bg-gray-200 hover:bg-gray-300 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleRemoveSelectedStudents}
-                    disabled={studentsToDelete.length === 0}
-                    className="px-5 py-2 rounded-lg font-semibold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    style={{ backgroundColor: '#dc2626' }}
-                    onMouseEnter={(e) => !e.target.disabled && (e.target.style.backgroundColor = '#b91c1c')}
-                    onMouseLeave={(e) => !e.target.disabled && (e.target.style.backgroundColor = '#dc2626')}
-                  >
+                  <button onClick={() => { setDeleteMode(false); setStudentsToDelete([]); }} className="px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest text-white/40 bg-white/5 hover:bg-white/10 transition-all">Cancel</button>
+                  <button onClick={handleRemoveSelectedStudents} disabled={studentsToDelete.length === 0} className="px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest bg-red-500 text-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-red-600 transition-all">
                     Remove {studentsToDelete.length > 0 && `(${studentsToDelete.length})`} Student{studentsToDelete.length !== 1 ? 's' : ''}
                   </button>
                 </>
               ) : (
-                <button
-                  onClick={() => setShowViewStudentsModal(false)}
-                  className="px-5 py-2 rounded-lg font-semibold text-gray-700 bg-gray-200 hover:bg-gray-300 transition-colors"
-                >
-                  Close
-                </button>
+                <button onClick={() => setShowViewStudentsModal(false)} className="px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest text-white/40 bg-white/5 hover:bg-white/10 transition-all">Close</button>
               )}
             </div>
           </div>
@@ -1110,124 +971,58 @@ const Docs = () => {
 
       {/* Add/Update Build Modal */}
       {showBuildModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-xl">
-            {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between" style={{ backgroundColor: '#D5F2D5' }}>
-              <h2 className="text-2xl font-bold flex items-center gap-2" style={{ color: '#074F06' }}>
-                <FaVrCardboard size={24} />
-                {existingBuilds.practice ? 'Update' : 'Add'} Practice Build
-              </h2>
-              <button
-                onClick={() => {
-                  setShowBuildModal(false);
-                  setBuildPath('');
-                  setBuildName('');
-                }}
-                className="p-2 hover:bg-white rounded-lg transition-colors"
-              >
-                <FiX size={24} style={{ color: '#074F06' }} />
+        <div className="fixed inset-0 bg-[#061E29]/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-[#0a2533] rounded-2xl border border-[#00C2C7]/20 w-full max-w-xl">
+            <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-[#00C2C7] flex items-center justify-center text-[#061E29]">
+                  <FaVrCardboard size={16} />
+                </div>
+                <h2 className="text-lg font-black text-white uppercase italic tracking-tighter">{existingBuilds.practice ? 'Update' : 'Add'} Practice Build</h2>
+              </div>
+              <button onClick={() => { setShowBuildModal(false); setBuildPath(''); setBuildName(''); }} className="p-2 hover:bg-white/5 rounded-lg transition-colors text-white/40 hover:text-white">
+                <FiX size={20} />
               </button>
             </div>
-
-            {/* Modal Body */}
             <div className="p-6">
               {existingBuilds.practice && (
-                <div className="mb-4 p-4 rounded-lg bg-blue-50 border border-blue-200">
-                  <p className="text-sm font-semibold text-blue-900 mb-1">Current Build:</p>
-                  <p className="text-sm text-blue-700 font-mono break-all">{existingBuilds.practice.build_path}</p>
-                  <p className="text-xs text-blue-600 mt-1">Uploaded: {new Date(existingBuilds.practice.uploaded_at).toLocaleString()}</p>
+                <div className="mb-4 p-4 rounded-xl bg-[#061E29] border border-[#00C2C7]/20">
+                  <p className="text-[10px] font-black text-[#00C2C7] uppercase tracking-widest mb-1">Current Build:</p>
+                  <p className="text-sm text-white/60 font-mono break-all">{existingBuilds.practice.build_path}</p>
+                  <p className="text-xs text-white/30 mt-1">Uploaded: {new Date(existingBuilds.practice.uploaded_at).toLocaleString()}</p>
                 </div>
               )}
-
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Build Path <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={buildPath}
-                    onChange={(e) => {
-                      // Automatically remove quotes if user pastes path with quotes
-                      const value = e.target.value.replace(/^["']|["']$/g, '');
-                      setBuildPath(value);
-                    }}
-                    placeholder="C:\path\to\unity\build\folder"
-                    className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-[#074F06] focus:outline-none font-mono text-sm"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Enter the full path to the folder containing your Unity build (.exe file)
-                  </p>
-                  <p className="text-xs text-amber-600 font-semibold mt-1">
-                    ⚠️ Note: Enter the path without quotes (e.g., C:\Builds\MyApp not "C:\Builds\MyApp")
-                  </p>
-                  <p className="text-xs text-red-600 font-semibold mt-1">
-                    ⚠️ Important: Enter the FOLDER path, not the .exe file path!
-                  </p>
-                  <div className="mt-2 p-2 rounded bg-green-50 border border-green-200">
-                    <p className="text-xs text-green-800">
-                      <strong>✅ Correct:</strong> <code className="bg-white px-1 rounded">C:\Builds\MyGame</code>
-                    </p>
+                  <label className="block text-[10px] font-black text-[#00C2C7] uppercase tracking-widest mb-2">Build Path <span className="text-red-400">*</span></label>
+                  <input type="text" value={buildPath} onChange={(e) => { const value = e.target.value.replace(/^["']|["']$/g, ''); setBuildPath(value); }} placeholder="C:\path\to\unity\build\folder" className="w-full bg-[#061E29] border border-white/10 rounded-xl px-4 py-3 text-white text-sm font-mono focus:outline-none focus:border-[#00C2C7]/50 transition-all" />
+                  <p className="text-xs text-white/30 mt-1">Enter the full path to the folder containing your Unity build (.exe file)</p>
+                  <p className="text-xs text-amber-400 font-bold mt-1">⚠️ Enter the path without quotes</p>
+                  <p className="text-xs text-red-400 font-bold mt-1">⚠️ Enter the FOLDER path, not the .exe file path!</p>
+                  <div className="mt-2 p-2 rounded-lg bg-[#00C2C7]/10 border border-[#00C2C7]/20">
+                    <p className="text-xs text-[#00C2C7]"><strong>✅ Correct:</strong> <code className="bg-[#061E29] px-1 rounded">C:\Builds\MyGame</code></p>
                   </div>
-                  <div className="mt-1 p-2 rounded bg-red-50 border border-red-200">
-                    <p className="text-xs text-red-800">
-                      <strong>❌ Wrong:</strong> <code className="bg-white px-1 rounded">C:\Builds\MyGame\MyGame.exe</code>
-                    </p>
+                  <div className="mt-1 p-2 rounded-lg bg-red-500/10 border border-red-500/20">
+                    <p className="text-xs text-red-400"><strong>❌ Wrong:</strong> <code className="bg-[#061E29] px-1 rounded">C:\Builds\MyGame\MyGame.exe</code></p>
                   </div>
-
-                  {/* Required Files Information */}
-                  <div className="mt-3 p-3 rounded-lg bg-blue-50 border border-blue-200">
-                    <p className="text-xs font-semibold text-blue-900 mb-2">📋 Required Unity Build Files:</p>
-                    <ul className="text-xs text-blue-800 space-y-1 ml-4">
-                      <li className="list-disc"><strong>[GameName].exe</strong> - Main executable file</li>
-                      <li className="list-disc"><strong>[GameName]_Data/</strong> - Game data folder</li>
-                      <li className="list-disc"><strong>UnityPlayer.dll</strong> - Unity runtime library</li>
+                  <div className="mt-3 p-3 rounded-xl bg-[#061E29] border border-white/5">
+                    <p className="text-[10px] font-black text-[#00C2C7] uppercase tracking-widest mb-2">📋 Required Unity Build Files:</p>
+                    <ul className="text-xs text-white/50 space-y-1 ml-4">
+                      <li className="list-disc"><strong className="text-white/70">[GameName].exe</strong> – Main executable</li>
+                      <li className="list-disc"><strong className="text-white/70">[GameName]_Data/</strong> – Game data folder</li>
+                      <li className="list-disc"><strong className="text-white/70">UnityPlayer.dll</strong> – Unity runtime library</li>
                     </ul>
-                    <p className="text-xs text-blue-700 mt-2 italic">
-                      All these files must be present in the build folder for it to be accepted.
-                    </p>
                   </div>
                 </div>
-
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Build Name (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={buildName}
-                    onChange={(e) => setBuildName(e.target.value)}
-                    placeholder="My VR Training Build"
-                    className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-[#074F06] focus:outline-none"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Optional friendly name for this build
-                  </p>
+                  <label className="block text-[10px] font-black text-[#00C2C7] uppercase tracking-widest mb-2">Build Name (Optional)</label>
+                  <input type="text" value={buildName} onChange={(e) => setBuildName(e.target.value)} placeholder="My VR Training Build" className="w-full bg-[#061E29] border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#00C2C7]/50 transition-all" />
                 </div>
               </div>
             </div>
-
-            {/* Modal Footer */}
-            <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-end gap-3" style={{ backgroundColor: '#f9fafb' }}>
-              <button
-                onClick={() => {
-                  setShowBuildModal(false);
-                  setBuildPath('');
-                  setBuildName('');
-                }}
-                className="px-5 py-2 rounded-lg font-semibold text-gray-700 bg-gray-200 hover:bg-gray-300 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSaveBuild}
-                disabled={!buildPath.trim()}
-                className="px-5 py-2 rounded-lg font-semibold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ backgroundColor: '#074F06' }}
-                onMouseEnter={(e) => !e.target.disabled && (e.target.style.backgroundColor = '#053d05')}
-                onMouseLeave={(e) => !e.target.disabled && (e.target.style.backgroundColor = '#074F06')}
-              >
+            <div className="px-6 py-4 border-t border-white/5 flex items-center justify-end gap-3">
+              <button onClick={() => { setShowBuildModal(false); setBuildPath(''); setBuildName(''); }} className="px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest text-white/40 bg-white/5 hover:bg-white/10 transition-all">Cancel</button>
+              <button onClick={handleSaveBuild} disabled={!buildPath.trim()} className="px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest bg-[#00C2C7] text-[#061E29] disabled:opacity-30 disabled:cursor-not-allowed transition-all">
                 {existingBuilds.practice ? 'Update Build' : 'Add Build'}
               </button>
             </div>
@@ -1239,70 +1034,47 @@ const Docs = () => {
 
       {/* Validation Error Modal */}
       {showValidationErrorModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-red-50">
-              <h2 className="text-2xl font-bold flex items-center gap-2 text-red-900">
-                <span className="text-3xl">❌</span>
-                Invalid Unity Build
-              </h2>
-              <button
-                onClick={() => setShowValidationErrorModal(false)}
-                className="p-2 hover:bg-white rounded-lg transition-colors"
-              >
-                <FiX size={24} className="text-red-900" />
+        <div className="fixed inset-0 bg-[#061E29]/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-[#0a2533] rounded-2xl border border-red-500/30 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+            <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-red-500/20 flex items-center justify-center text-red-400 border border-red-500/30">
+                  <FiX size={18} />
+                </div>
+                <h2 className="text-lg font-black text-white uppercase italic tracking-tighter">Invalid Unity Build</h2>
+              </div>
+              <button onClick={() => setShowValidationErrorModal(false)} className="p-2 hover:bg-white/5 rounded-lg transition-colors text-white/40 hover:text-white">
+                <FiX size={20} />
               </button>
             </div>
-
-            {/* Modal Body */}
             <div className="p-6">
-              {/* Error Message */}
               <div className="mb-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">{validationError.message}</h3>
-                {validationError.details && (
-                  <p className="text-gray-700 whitespace-pre-line">{validationError.details}</p>
-                )}
+                <h3 className="text-base font-black text-white uppercase italic mb-2">{validationError.message}</h3>
+                {validationError.details && <p className="text-white/60 text-sm whitespace-pre-line">{validationError.details}</p>}
               </div>
-
-              {/* Missing Files Section */}
               {validationError.missing && validationError.missing.length > 0 && (
-                <div className="mb-6 p-4 rounded-lg bg-red-50 border-2 border-red-300">
-                  <h4 className="text-lg font-bold text-red-900 mb-3 flex items-center gap-2">
-                    <span>🚫</span> Missing Required Files
-                  </h4>
-                  <ul className="space-y-2">
+                <div className="mb-4 p-4 rounded-xl bg-red-500/10 border border-red-500/20">
+                  <h4 className="text-sm font-black text-red-400 uppercase tracking-widest mb-3">🚫 Missing Required Files</h4>
+                  <ul className="space-y-1">
                     {validationError.missing.map((item, index) => (
-                      <li key={index} className="flex items-start gap-2 text-red-800">
-                        <span className="text-red-600 font-bold">•</span>
-                        <span className="font-mono text-sm">{item}</span>
-                      </li>
+                      <li key={index} className="flex items-start gap-2 text-red-300 text-xs"><span className="text-red-400">•</span><span className="font-mono">{item}</span></li>
                     ))}
                   </ul>
                 </div>
               )}
-
-              {/* Found Files Section */}
               {validationError.found && validationError.found.length > 0 && (
-                <div className="mb-6 p-4 rounded-lg bg-green-50 border-2 border-green-300">
-                  <h4 className="text-lg font-bold text-green-900 mb-3 flex items-center gap-2">
-                    <span>✅</span> Found Files
-                  </h4>
-                  <ul className="space-y-2">
+                <div className="mb-4 p-4 rounded-xl bg-[#00C2C7]/10 border border-[#00C2C7]/20">
+                  <h4 className="text-sm font-black text-[#00C2C7] uppercase tracking-widest mb-3">✅ Found Files</h4>
+                  <ul className="space-y-1">
                     {validationError.found.map((item, index) => (
-                      <li key={index} className="flex items-start gap-2 text-green-800">
-                        <span className="text-green-600 font-bold">•</span>
-                        <span className="font-mono text-sm">{item}</span>
-                      </li>
+                      <li key={index} className="flex items-start gap-2 text-[#00C2C7]/70 text-xs"><span className="text-[#00C2C7]">•</span><span className="font-mono">{item}</span></li>
                     ))}
                   </ul>
                 </div>
               )}
-
-              {/* Help Section */}
-              <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
-                <h4 className="text-sm font-bold text-blue-900 mb-2">💡 What to do:</h4>
-                <ul className="text-sm text-blue-800 space-y-1 ml-4">
+              <div className="p-4 rounded-xl bg-[#061E29] border border-white/5">
+                <h4 className="text-[10px] font-black text-[#00C2C7] uppercase tracking-widest mb-2">💡 What to do:</h4>
+                <ul className="text-xs text-white/50 space-y-1 ml-4">
                   <li className="list-disc">Ensure you're pointing to the correct build folder</li>
                   <li className="list-disc">Verify all required Unity build files are present</li>
                   <li className="list-disc">Check that the build was exported correctly from Unity</li>
@@ -1310,13 +1082,8 @@ const Docs = () => {
                 </ul>
               </div>
             </div>
-
-            {/* Modal Footer */}
-            <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-end gap-3 bg-gray-50">
-              <button
-                onClick={() => setShowValidationErrorModal(false)}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
-              >
+            <div className="px-6 py-4 border-t border-white/5 flex items-center justify-end">
+              <button onClick={() => setShowValidationErrorModal(false)} className="px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest bg-[#00C2C7] text-[#061E29] transition-all">
                 Got it, I'll fix this
               </button>
             </div>
@@ -1326,72 +1093,37 @@ const Docs = () => {
 
       {/* Delete Build Confirmation Modal */}
       {showDeleteBuildModal && buildToDelete && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl">
-            {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-red-50">
-              <h2 className="text-2xl font-bold flex items-center gap-2 text-red-900">
-                <FaTrash size={24} />
-                Delete Practice Build
-              </h2>
-              <button
-                onClick={() => {
-                  setShowDeleteBuildModal(false);
-                  setBuildToDelete(null);
-                }}
-                className="p-2 hover:bg-white rounded-lg transition-colors"
-              >
-                <FiX size={24} className="text-red-900" />
+        <div className="fixed inset-0 bg-[#061E29]/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-[#0a2533] rounded-2xl border border-red-500/30 w-full max-w-2xl">
+            <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-red-500/20 border border-red-500/30 flex items-center justify-center text-red-400">
+                  <FaTrash size={14} />
+                </div>
+                <h2 className="text-lg font-black text-white uppercase italic tracking-tighter">Delete Practice Build</h2>
+              </div>
+              <button onClick={() => { setShowDeleteBuildModal(false); setBuildToDelete(null); }} className="p-2 hover:bg-white/5 rounded-lg transition-colors text-white/40 hover:text-white">
+                <FiX size={20} />
               </button>
             </div>
-
-            {/* Modal Body */}
             <div className="p-6">
-              <div className="mb-4">
-                <p className="text-gray-700 mb-4 font-semibold text-lg">
-                  ⚠️ Are you sure you want to permanently delete this practice build?
-                </p>
-
-                <div className="p-4 rounded-lg bg-red-50 border-2 border-red-300 mb-4">
-                  <p className="text-sm font-bold text-red-900 mb-2">🗑️ WARNING: This action cannot be undone!</p>
-                  <p className="text-sm text-red-800 mb-2">
-                    This will <strong>permanently delete</strong>:
-                  </p>
-                  <ul className="text-sm text-red-800 ml-6 list-disc space-y-1">
-                    <li>The build configuration from the database</li>
-                    <li><strong>All build files from your PC</strong> (including .exe, _Data folder, and all assets)</li>
-                  </ul>
-                </div>
-
-                <div className="p-4 rounded-lg bg-gray-100 border border-gray-300">
-                  <p className="text-sm font-semibold text-gray-900 mb-2">📂 Build Location:</p>
-                  <p className="text-sm text-gray-800 font-mono break-all">
-                    {buildToDelete.build_path}
-                  </p>
-                </div>
+              <p className="text-white/80 font-bold mb-4">⚠️ Are you sure you want to permanently delete this practice build?</p>
+              <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 mb-4">
+                <p className="text-sm font-black text-red-400 uppercase tracking-widest mb-2">🗑️ WARNING: This action cannot be undone!</p>
+                <p className="text-sm text-white/60 mb-2">This will <strong className="text-white/80">permanently delete</strong>:</p>
+                <ul className="text-sm text-white/50 ml-6 list-disc space-y-1">
+                  <li>The build configuration from the database</li>
+                  <li><strong className="text-white/70">All build files from your PC</strong> (including .exe, _Data folder, and all assets)</li>
+                </ul>
+              </div>
+              <div className="p-4 rounded-xl bg-[#061E29] border border-white/5">
+                <p className="text-[10px] font-black text-[#00C2C7] uppercase tracking-widest mb-2">📂 Build Location:</p>
+                <p className="text-sm text-white/60 font-mono break-all">{buildToDelete.build_path}</p>
               </div>
             </div>
-
-            {/* Modal Footer */}
-            <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-end gap-3" style={{ backgroundColor: '#f9fafb' }}>
-              <button
-                onClick={() => {
-                  setShowDeleteBuildModal(false);
-                  setBuildToDelete(null);
-                }}
-                className="px-5 py-2 rounded-lg font-semibold text-gray-700 bg-gray-200 hover:bg-gray-300 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDeleteBuild}
-                className="px-5 py-2 rounded-lg font-semibold text-white transition-all"
-                style={{ backgroundColor: '#dc2626' }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = '#b91c1c'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = '#dc2626'}
-              >
-                Delete Configuration
-              </button>
+            <div className="px-6 py-4 border-t border-white/5 flex items-center justify-end gap-3">
+              <button onClick={() => { setShowDeleteBuildModal(false); setBuildToDelete(null); }} className="px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest text-white/40 bg-white/5 hover:bg-white/10 transition-all">Cancel</button>
+              <button onClick={handleDeleteBuild} className="px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest bg-red-500 text-white hover:bg-red-600 transition-all">Delete Configuration</button>
             </div>
           </div>
         </div>
@@ -1406,7 +1138,8 @@ const Docs = () => {
       />
     </div>
 
-     
-)}
+
+  )
+}
 
 export default Docs;
