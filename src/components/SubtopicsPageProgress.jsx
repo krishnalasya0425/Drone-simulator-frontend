@@ -189,42 +189,48 @@ function SubtopicsPage({ classId: propClassId, studentId: propStudentId, embedde
   const displayDocumentSubtopics = documentSubtopics;
   const displayUnitySubtopics = modelSubtopics;
 
-  // Compute drone training stats — deduplicate by unique progress key to avoid counting same unit multiple times
+  // Compute drone training stats — count modules, submodules, and sub-submodules for the selected category individually
   const droneStats = React.useMemo(() => {
-    let total = 0;
-    const completedKeys = new Set();
-    const seenLeafKeys = new Set();
+    let totalValue = 0;
+    let completedValue = 0;
 
-    fullDroneData.forEach(category => {
-      (category.modules || []).forEach(module => {
+    // Filter by the selected drone category to satisfy "classes individually" requirement
+    const activeCategory = selectedDroneCategory
+      ? fullDroneData.find(c => c.id === selectedDroneCategory.id)
+      : (fullDroneData.length > 0 ? fullDroneData[0] : null);
+
+    if (activeCategory) {
+      (activeCategory.modules || []).forEach(module => {
+        // 1. Count Module
+        totalValue++;
+        if (module.progress && (module.progress.completed === 1 || module.progress.completed === true)) {
+          completedValue++;
+        }
+
         (module.submodules || []).forEach(submodule => {
-          const subSubmodules = submodule.subsubmodules || [];
-          if (subSubmodules.length > 0) {
-            subSubmodules.forEach(ssm => {
-              const key = `${module.id}_${submodule.id}_${ssm.id}`;
-              if (!seenLeafKeys.has(key)) {
-                seenLeafKeys.add(key);
-                total++;
-                const p = ssm.progress;
-                if (p && (p.completed === 1 || p.completed === true)) completedKeys.add(key);
-              }
-            });
-          } else {
-            const key = `${module.id}_${submodule.id}_null`;
-            if (!seenLeafKeys.has(key)) {
-              seenLeafKeys.add(key);
-              total++;
-              const p = submodule.progress;
-              if (p && (p.completed === 1 || p.completed === true)) completedKeys.add(key);
-            }
+          // 2. Count Submodule
+          totalValue++;
+          if (submodule.progress && (submodule.progress.completed === 1 || submodule.progress.completed === true)) {
+            completedValue++;
           }
+
+          (submodule.subsubmodules || []).forEach(ssm => {
+            // 3. Count Sub-submodule
+            totalValue++;
+            if (ssm.progress && (ssm.progress.completed === 1 || ssm.progress.completed === true)) {
+              completedValue++;
+            }
+          });
         });
       });
-    });
+    }
 
-    const completed = completedKeys.size;
-    return { total, completed, pending: total - completed };
-  }, [fullDroneData]);
+    return {
+      total: totalValue,
+      completed: completedValue,
+      pending: Math.max(0, totalValue - completedValue)
+    };
+  }, [fullDroneData, selectedDroneCategory?.id]);
 
   return (
     <div className={embedded ? "" : "min-h-screen bg-[#061E29] p-8 font-sans text-white overflow-x-hidden relative"}>
@@ -400,6 +406,24 @@ function SubtopicsPage({ classId: propClassId, studentId: propStudentId, embedde
                 <span className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em] mt-1">Total Units</span>
               </div>
             </div>
+
+            {/* DRONE CATEGORY TABS */}
+            {droneCategories.length > 1 && (
+              <div className="flex flex-wrap gap-2 p-1 bg-[#061E29]/50 rounded-2xl border border-white/5 shadow-inner">
+                {droneCategories.map((cat) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => setSelectedDroneCategory(cat)}
+                    className={`px-4 py-2 rounded-xl font-black text-[9px] uppercase tracking-widest transition-all ${selectedDroneCategory?.id === cat.id
+                      ? 'bg-[#00C2C7] text-[#061E29] shadow-lg shadow-[#00C2C7]/20 border border-[#00C2C7]/30'
+                      : 'text-[#00C2C7]/60 hover:text-[#00C2C7] hover:bg-[#00C2C7]/5 border border-transparent'
+                      }`}
+                  >
+                    {cat.category_name}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* DRONE TRAINING HIERARCHICAL VIEW */}
             <div className="mt-4 space-y-4">

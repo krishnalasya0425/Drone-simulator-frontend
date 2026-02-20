@@ -80,9 +80,9 @@ export default function StudentDashboard() {
     navigate(`/${classId}/docs`);
   };
 
-  const handleTestClick = (testId, testSetId, status) => {
+  const handleTestClick = (stsId, testSetId, status) => {
     if (status === "available" || status === "in-progress") {
-      navigate(`/${testSetId || testId}/questions`);
+      navigate(`/${stsId}/questions`);
     }
   };
 

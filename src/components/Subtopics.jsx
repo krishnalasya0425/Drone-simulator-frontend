@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import SubtopicService from "../entities/subtopic";
-import { FiPlus, FiEdit2, FiTrash2, FiCheck, FiX, FiList, FiChevronRight, FiChevronDown, FiPlusCircle, FiActivity, FiLayers, FiTarget } from "react-icons/fi";
+import { FiPlus, FiEdit2, FiTrash2, FiCheck, FiX, FiList, FiChevronRight, FiChevronDown, FiPlusCircle, FiActivity, FiLayers, FiTarget, FiRefreshCw } from "react-icons/fi";
 import { FaLayerGroup, FaDotCircle, FaRobot, FaMicrochip } from "react-icons/fa";
 
 const Subtopics = ({ userRole }) => {
@@ -14,6 +14,7 @@ const Subtopics = ({ userRole }) => {
   const [editId, setEditId] = useState(null);
   const [editName, setEditName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const [addingChildTo, setAddingChildTo] = useState(null);
   const [childName, setChildName] = useState("");
 
@@ -35,6 +36,26 @@ const Subtopics = ({ userRole }) => {
   useEffect(() => {
     fetchSubtopics();
   }, [classId]);
+
+  // Sync subtopics from drone training hierarchy
+  const handleSyncFromTraining = async () => {
+    if (!window.confirm(
+      `This will import all training modules, submodules, and sub-submodules for this class into the module hierarchy. Existing nodes will not be duplicated. Continue?`
+    )) return;
+
+    setSyncing(true);
+    try {
+      const res = await SubtopicService.syncFromTraining(classId);
+      const { insertedCount, skippedCount, message } = res.data;
+      alert(`✅ Sync Complete!\n\n${insertedCount} new nodes added\n${skippedCount} already existed\n\n${message}`);
+      fetchSubtopics();
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Sync failed. Ensure training modules are initialized for this class.';
+      alert(`❌ Sync Failed\n\n${msg}`);
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   // Build tree structure
   const subtopicTree = useMemo(() => {
@@ -337,13 +358,25 @@ const Subtopics = ({ userRole }) => {
             </div>
           </div>
 
-          <div className="flex gap-6 relative z-10">
+          <div className="flex flex-col sm:flex-row items-center gap-4 relative z-10">
             <div className="text-center px-8 py-4 rounded-3xl border border-[#00C2C7]/10 bg-[#061E29]/50 backdrop-blur-md min-w-[140px]">
               <div className="text-4xl font-black text-[#00C2C7] leading-none drop-shadow-[0_0_10px_rgba(0,194,199,0.5)]">
                 {subtopics.length}
               </div>
               <p className="text-[10px] text-white/40 font-black uppercase tracking-[0.3em] mt-2">Active Nodes</p>
             </div>
+
+            {/* Sync from Training button — available to admin and instructor */}
+            {(role === "admin" || role === "Instructor") && (
+              <button
+                onClick={handleSyncFromTraining}
+                disabled={syncing}
+                className="flex items-center gap-3 px-6 py-4 bg-[#00C2C7]/10 border border-[#00C2C7]/30 text-[#00C2C7] rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#00C2C7]/20 hover:border-[#00C2C7]/60 hover:shadow-[0_0_20px_rgba(0,194,199,0.2)] transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <FiRefreshCw size={16} className={syncing ? 'animate-spin' : ''} />
+                {syncing ? 'Syncing...' : 'Sync from Training'}
+              </button>
+            )}
           </div>
         </div>
 
@@ -407,19 +440,43 @@ const Subtopics = ({ userRole }) => {
             </div>
           </div>
 
-          {loading ? (
+          {loading || syncing ? (
             <div className="flex flex-col items-center justify-center py-40 gap-6">
               <div className="relative">
                 <div className="w-16 h-16 border-2 border-[#00C2C7]/20 border-t-[#00C2C7] rounded-full animate-spin"></div>
-                <div className="absolute inset-0 w-16 h-16 border-2 border-[#00C2C7]/20 border-b-[#00C2C7] rounded-full animate-reverse-spin"></div>
+                <div className="absolute inset-0 w-16 h-16 border-2 border-[#00C2C7]/20 border-b-[#00C2C7] rounded-full" style={{ animationDirection: 'reverse', animation: 'spin 1.5s linear infinite' }}></div>
               </div>
-              <p className="font-black text-[#00C2C7] text-xs uppercase tracking-[0.5em] animate-pulse">Syncing Operational Data</p>
+              <p className="font-black text-[#00C2C7] text-xs uppercase tracking-[0.5em] animate-pulse">
+                {syncing ? 'Importing from Training Modules...' : 'Syncing Operational Data'}
+              </p>
             </div>
           ) : subtopicTree.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-40 text-white/10 scale-125">
-              <FiTarget size={100} className="mb-8 animate-pulse-slow font-thin" />
-              <p className="text-2xl font-black uppercase tracking-[0.3em] italic">No Operational Units Linked</p>
-              <p className="text-xs font-black uppercase tracking-widest mt-4 opacity-30">Waiting for Root Category Initialization</p>
+            <div className="flex flex-col items-center justify-center py-24 gap-6 px-8 text-center">
+              <div className="w-24 h-24 rounded-3xl bg-[#00C2C7]/5 border border-[#00C2C7]/10 flex items-center justify-center text-[#00C2C7]/20">
+                <FiTarget size={48} />
+              </div>
+              <div>
+                <p className="text-2xl font-black uppercase tracking-[0.2em] italic text-white/20">No Operational Units Linked</p>
+                <p className="text-xs font-black uppercase tracking-widest mt-3 text-white/10">This class has no module hierarchy yet</p>
+              </div>
+
+              {(role === "admin" || role === "Instructor") && (
+                <div className="mt-4 p-8 bg-[#00C2C7]/5 border border-[#00C2C7]/20 rounded-3xl max-w-md">
+                  <p className="text-[10px] font-black text-[#00C2C7] uppercase tracking-[0.3em] mb-3">Quick Import Available</p>
+                  <p className="text-sm text-white/40 font-medium mb-6 leading-relaxed">
+                    Import the full 3-level hierarchy directly from the drone training tables —
+                    <span className="text-white/60"> modules → submodules → sub-submodules</span>.
+                  </p>
+                  <button
+                    onClick={handleSyncFromTraining}
+                    disabled={syncing}
+                    className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-[#00C2C7] text-[#061E29] rounded-2xl font-black text-sm uppercase tracking-widest shadow-[0_0_20px_rgba(0,194,199,0.3)] hover:shadow-[0_0_35px_rgba(0,194,199,0.5)] transition-all active:scale-95 disabled:opacity-50"
+                  >
+                    <FiRefreshCw size={18} className={syncing ? 'animate-spin' : ''} />
+                    {syncing ? 'Importing...' : 'Sync from Training Modules'}
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <div className="py-6">

@@ -234,6 +234,7 @@ const TestQuestions = () => {
       setScore(result);
       await scoreAPI.postScore({
         test_set_id: examMeta?.test_set_id,
+        student_test_set_id: examMeta?.student_test_set_id,
         student_id,
         score: result,
         total_questions: questions.length,

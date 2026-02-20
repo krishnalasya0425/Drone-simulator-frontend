@@ -25,7 +25,7 @@ const TestReview = () => {
     try {
       setLoading(true);
       const data = await scoreAPI.getTestReview(student_id, test_set_id);
-     
+
       setTestReview(data);
     } catch (error) {
       console.error("Error fetching test review:", error);
@@ -80,227 +80,245 @@ const TestReview = () => {
 
 
   return (
-    <div className="min-h-screen p-4" style={{ backgroundColor: '#f0fdf4' }}>
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen relative overflow-hidden bg-[#061E29] text-[#F3F4F4] font-['Inter',_sans-serif]">
+      {/* Dynamic Tactical Background */}
+      <div className="fixed inset-0 z-0">
+        <div
+          className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,_rgba(0,194,199,0.05)_0%,_transparent_70%)] animate-pulse"
+        />
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
+          style={{ backgroundImage: 'linear-gradient(#00C2C7 1px, transparent 1px), linear-gradient(90deg, #00C2C7 1px, transparent 1px)', backgroundSize: '40px 40px' }}
+        />
+        <div className="floating-orb orb-1 opacity-20"></div>
+        <div className="floating-orb orb-2 opacity-10"></div>
+      </div>
 
-        {/* Back Button - Compact */}
+      <div className="relative z-10 max-w-4xl mx-auto px-6 py-6">
+        {/* Navigation HUD */}
         <button
           onClick={() => navigate(-1)}
-          className="mb-4 flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-800 font-medium transition-colors"
+          className="group mb-6 flex items-center gap-2.5 px-3.5 py-1.5 rounded-lg bg-[#1D546D]/20 border border-[#5F9598]/20 text-[#00C2C7] font-black uppercase tracking-widest text-[10px] hover:bg-[#00C2C7] hover:text-[#061E29] transition-all duration-300 shadow-[0_0_20px_rgba(0,194,199,0.1)] hover:shadow-[0_0_30px_rgba(0,194,199,0.3)]"
         >
-          <FiArrowLeft size={16} />
-          <span>Back to Results</span>
+          <FiArrowLeft className="group-hover:-translate-x-1 transition-transform" size={14} />
+          <span>Abort Review & Return</span>
         </button>
 
-        {/* Summary Header - Professional & Compact */}
-        <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden mb-4">
-          {/* Header Section */}
-          <div className="p-4 border-b" style={{ backgroundColor: '#f9fafb' }}>
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg" style={{ backgroundColor: passed ? '#D5F2D5' : '#fee2e2' }}>
-                  <FaClipboardCheck className={passed ? 'text-green-700' : 'text-red-700'} size={20} />
-                </div>
-                <div>
-                  <h1 className="text-lg font-bold text-gray-800">Test Review</h1>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-xs text-gray-600 font-bold uppercase tracking-wider">{testReview.student_name || "Student"}</span>
+        {/* Mission Status Header */}
+        <div className="glass-container border-[#00C2C7]/30 p-6 mb-6 relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+            <FaClipboardCheck size={100} className={passed ? 'text-[#34d399]' : 'text-[#f87171]'} />
+          </div>
+
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="flex items-center gap-5">
+              <div className={`w-16 h-16 rounded-xl flex items-center justify-center border-2 shadow-[0_0_30px_rgba(0,0,0,0.5)] ${passed ? 'bg-gradient-to-br from-[#061E29] to-[#34d399]/40 border-[#34d399]/50' : 'bg-gradient-to-br from-[#061E29] to-[#f87171]/40 border-[#f87171]/50'}`}>
+                {passed ? <FiCheckCircle size={32} className="text-[#34d399]" /> : <FiXCircle size={32} className="text-[#f87171]" />}
+              </div>
+              <div>
+                <h1 className="text-3xl font-black italic uppercase tracking-tighter mb-1 text-gradient">
+                  Mission Review
+                </h1>
+                <div className="flex items-center gap-2.5">
+                  <div className="px-2.5 py-0.5 bg-[#00C2C7]/10 border border-[#00C2C7]/30 rounded">
+                    <span className="text-[#00C2C7] font-black uppercase tracking-widest text-[9px]">OPERATIVE: {testReview.student_name || "REDACTED"}</span>
+                  </div>
+                  <div className={`px-2.5 py-0.5 border rounded ${passed ? 'bg-[#34d399]/10 border-[#34d399]/30 text-[#34d399]' : 'bg-[#f87171]/10 border-[#f87171]/30 text-[#f87171]'}`}>
+                    <span className="font-black uppercase tracking-widest text-[9px]">{passed ? 'STATUS: SUCCESS' : 'STATUS: FAILURE'}</span>
                   </div>
                 </div>
               </div>
+            </div>
 
-              <div className="flex items-center gap-3">
-                <div className="text-right">
-                  <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-1">Status</p>
-                  <div className={`px-3 py-1 rounded-full text-xs font-bold inline-flex items-center gap-1.5 ${passed ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                    {passed ? <FiCheckCircle size={12} /> : <FiXCircle size={12} />}
-                    {passed ? 'PASSED' : 'FAILED'}
-                  </div>
+            <div className="flex items-center gap-6">
+              <div className="text-center">
+                <p className="text-[#5F9598] font-black uppercase tracking-widest text-[9px] mb-1.5 opacity-60">Accuracy</p>
+                <div className="relative w-20 h-20 flex items-center justify-center">
+                  <svg className="absolute inset-0 w-full h-full -rotate-90">
+                    <circle cx="40" cy="40" r="35" fill="none" stroke="rgba(95, 149, 152, 0.1)" strokeWidth="5" />
+                    <circle
+                      cx="40"
+                      cy="40"
+                      r="35"
+                      fill="none"
+                      stroke={passed ? '#34d399' : '#f87171'}
+                      strokeWidth="5"
+                      strokeDasharray={`${scorePercentage * 2.2} 220`}
+                      strokeLinecap="round"
+                      className="drop-shadow-[0_0_8px_rgba(0,194,199,0.3)]"
+                    />
+                  </svg>
+                  <span className="text-xl font-black italic">{scorePercentage}%</span>
                 </div>
-                <div className="w-px h-8 bg-gray-200"></div>
-                <div className="text-center">
-                  <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-1">Score</p>
-                  <p className="text-xl font-bold" style={{ color: '#074F06' }}>
-                    {testReview?.score ?? 0}
-                    <span className="text-sm text-gray-400 font-normal"> / {testReview?.total_questions ?? 0}</span>
+              </div>
+
+              <div className="h-16 w-px bg-gradient-to-b from-transparent via-[#5F9598]/30 to-transparent" />
+
+              <div className="text-center">
+                <p className="text-[#5F9598] font-black uppercase tracking-widest text-[9px] mb-1.5 opacity-60">Score Matrix</p>
+                <div className="text-3xl font-black italic text-[#F3F4F4]">
+                  {testReview?.score ?? 0}
+                  <span className="text-base text-[#5F9598] ml-1 opacity-50">/{testReview?.total_questions ?? 0}</span>
+                </div>
+                <div className="h-1 w-full bg-[#1D546D]/30 rounded-full mt-2 overflow-hidden border border-[#5F9598]/20">
+                  <div
+                    className={`h-full rounded-full ${passed ? 'bg-[#34d399]' : 'bg-[#f87171]'}`}
+                    style={{ width: `${scorePercentage}%`, boxShadow: passed ? '0 0 10px #34d399' : '0 0 10px #f87171' }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick HUD Metrics */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-8">
+            <div className="bg-[#0a2533]/50 border border-[#5F9598]/20 rounded-xl p-3 backdrop-blur-md">
+              <div className="flex items-center gap-2.5">
+                <FiClock className="text-[#00C2C7]" size={16} />
+                <div>
+                  <p className="text-[#5F9598] font-black uppercase tracking-widest text-[8px]">TIME EXPENDED</p>
+                  <p className="text-sm font-black italic whitespace-nowrap">
+                    {testReview.exam_type === 'UNTIMED' ? 'RECONNAISSANCE' : `${testReview.time_taken || "--"} MINUTES`}
                   </p>
                 </div>
               </div>
             </div>
-          </div>
-
-          {/* Stats Grid - Compact */}
-          <div className="grid grid-cols-2 md:grid-cols-4 divide-x border-t">
-            <div className="p-3 flex items-center gap-2">
-              <div className="p-1.5 rounded-md" style={{ backgroundColor: '#fffbeb' }}>
-                <FiAward className="text-amber-600" size={16} />
-              </div>
-              <div>
-                <p className="text-[10px] text-gray-500 font-semibold uppercase">Percentage</p>
-                <p className="text-base font-bold text-gray-800">{scorePercentage}%</p>
+            <div className="bg-[#0a2533]/50 border border-[#5F9598]/20 rounded-xl p-3 backdrop-blur-md">
+              <div className="flex items-center gap-2.5">
+                <FiCalendar className="text-[#00C2C7]" size={16} />
+                <div>
+                  <p className="text-[#5F9598] font-black uppercase tracking-widest text-[8px]">DATE RECORDED</p>
+                  <p className="text-sm font-black italic whitespace-nowrap">
+                    {testReview.submitted_at ? new Date(testReview.submitted_at).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'UNKNOWN'}
+                  </p>
+                </div>
               </div>
             </div>
-            <div className="p-3 flex items-center gap-2">
-              <div className="p-1.5 rounded-md" style={{ backgroundColor: '#eff6ff' }}>
-                <FiClock className="text-blue-600" size={16} />
-              </div>
-              <div>
-                <p className="text-[10px] text-gray-500 font-semibold uppercase">Time Taken</p>
-                <p className="text-base font-bold text-gray-800">
-                  {testReview.exam_type === 'UNTIMED'
-                    ? 'Untimed'
-                    : `${testReview.time_taken || "--"} mins`}
-                </p>
+            <div className="bg-[#0a2533]/50 border border-[#5F9598]/20 rounded-xl p-3 backdrop-blur-md col-span-2 md:col-span-1">
+              <div className="flex items-center gap-2.5">
+                <FiAward className="text-[#00C2C7]" size={16} />
+                <div>
+                  <p className="text-[#5F9598] font-black uppercase tracking-widest text-[8px]">THRESHOLD</p>
+                  <p className="text-sm font-black italic whitespace-nowrap">{testReview.pass_threshold} POINTS REQUIRED</p>
+                </div>
               </div>
             </div>
-            <div className="p-3 flex items-center gap-2">
-              <div className="p-1.5 rounded-md" style={{ backgroundColor: '#f0fdf4' }}>
-                <FiCalendar className="text-green-600" size={16} />
-              </div>
-              <div>
-                <p className="text-[10px] text-gray-500 font-semibold uppercase">Date Attempted</p>
-                <p className="text-base font-bold text-gray-800">
-                  {testReview.submitted_at ? new Date(testReview.submitted_at).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '--'}
-                </p>
-              </div>
-            </div>
-            <div className="p-3 flex items-center gap-2">
-              <div className="p-1.5 rounded-md" style={{ backgroundColor: passed ? '#D5F2D5' : '#fee2e2' }}>
-                {passed ? <FiCheckCircle className="text-green-600" size={16} /> : <FiXCircle className="text-red-600" size={16} />}
-              </div>
-              <div>
-                <p className="text-[10px] text-gray-500 font-semibold uppercase">Status</p>
-                <p className={`text-base font-bold ${passed ? 'text-green-700' : 'text-red-700'}`}>
-                  {passed ? 'Passed' : 'Failed'}
-                </p>
-              </div>
-            </div>
-
           </div>
         </div>
 
-        {/* Questions Section */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base font-bold flex items-center gap-2" style={{ color: '#074F06' }}>
-              <FaClipboardCheck size={18} />
-              Question Analysis
+        {/* Tactical Question Breakdown */}
+        <div>
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-xl font-black italic uppercase tracking-tighter text-[#F3F4F4]">
+              Tactical Question Breakdown
             </h2>
-            <div className="flex items-center gap-3 text-xs text-gray-600 bg-white px-3 py-1.5 rounded-md border border-gray-200">
+            <div className="flex items-center gap-3 px-3 py-1.5 bg-[#1D546D]/20 border border-[#5F9598]/20 rounded-lg backdrop-blur-md">
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                <span className="font-medium">Correct</span>
+                <div className="w-2 h-2 rounded-full bg-[#34d399]"></div>
+                <span className="text-[8px] font-black uppercase text-[#F3F4F4]/60">CORRECT</span>
               </div>
-              <div className="w-px h-3 bg-gray-300"></div>
+              <div className="w-px h-3 bg-[#5F9598]/30"></div>
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-red-500"></span>
-                <span className="font-medium">Incorrect</span>
+                <div className="w-2 h-2 rounded-full bg-[#f87171]"></div>
+                <span className="text-[8px] font-black uppercase text-[#F3F4F4]/60">INCORRECT</span>
               </div>
             </div>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
             {testReview.questions.map((q, idx) => {
               const isCorrect = q.selected_answer === q.correct_answer;
 
               return (
                 <div
-                  key={q.id}
-                  className={`bg-white rounded-lg shadow-sm border-l-4 overflow-hidden transition-all hover:shadow-md ${isCorrect ? 'border-green-500' : 'border-red-500'}`}
+                  key={q.question_id}
+                  className={`glass-container border-y-0 border-r-0 border-l-[4px] transition-all hover:translate-x-1 duration-300 ${isCorrect ? 'border-[#34d399]/60' : 'border-[#f87171]/60'}`}
                 >
-                  <div className="p-4">
-                    <div className="flex items-start gap-3">
-                      <div className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 font-bold text-xs ${isCorrect ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                        {idx + 1}
+                  <div className="p-5">
+                    <div className="flex items-start gap-4">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 font-black text-sm italic shadow-lg ${isCorrect ? 'bg-[#34d399] text-[#061E29]' : 'bg-[#f87171] text-[#061E29]'}`}>
+                        {String(idx + 1).padStart(2, '0')}
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-3 mb-3">
-                          <h3 className="text-sm font-semibold text-gray-800 leading-relaxed flex-1">
+                        <div className="flex items-start justify-between gap-4 mb-4">
+                          <h3 className="text-lg font-bold text-[#F3F4F4] leading-tight flex-1">
                             {q.question_text}
                           </h3>
-                          {isCorrect ? (
-                            <FiCheckCircle className="text-green-500 flex-shrink-0 mt-0.5" size={18} />
-                          ) : (
-                            <FiXCircle className="text-red-500 flex-shrink-0 mt-0.5" size={18} />
-                          )}
                         </div>
 
-                        {/* MCQ Options */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        {/* HUD Options Analysis */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
                           {q.options?.length > 0 ? (
                             q.options.map((opt) => {
                               const isCorrectOption = opt.key === q.correct_answer;
                               const isSelectedOption = q.selected_answer === opt.key;
 
-                              let bgStyle = "bg-gray-50 border-gray-200";
-                              let icon = null;
+                              let bgStyle = "bg-[#0a2533]/30 border-[#5F9598]/20 text-[#F3F4F4]/70";
+                              let glowStyle = "";
 
                               if (isCorrectOption) {
-                                bgStyle = "bg-green-50 border-green-400";
-                                icon = <FiCheckCircle className="text-green-600" size={16} />;
+                                bgStyle = "bg-[#34d399]/10 border-[#34d399]/40 text-[#34d399]";
+                                glowStyle = "shadow-[0_0_15px_rgba(52,211,153,0.15)]";
                               } else if (isSelectedOption && !isCorrectOption) {
-                                bgStyle = "bg-red-50 border-red-400";
-                                icon = <FiXCircle className="text-red-600" size={16} />;
+                                bgStyle = "bg-[#f87171]/10 border-[#f87171]/40 text-[#f87171]";
+                                glowStyle = "shadow-[0_0_15px_rgba(248,113,113,0.15)]";
                               }
 
                               return (
                                 <div
                                   key={opt.option_id}
-                                  className={`p-2.5 rounded-md border flex items-center justify-between transition-all ${bgStyle}`}
+                                  className={`p-3 rounded-lg border flex items-center justify-between transition-all duration-300 ${bgStyle} ${glowStyle}`}
                                 >
-                                  <div className="flex items-center gap-2">
-                                    <span className="w-6 h-6 bg-white rounded flex items-center justify-center text-xs font-bold border">
+                                  <div className="flex items-center gap-3">
+                                    <span className={`w-7 h-7 rounded flex items-center justify-center text-[11px] font-black border ${isCorrectOption ? 'bg-[#34d399] text-[#061E29] border-[#34d399]' : isSelectedOption ? 'bg-[#f87171] text-[#061E29] border-[#f87171]' : 'bg-[#1D546D]/20 border-[#5F9598]/30 text-[#00C2C7]'}`}>
                                       {opt.key}
                                     </span>
-                                    <span className={`text-xs font-medium ${isCorrectOption ? 'text-green-900' : isSelectedOption ? 'text-red-900' : 'text-gray-700'}`}>
+                                    <span className="text-xs font-bold tracking-tight">
                                       {opt.value}
                                     </span>
                                   </div>
-                                  {icon}
+                                  {isCorrectOption && <FiCheckCircle className="text-[#34d399]" size={16} />}
+                                  {isSelectedOption && !isCorrectOption && <FiXCircle className="text-[#f87171]" size={16} />}
                                 </div>
                               );
                             })
                           ) : (
-                            // True/False
+                            // True/False Recon
                             ["True", "False"].map((val) => {
                               const isCorrectOption = val === q.correct_answer;
                               const isSelectedOption = q.selected_answer === val;
 
-                              let bgStyle = "bg-gray-50 border-gray-200";
-                              let icon = null;
-
-                              if (isCorrectOption) {
-                                bgStyle = "bg-green-50 border-green-400";
-                                icon = <FiCheckCircle className="text-green-600" size={16} />;
-                              } else if (isSelectedOption && !isCorrectOption) {
-                                bgStyle = "bg-red-50 border-red-400";
-                                icon = <FiXCircle className="text-red-600" size={16} />;
-                              }
+                              let bgStyle = "bg-[#0a2533]/30 border-[#5F9598]/20 text-[#F3F4F4]/70";
+                              if (isCorrectOption) bgStyle = "bg-[#34d399]/10 border-[#34d399]/40 text-[#34d399]";
+                              else if (isSelectedOption && !isCorrectOption) bgStyle = "bg-[#f87171]/10 border-[#f87171]/40 text-[#f87171]";
 
                               return (
                                 <div
                                   key={val}
-                                  className={`p-2.5 rounded-md border flex items-center justify-between transition-all ${bgStyle}`}
+                                  className={`p-3 rounded-lg border flex items-center justify-between transition-all duration-300 ${bgStyle}`}
                                 >
-                                  <span className={`text-xs font-bold ${isCorrectOption ? 'text-green-900' : isSelectedOption ? 'text-red-900' : 'text-gray-700'}`}>
+                                  <span className="text-xs font-black uppercase tracking-widest">
                                     {val}
                                   </span>
-                                  {icon}
+                                  {isCorrectOption && <FiCheckCircle className="text-[#34d399]" size={16} />}
+                                  {isSelectedOption && !isCorrectOption && <FiXCircle className="text-[#f87171]" size={16} />}
                                 </div>
                               );
                             })
                           )}
                         </div>
 
-                        {/* Status Message - Compact */}
+                        {/* Debriefing Insight */}
                         {!isCorrect && (
-                          <div className="mt-3 p-2.5 bg-blue-50 border border-blue-200 rounded-md flex items-start gap-2">
-                            <FiInfo className="text-blue-600 flex-shrink-0 mt-0.5" size={14} />
-                            <p className="text-[11px] text-blue-800 leading-relaxed">
-                              Correct: <span className="font-bold">{q.correct_answer}</span> •
-                              Selected: <span className="font-bold">{q.selected_answer || "None"}</span>
-                            </p>
+                          <div className="mt-5 p-3.5 bg-[#00C2C7]/5 border border-[#00C2C7]/20 rounded-xl flex items-start gap-2.5 backdrop-blur-sm">
+                            <FiInfo className="text-[#00C2C7] flex-shrink-0 mt-0.5" size={14} />
+                            <div>
+                              <p className="text-[9px] font-black text-[#5F9598] uppercase tracking-[0.2em] mb-1">Mission Intelligence</p>
+                              <p className="text-xs font-bold text-[#F3F4F4]/90">
+                                Tactical error detected. Correct response was <span className="text-[#34d399] font-black italic">{q.correct_answer}</span>.
+                                Operative selected <span className="text-[#f87171] font-black italic">{q.selected_answer || "NO RESPONSE"}</span>.
+                              </p>
+                            </div>
                           </div>
                         )}
                       </div>
@@ -311,11 +329,38 @@ const TestReview = () => {
             })}
           </div>
         </div>
-
       </div>
+
+      <style>{`
+        .glass-container {
+          background: rgba(10, 37, 51, 0.6);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border: 1px solid rgba(0, 194, 199, 0.2);
+          border-radius: 20px;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+        .text-gradient {
+          background: linear-gradient(135deg, #F3F4F4 0%, #00C2C7 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+        .floating-orb {
+          position: absolute;
+          border-radius: 50%;
+          filter: blur(80px);
+          z-index: -1;
+        }
+        .orb-1 { width: 400px; height: 400px; top: -100px; right: -100px; background: rgba(0, 194, 199, 0.15); }
+        .orb-2 { width: 300px; height: 300px; bottom: -50px; left: -50px; background: rgba(29, 84, 109, 0.1); }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .animate-spin { animation: spin 1s linear infinite; }
+      `}</style>
     </div>
   );
 };
+
+export default TestReview;
 
 // Internal icon for target if not imported
 const FiTarget = (props) => (
@@ -325,5 +370,3 @@ const FiTarget = (props) => (
     <circle cx="12" cy="12" r="2"></circle>
   </svg>
 );
-
-export default TestReview;
