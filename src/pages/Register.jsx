@@ -115,7 +115,7 @@ export default function Register() {
             </div>
 
             <div>
-              <label className="text-[9px] font-sans text-white/50 uppercase tracking-widest block mb-1.5">Course No</label>
+              <label className="text-[9px] font-sans text-white/50 uppercase tracking-widest block mb-1.5">Army ID</label>
               <input type="text" name="courseNo" placeholder="CN-XXX" value={formData.courseNo} onChange={handleChange} required className="w-full bg-[#0a1923]/40 border border-white/10 rounded-lg px-4 py-2.5 text-xs text-white placeholder:text-white/10 focus:outline-none focus:border-[#5F9598]/50 focus:bg-[#0a1923]/60 transition-all font-sans" />
             </div>
 

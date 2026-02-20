@@ -70,8 +70,14 @@ function DroneTrainingProgress({ classId: propClassId, studentId: propStudentId,
                     classId
                 );
 
+                console.log('[DEBUG] allData:', allData);
+                console.log('[DEBUG] selectedCategory.id:', selectedCategory.id);
+
                 // Filter by selected category
                 const categoryData = allData.find(cat => cat.id === selectedCategory.id);
+                console.log('[DEBUG] categoryData:', categoryData);
+                console.log('[DEBUG] categoryData.modules:', categoryData?.modules);
+
                 setHierarchy(categoryData?.modules || []);
             } catch (err) {
                 console.error('Error fetching hierarchy:', err);
@@ -280,6 +286,13 @@ function DroneTrainingProgress({ classId: propClassId, studentId: propStudentId,
                                                     const isSubExpanded = expandedSubmodules[submodule.id];
                                                     const hasSubSubmodules = submodule.subsubmodules && submodule.subsubmodules.length > 0;
                                                     const submoduleProgress = submodule.progress;
+
+                                                    console.log(`[DEBUG RENDER] Submodule ${submodule.id} (${submodule.submodule_name}):`, {
+                                                        progress: submoduleProgress,
+                                                        completed: submoduleProgress?.completed,
+                                                        moduleId: module.id,
+                                                        submoduleId: submodule.id
+                                                    });
 
                                                     return (
                                                         <div key={submodule.id} className="ml-8 bg-[#0a2533]/40 rounded-xl border border-white/5">

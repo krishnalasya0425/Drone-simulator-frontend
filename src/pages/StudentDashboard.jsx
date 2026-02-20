@@ -207,10 +207,11 @@ export default function StudentDashboard() {
                     </span>
                   </div> */}
 
-                  <h1 className="text-4xl md:text-6xl font-black text-[#F3F4F4] mb-6 leading-tight uppercase italic tracking-tighter">
+                  <h1 className="text-2xl md:text-3xl font-bold text-[#F3F4F4] mb-4 leading-tight uppercase italic tracking-tight whitespace-nowrap pt-4">
                     Welcome Back,
-                    <br />
-                    <span className="text-gradient drop-shadow-[0_0_20px_rgba(0,194,199,0.3)]">{studentName}</span>
+                    <span className="text-gradient drop-shadow-[0_0_10px_rgba(0,194,199,0.3)] ml-2">
+                      {studentName}
+                    </span>
                   </h1>
 
                   <p className="text-lg md:text-xl text-[#00C2C7] mb-8 font-black uppercase tracking-[0.2em] opacity-80">

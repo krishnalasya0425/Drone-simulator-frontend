@@ -162,8 +162,8 @@ const Subtopics = ({ userRole }) => {
       <div key={item.id} className="w-full">
         <div
           className={`group flex items-center justify-between p-4 border-b border-[#00C2C7]/10 transition-all ${selectedIds.includes(item.id)
-              ? 'bg-[#00C2C7]/10 border-l-4 border-l-[#00C2C7]'
-              : 'hover:bg-white/5 border-l-4 border-l-transparent'
+            ? 'bg-[#00C2C7]/10 border-l-4 border-l-[#00C2C7]'
+            : 'hover:bg-white/5 border-l-4 border-l-transparent'
             }`}
           style={{ paddingLeft: `${level * 2 + 1}rem` }}
         >
@@ -316,24 +316,24 @@ const Subtopics = ({ userRole }) => {
       <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-[#00C2C7]/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
       <div className="fixed bottom-0 left-0 w-[500px] h-[500px] bg-[#00C2C7]/5 blur-[120px] rounded-full translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
 
-      <div className="max-w-6xl mx-auto relative z-10">
+      <div className="max-w-4xl mx-auto relative z-7">
         <div className="bg-[#0a2533]/60 backdrop-blur-xl rounded-[2rem] shadow-2xl p-10 mb-8 border border-[#00C2C7]/20 flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+          {/* <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
             <FaRobot size={120} />
-          </div>
+          </div> */}
 
           <div className="flex items-center gap-8 relative z-10">
-            <div className="w-20 h-20 rounded-3xl flex items-center justify-center text-[#061E29] text-4xl shadow-[0_0_30px_rgba(0,194,199,0.4)] bg-gradient-to-br from-[#00C2C7] to-[#0099a3] border border-[#00C2C7]/30 transform group-hover:rotate-6 transition-transform">
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-[#061E29] text-2xl shadow-[0_0_30px_rgba(0,194,199,0.4)] bg-gradient-to-br from-[#00C2C7] to-[#0099a3] border border-[#00C2C7]/30 transform group-hover:rotate-6 transition-transform">
               <FaLayerGroup />
             </div>
             <div>
-              <h1 className="text-4xl font-black text-white tracking-tighter uppercase italic">
+              <h1 className="text-2xl font-black text-white tracking-tighter uppercase italic">
                 Mission Architecture
               </h1>
-              <div className="flex items-center gap-3 mt-2">
+              {/* <div className="flex items-center gap-3 mt-2">
                 <span className="h-0.5 w-12 bg-[#00C2C7]"></span>
                 <p className="text-[#00C2C7] font-black text-xs uppercase tracking-[0.4em]">Operational Matrix v2.0</p>
-              </div>
+              </div> */}
             </div>
           </div>
 
@@ -428,7 +428,7 @@ const Subtopics = ({ userRole }) => {
           )}
         </div>
 
-        <div className="bg-gradient-to-r from-[#00C2C7]/10 via-transparent to-transparent rounded-[2rem] p-10 border-l-4 border-l-[#00C2C7] border border-white/5">
+        {/* <div className="bg-gradient-to-r from-[#00C2C7]/10 via-transparent to-transparent rounded-[2rem] p-10 border-l-4 border-l-[#00C2C7] border border-white/5">
           <div className="flex flex-col md:flex-row gap-8 items-center">
             <div className="bg-[#00C2C7] text-[#061E29] p-4 rounded-2xl shadow-[0_0_20px_rgba(0,194,199,0.2)]"><FiPlusCircle size={28} /></div>
             <div>
@@ -439,7 +439,7 @@ const Subtopics = ({ userRole }) => {
               </p>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
 
       <div className="fixed top-20 left-4 bottom-20 w-1 border-l border-white/5 pointer-events-none"></div>

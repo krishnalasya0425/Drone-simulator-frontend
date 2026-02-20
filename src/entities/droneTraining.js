@@ -78,6 +78,26 @@ const droneTrainingAPI = {
             console.error('Error in recordProgress:', error);
             throw error;
         }
+    },
+
+    // Get screenshots metadata for a student in a class
+    getScreenshots: async (studentId, classId) => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.get(
+                `${API_URL}/drone-training/screenshots/${studentId}/${classId}`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            return response.data.data || [];
+        } catch (error) {
+            console.error('Error in getScreenshots:', error);
+            return [];
+        }
+    },
+
+    // Build the URL to display a screenshot image by its ID
+    getScreenshotImageUrl: (screenshotId) => {
+        return `${API_URL}/drone-training/screenshots/image/${screenshotId}`;
     }
 };
 

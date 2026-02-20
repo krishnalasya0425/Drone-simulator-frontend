@@ -32,7 +32,10 @@ const droneTrainingAPI = {
     // ============================================
     async getStudentProgress(studentId, classId, categoryId) {
         try {
-            const response = await axios.get(`/drone-training/progress/${studentId}/${classId}/${categoryId}`);
+            const url = categoryId 
+                ? `/drone-training/progress/${studentId}/${classId}?categoryId=${categoryId}`
+                : `/drone-training/progress/${studentId}/${classId}`;
+            const response = await axios.get(url);
             return response.data.data;
         } catch (error) {
             console.error('Error fetching student progress:', error);

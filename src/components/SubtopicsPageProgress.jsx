@@ -6,8 +6,8 @@ import progressAPI from '../entities/progress';
 import userService from '../entities/users';
 import classService from '../entities/class';
 import droneTrainingAPI from "../entities/droneTraining";
-import { FaCheckCircle, FaBook, FaImage, FaVideo, FaGamepad, FaUser, FaGraduationCap, FaCube, FaRobot, FaMicrochip } from 'react-icons/fa';
-import { FiCheck, FiClock, FiActivity, FiLayers, FiTarget, FiBox, FiCheckCircle, FiChevronDown, FiChevronRight } from 'react-icons/fi';
+import { FaCheckCircle, FaBook, FaImage, FaVideo, FaGamepad, FaUser, FaGraduationCap, FaCube, FaRobot, FaMicrochip, FaCamera, FaExpand, FaTimes } from 'react-icons/fa';
+import { FiCheck, FiClock, FiActivity, FiLayers, FiTarget, FiBox, FiCheckCircle, FiChevronDown, FiChevronRight, FiCamera } from 'react-icons/fi';
 
 function SubtopicsPage({ classId: propClassId, studentId: propStudentId, embedded = false }) {
   const [subtopics, setSubtopics] = useState([]);
@@ -23,6 +23,10 @@ function SubtopicsPage({ classId: propClassId, studentId: propStudentId, embedde
   const [expandedModules, setExpandedModules] = useState({});
   const [expandedSubmodules, setExpandedSubmodules] = useState({});
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  // Screenshots state
+  const [screenshots, setScreenshots] = useState([]);
+  const [lightboxScreenshot, setLightboxScreenshot] = useState(null);
 
   const [userData, setUserData] = useState({});
   const [classData, setClassData] = useState({});
@@ -49,7 +53,8 @@ function SubtopicsPage({ classId: propClassId, studentId: propStudentId, embedde
           categoriesData,
           fullProgressData,
           userDataRes,
-          classDataRes
+          classDataRes,
+          screenshotsData
         ] = await Promise.all([
           SubtopicService.getSubtopicsByClassId(classId),
           CompletionProgressService.getProgressByStudentAndClass(studentId, classId),
@@ -57,7 +62,8 @@ function SubtopicsPage({ classId: propClassId, studentId: propStudentId, embedde
           droneTrainingAPI.getAllCategories(),
           droneTrainingAPI.getStudentProgress(studentId, classId),
           userService.getUserById(studentId),
-          classService.getClassInfo(classId)
+          classService.getClassInfo(classId),
+          droneTrainingAPI.getScreenshots(studentId, classId)
         ]);
 
         if (!isMounted) return;
@@ -79,6 +85,9 @@ function SubtopicsPage({ classId: propClassId, studentId: propStudentId, embedde
         setDroneCategories(categoriesData);
         setFullDroneData(fullProgressData);
 
+        // 4. Screenshots
+        setScreenshots(screenshotsData);
+
         // 4. Initial Drone Category Selection (Only if not already set)
         setSelectedDroneCategory(prev => {
           if (prev) return prev;
@@ -95,6 +104,23 @@ function SubtopicsPage({ classId: propClassId, studentId: propStudentId, embedde
     fetchComponentData();
     return () => { isMounted = false; };
   }, [classId, studentId, refreshTrigger]);
+
+  // AUTO-POLL: Re-fetch drone training progress every 10 seconds
+  // so the UI updates automatically when Unity/AR-VR sends completion data
+  useEffect(() => {
+    if (!classId || !studentId) return;
+
+    const pollInterval = setInterval(async () => {
+      try {
+        const freshProgressData = await droneTrainingAPI.getStudentProgress(studentId, classId);
+        setFullDroneData(freshProgressData);
+      } catch (err) {
+        // Silent fail on poll — don't disrupt the UI
+      }
+    }, 10000); // every 10 seconds
+
+    return () => clearInterval(pollInterval);
+  }, [classId, studentId]);
 
   // DERIVED HIERARCHY EFFECT
   useEffect(() => {
@@ -162,6 +188,43 @@ function SubtopicsPage({ classId: propClassId, studentId: propStudentId, embedde
   // Use the filtered lists
   const displayDocumentSubtopics = documentSubtopics;
   const displayUnitySubtopics = modelSubtopics;
+
+  // Compute drone training stats — deduplicate by unique progress key to avoid counting same unit multiple times
+  const droneStats = React.useMemo(() => {
+    let total = 0;
+    const completedKeys = new Set();
+    const seenLeafKeys = new Set();
+
+    fullDroneData.forEach(category => {
+      (category.modules || []).forEach(module => {
+        (module.submodules || []).forEach(submodule => {
+          const subSubmodules = submodule.subsubmodules || [];
+          if (subSubmodules.length > 0) {
+            subSubmodules.forEach(ssm => {
+              const key = `${module.id}_${submodule.id}_${ssm.id}`;
+              if (!seenLeafKeys.has(key)) {
+                seenLeafKeys.add(key);
+                total++;
+                const p = ssm.progress;
+                if (p && (p.completed === 1 || p.completed === true)) completedKeys.add(key);
+              }
+            });
+          } else {
+            const key = `${module.id}_${submodule.id}_null`;
+            if (!seenLeafKeys.has(key)) {
+              seenLeafKeys.add(key);
+              total++;
+              const p = submodule.progress;
+              if (p && (p.completed === 1 || p.completed === true)) completedKeys.add(key);
+            }
+          }
+        });
+      });
+    });
+
+    const completed = completedKeys.size;
+    return { total, completed, pending: total - completed };
+  }, [fullDroneData]);
 
   return (
     <div className={embedded ? "" : "min-h-screen bg-[#061E29] p-8 font-sans text-white overflow-x-hidden relative"}>
@@ -305,13 +368,15 @@ function SubtopicsPage({ classId: propClassId, studentId: propStudentId, embedde
                     <circle
                       cx="28" cy="28" r="25" stroke="#00C2C7" strokeWidth="4" fill="none"
                       strokeDasharray={`${2 * Math.PI * 25}`}
-                      strokeDashoffset={`${2 * Math.PI * 25 * (1 - completionPercentage / 100)}`}
+                      strokeDashoffset={`${2 * Math.PI * 25 * (1 - (droneStats.total > 0 ? droneStats.completed / droneStats.total : 0))}`}
                       strokeLinecap="round"
                       className="transition-all duration-1000"
                       style={{ filter: 'drop-shadow(0 0 5px #00C2C7)' }}
                     />
                   </svg>
-                  <span className="text-sm font-black text-[#00C2C7] relative">{Math.round(completionPercentage)}%</span>
+                  <span className="text-sm font-black text-[#00C2C7] relative">
+                    {droneStats.total > 0 ? Math.round((droneStats.completed / droneStats.total) * 100) : 0}%
+                  </span>
                 </div>
                 <div className="flex flex-col">
                   <span className="text-[8px] font-black text-white/40 uppercase tracking-widest leading-none">Overall</span>
@@ -323,15 +388,15 @@ function SubtopicsPage({ classId: propClassId, studentId: propStudentId, embedde
             {/* STATS HUD */}
             <div className="grid grid-cols-3 gap-4">
               <div className="bg-[#061E29]/80 p-5 rounded-2xl border border-white/5 flex flex-col items-center">
-                <span className="text-2xl font-black text-[#00C2C7]">{completedSubtopicIds.length}</span>
+                <span className="text-2xl font-black text-[#00C2C7]">{droneStats.completed}</span>
                 <span className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em] mt-1">Verified</span>
               </div>
               <div className="bg-[#061E29]/80 p-5 rounded-2xl border border-white/5 flex flex-col items-center">
-                <span className="text-2xl font-black text-white/60">{subtopics.length - completedSubtopicIds.length}</span>
+                <span className="text-2xl font-black text-white/60">{droneStats.pending}</span>
                 <span className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em] mt-1">Pending</span>
               </div>
               <div className="bg-[#061E29]/80 p-5 rounded-2xl border border-white/5 flex flex-col items-center">
-                <span className="text-2xl font-black text-white">{subtopics.length}</span>
+                <span className="text-2xl font-black text-white">{droneStats.total}</span>
                 <span className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em] mt-1">Total Units</span>
               </div>
             </div>
@@ -351,25 +416,6 @@ function SubtopicsPage({ classId: propClassId, studentId: propStudentId, embedde
                 </button>
               </div>
 
-              {/* Category Selector */}
-              {droneCategories.length > 0 && (
-                <div className="flex gap-2 mb-4 overflow-x-auto pb-2 custom-scrollbar">
-                  {droneCategories.map(cat => (
-                    <button
-                      key={cat.id}
-                      onClick={() => {
-                        setSelectedDroneCategory(cat);
-                      }}
-                      className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${selectedDroneCategory?.id === cat.id
-                        ? 'bg-[#00C2C7] text-[#061E29] border-[#00C2C7]'
-                        : 'bg-[#061E29]/80 text-white/40 border-white/5 hover:border-[#00C2C7]/30'
-                        }`}
-                    >
-                      {cat.category_name}
-                    </button>
-                  ))}
-                </div>
-              )}
 
               <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                 {droneHierarchy.length === 0 ? (
@@ -512,6 +558,155 @@ function SubtopicsPage({ classId: propClassId, studentId: propStudentId, embedde
           </div>
         </div>
       </div>
+
+      {/* SCREENSHOTS SECTION */}
+      <div className={embedded ? "mt-6" : "max-w-7xl mx-auto relative z-10 mt-8"}>
+        <div className="bg-[#0a2533]/40 backdrop-blur-xl rounded-[2.5rem] p-8 border border-white/5">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-[#00C2C7] border border-[#00C2C7]/30 bg-[#00C2C7]/10 shadow-[0_0_15px_rgba(0,194,199,0.1)]">
+                <FaCamera size={20} />
+              </div>
+              <div>
+                <h2 className="text-xl font-black text-white uppercase tracking-tighter">Mission Screenshots</h2>
+                <p className="text-[10px] text-[#00C2C7] font-black uppercase tracking-[0.2em] opacity-60">AR/VR Session Captures</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="bg-[#00C2C7]/10 border border-[#00C2C7]/20 text-[#00C2C7] text-xs font-black px-4 py-2 rounded-xl uppercase tracking-widest">
+                {screenshots.length} {screenshots.length === 1 ? 'Capture' : 'Captures'}
+              </span>
+              <button
+                onClick={() => setRefreshTrigger(prev => prev + 1)}
+                className="px-3 py-2 rounded-xl text-xs font-bold bg-[#00C2C7]/20 text-[#00C2C7] border border-[#00C2C7]/30 hover:bg-[#00C2C7] hover:text-[#061E29] transition-all flex items-center gap-2"
+              >
+                <FiActivity /> Refresh
+              </button>
+            </div>
+          </div>
+
+          {screenshots.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-white/10 rounded-2xl">
+              <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-4 text-white/20">
+                <FaCamera size={28} />
+              </div>
+              <p className="text-white/30 font-bold uppercase tracking-widest text-sm">No Screenshots Yet</p>
+              <p className="text-white/15 text-xs mt-1">Screenshots will appear here when captured from AR/VR sessions</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {screenshots.map((shot) => {
+                const imageUrl = droneTrainingAPI.getScreenshotImageUrl(shot.id);
+                const label = [shot.module_name, shot.submodule_name, shot.subsubmodule_name].filter(Boolean).join(' › ');
+                const capturedAt = new Date(shot.captured_at).toLocaleString('en-IN', {
+                  day: '2-digit', month: 'short', year: 'numeric',
+                  hour: '2-digit', minute: '2-digit'
+                });
+
+                return (
+                  <div
+                    key={shot.id}
+                    className="group relative bg-[#061E29]/80 rounded-2xl border border-white/5 overflow-hidden cursor-pointer hover:border-[#00C2C7]/40 transition-all hover:shadow-[0_0_20px_rgba(0,194,199,0.15)]"
+                    onClick={() => setLightboxScreenshot(shot)}
+                  >
+                    {/* Thumbnail */}
+                    <div className="aspect-video w-full overflow-hidden bg-black/40 relative">
+                      <img
+                        src={imageUrl}
+                        alt={label || 'Mission Screenshot'}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        loading="lazy"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextSibling.style.display = 'flex';
+                        }}
+                      />
+                      <div className="hidden w-full h-full items-center justify-center text-white/20 absolute inset-0">
+                        <FaCamera size={24} />
+                      </div>
+                      {/* Expand overlay */}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                        <FaExpand className="text-white" size={20} />
+                      </div>
+                    </div>
+
+                    {/* Info */}
+                    <div className="p-3">
+                      {shot.category_name && (
+                        <span className="text-[9px] font-black text-[#00C2C7] uppercase tracking-widest">{shot.category_name}</span>
+                      )}
+                      {label && (
+                        <p className="text-[10px] text-white/70 font-bold mt-0.5 truncate">{label}</p>
+                      )}
+                      <p className="text-[9px] text-white/30 mt-1">{capturedAt}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* LIGHTBOX MODAL */}
+      {lightboxScreenshot && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+          onClick={() => setLightboxScreenshot(null)}
+        >
+          <div
+            className="relative max-w-5xl w-full bg-[#0a2533] rounded-3xl border border-[#00C2C7]/20 overflow-hidden shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              onClick={() => setLightboxScreenshot(null)}
+              className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-black/60 border border-white/10 flex items-center justify-center text-white hover:bg-[#00C2C7] hover:text-[#061E29] transition-all"
+            >
+              <FaTimes size={16} />
+            </button>
+
+            {/* Image */}
+            <div className="w-full bg-black/40">
+              <img
+                src={droneTrainingAPI.getScreenshotImageUrl(lightboxScreenshot.id)}
+                alt="Mission Screenshot"
+                className="w-full max-h-[70vh] object-contain"
+              />
+            </div>
+
+            {/* Info bar */}
+            <div className="p-6 flex flex-wrap gap-4 items-center justify-between">
+              <div>
+                {lightboxScreenshot.category_name && (
+                  <span className="text-xs font-black text-[#00C2C7] uppercase tracking-widest">{lightboxScreenshot.category_name}</span>
+                )}
+                <p className="text-white font-bold mt-1">
+                  {[lightboxScreenshot.module_name, lightboxScreenshot.submodule_name, lightboxScreenshot.subsubmodule_name].filter(Boolean).join(' › ') || 'Mission Screenshot'}
+                </p>
+                <p className="text-white/40 text-xs mt-1">
+                  Captured: {new Date(lightboxScreenshot.captured_at).toLocaleString('en-IN', {
+                    day: '2-digit', month: 'long', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit'
+                  })}
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <a
+                  href={droneTrainingAPI.getScreenshotImageUrl(lightboxScreenshot.id)}
+                  download={`screenshot-${lightboxScreenshot.id}.png`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest bg-[#00C2C7] text-[#061E29] hover:bg-[#00a8ad] transition-all"
+                >
+                  Download
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
